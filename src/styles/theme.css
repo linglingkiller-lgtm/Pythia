@@ -1,0 +1,392 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  
+  /* Core Brand Colors - Revere Theme */
+  --revere-red: #8B1538;
+  --revere-red-dark: #6B0F2A;
+  --revere-red-light: #A41B43;
+  --revere-blue: #1E3A8A;
+  --revere-white: #FFFFFF;
+  
+  /* Background & Surfaces */
+  --background: #F8F9FB;
+  --foreground: #0F1419;
+  --card: #FFFFFF;
+  --card-foreground: #0F1419;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F1419;
+  
+  /* Primary (Revere Red) */
+  --primary: #8B1538;
+  --primary-foreground: #FFFFFF;
+  --primary-hover: #A41B43;
+  
+  /* Secondary (Deep Navy) */
+  --secondary: #1E293B;
+  --secondary-foreground: #F1F5F9;
+  
+  /* Muted & Subtle */
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  
+  /* Accent (Revere Blue) */
+  --accent: #EFF6FF;
+  --accent-foreground: #1E3A8A;
+  
+  /* Status Colors */
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --success: #059669;
+  --success-foreground: #FFFFFF;
+  --warning: #D97706;
+  --warning-foreground: #FFFFFF;
+  
+  /* Borders & Inputs */
+  --border: #E2E8F0;
+  --input: transparent;
+  --input-background: #F8FAFC;
+  --switch-background: #CBD5E1;
+  --ring: #8B1538;
+  
+  /* Typography Weights */
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Chart Colors - Professional Palette */
+  --chart-1: #8B1538;
+  --chart-2: #1E3A8A;
+  --chart-3: #059669;
+  --chart-4: #D97706;
+  --chart-5: #7C3AED;
+  
+  /* Border Radius */
+  --radius: 0.5rem;
+  
+  /* Sidebar - Dark Red Theme */
+  --sidebar: #8B1538;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #FFFFFF;
+  --sidebar-primary-foreground: #8B1538;
+  --sidebar-accent: #A41B43;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #6B0F2A;
+  --sidebar-ring: #FFFFFF;
+  
+  /* Shadows - Professional Depth */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.7), 0 8px 10px -6px rgb(0 0 0 / 0.7);
+}
+
+/* Custom Scrollbar Styling - Modern & Sleek */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.4);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(71, 85, 105, 0.6);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+
+.dark * {
+  scrollbar-color: rgba(71, 85, 105, 0.4) transparent;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /**
+  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
+  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+    font-family: 'Corpline', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+    font-family: 'Corpline', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+    font-family: 'Corpline', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+    font-family: 'Corpline', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+  
+  /* NYT-inspired animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  .animate-slideInRight {
+    animation: slideInRight 0.4s ease-out forwards;
+  }
+  
+  .animate-slideInLeft {
+    animation: slideInLeft 0.4s ease-out forwards;
+  }
+  
+  /* Shifting gradient background animation */
+  @keyframes gradientShift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  .animate-gradient-shift {
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+  }
+  
+  .bg-gradient-shift {
+    background: linear-gradient(
+      135deg,
+      #f8f9fa 0%,
+      #f1f3f5 25%,
+      #e9ecef 50%,
+      #f1f3f5 75%,
+      #f8f9fa 100%
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+  }
+  
+  .bg-gradient-shift-subtle {
+    background: linear-gradient(
+      135deg,
+      #fafafa 0%,
+      #f5f5f5 20%,
+      #fef2f2 35%,
+      #eff6ff 50%,
+      #fef2f2 65%,
+      #f5f5f5 80%,
+      #fafafa 100%
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 20s ease infinite;
+  }
+  
+  /* Animated gradient for background overlay */
+  @keyframes gradientMove {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  .animate-gradient {
+    animation: gradientMove 25s ease-in-out infinite;
+  }
+
+  /* Spin animation for loading spinners */
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  /* 🎉 Birthday Celebration Animations */
+  @keyframes dance {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg) scale(1);
+    }
+    25% {
+      transform: translateY(-4px) rotate(-0.5deg) scale(1.01);
+    }
+    50% {
+      transform: translateY(-6px) rotate(0deg) scale(1.02);
+    }
+    75% {
+      transform: translateY(-4px) rotate(0.5deg) scale(1.01);
+    }
+  }
+
+  @keyframes wiggle {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(0.5deg);
+    }
+    50% {
+      transform: rotate(0deg);
+    }
+    75% {
+      transform: rotate(-0.5deg);
+    }
+  }
+
+  .animate-dance {
+    animation: dance 1.5s ease-in-out infinite;
+  }
+
+  .animate-wiggle {
+    animation: wiggle 1.2s ease-in-out infinite;
+  }
+}

@@ -1,0 +1,215 @@
+import { Notification } from '../components/notifications/NotificationDropdown';
+
+// Helper to create dates relative to now
+const now = new Date();
+const minutesAgo = (minutes: number) => new Date(now.getTime() - minutes * 60 * 1000);
+const hoursAgo = (hours: number) => new Date(now.getTime() - hours * 60 * 60 * 1000);
+const daysAgo = (days: number) => new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+
+export const sampleNotifications: Notification[] = [
+  // URGENT
+  {
+    id: 'notif-1',
+    title: 'Quarterly expenditure report due',
+    message: 'Due in 3 days. 4 items missing tags.',
+    category: 'Compliance',
+    priority: 'Urgent',
+    timestamp: hoursAgo(2),
+    read: false,
+    links: { type: 'record', id: 'compliance-report-q4' },
+    actions: [
+      { label: 'Review report', onClick: () => console.log('Review report') },
+      { label: 'Fix tags', onClick: () => console.log('Fix tags') },
+    ],
+  },
+  {
+    id: 'notif-2',
+    title: 'HB90 vote scheduled',
+    message: 'Floor vote scheduled for tomorrow 10:00 AM. Prepare final position.',
+    category: 'Legislation',
+    priority: 'Urgent',
+    timestamp: hoursAgo(4),
+    read: false,
+    links: { type: 'bill', id: 'hb90' },
+    actions: [
+      { label: 'View bill', onClick: () => console.log('View bill') },
+      { label: 'Add to calendar', onClick: () => console.log('Add to calendar') },
+    ],
+  },
+
+  // ACTION NEEDED
+  {
+    id: 'notif-3',
+    title: 'Lobbyist registration renewal due',
+    message: 'Arizona renewal due in 14 days. Review and submit.',
+    category: 'Compliance',
+    priority: 'ActionNeeded',
+    timestamp: hoursAgo(5),
+    read: false,
+    links: { type: 'record', id: 'lobbyist-renewal' },
+    actions: [
+      { label: 'Open compliance', onClick: () => console.log('Open compliance') },
+      { label: 'Snooze 7 days', onClick: () => console.log('Snooze 7 days') },
+    ],
+  },
+  {
+    id: 'notif-4',
+    title: 'Committee hearing posted',
+    message: 'HB90 hearing scheduled. Testimony signup opens tomorrow.',
+    category: 'Legislation',
+    priority: 'ActionNeeded',
+    timestamp: hoursAgo(8),
+    read: false,
+    links: { type: 'bill', id: 'hb90' },
+    actions: [
+      { label: 'Generate brief', onClick: () => console.log('Generate brief') },
+      { label: 'Add to calendar', onClick: () => console.log('Add to calendar') },
+    ],
+  },
+  {
+    id: 'notif-5',
+    title: 'Amendment filed on HB90',
+    message: 'New amendment impacts interconnection timelines.',
+    category: 'Legislation',
+    priority: 'ActionNeeded',
+    timestamp: hoursAgo(10),
+    read: false,
+    links: { type: 'bill', id: 'hb90' },
+    actions: [
+      { label: 'View redline', onClick: () => console.log('View redline') },
+      { label: 'Assign analysis', onClick: () => console.log('Assign analysis') },
+    ],
+  },
+  {
+    id: 'notif-6',
+    title: 'Time to reconnect reached',
+    message: '21 days since last touch with Rep. Ramirez\'s Energy LA.',
+    category: 'Relationship',
+    priority: 'ActionNeeded',
+    timestamp: hoursAgo(12),
+    read: false,
+    links: { type: 'person', id: 'ramirez-la' },
+    actions: [
+      { label: 'Create task', onClick: () => console.log('Create task') },
+      { label: 'Log outreach', onClick: () => console.log('Log outreach') },
+    ],
+  },
+  {
+    id: 'notif-7',
+    title: 'Unlogged meeting detected',
+    message: 'Calendar event ended 2 hours ago. No interaction record logged.',
+    category: 'Records',
+    priority: 'ActionNeeded',
+    timestamp: hoursAgo(2),
+    read: false,
+    links: { type: 'record', id: 'meeting-123' },
+    actions: [
+      { label: 'Log now', onClick: () => console.log('Log now') },
+      { label: 'Snooze', onClick: () => console.log('Snooze') },
+    ],
+  },
+  {
+    id: 'notif-8',
+    title: 'Task assigned to you',
+    message: 'Sarah assigned: "Research SB45 fiscal impact analysis"',
+    category: 'Tasks',
+    priority: 'ActionNeeded',
+    timestamp: hoursAgo(6),
+    read: true,
+    links: { type: 'task', id: 'task-456' },
+    actions: [
+      { label: 'View task', onClick: () => console.log('View task') },
+      { label: 'Start work', onClick: () => console.log('Start work') },
+    ],
+  },
+
+  // INFO
+  {
+    id: 'notif-9',
+    title: 'Narrative shift detected',
+    message: 'Solar cost-shift framing trending in 3 outlets.',
+    category: 'Intel',
+    priority: 'Info',
+    timestamp: hoursAgo(14),
+    read: false,
+    links: { type: 'record', id: 'intel-123' },
+    actions: [
+      { label: 'Open intel', onClick: () => console.log('Open intel') },
+      { label: 'Add to brief', onClick: () => console.log('Add to brief') },
+    ],
+  },
+  {
+    id: 'notif-10',
+    title: 'Bill status changed',
+    message: 'SB45 moved from committee to second reading.',
+    category: 'Legislation',
+    priority: 'Info',
+    timestamp: hoursAgo(18),
+    read: true,
+    links: { type: 'bill', id: 'sb45' },
+  },
+  {
+    id: 'notif-11',
+    title: 'Meeting reminder',
+    message: 'Weekly team sync in 30 minutes.',
+    category: 'Calendar',
+    priority: 'Info',
+    timestamp: minutesAgo(30),
+    read: false,
+    links: { type: 'record', id: 'meeting-weekly' },
+    actions: [
+      { label: 'Join meeting', onClick: () => console.log('Join meeting') },
+    ],
+  },
+  {
+    id: 'notif-12',
+    title: 'Brief saved',
+    message: 'Your brief for Rep. Johnson meeting has been saved.',
+    category: 'Records',
+    priority: 'Info',
+    timestamp: daysAgo(1),
+    read: true,
+    links: { type: 'record', id: 'brief-johnson' },
+  },
+  {
+    id: 'notif-13',
+    title: 'Export ready',
+    message: 'Your Q4 compliance report export is ready to download.',
+    category: 'Records',
+    priority: 'Info',
+    timestamp: daysAgo(2),
+    read: true,
+  },
+  {
+    id: 'notif-14',
+    title: 'Legislator birthday',
+    message: 'Rep. Martinez\'s birthday is tomorrow. Send a note?',
+    category: 'Relationship',
+    priority: 'Info',
+    timestamp: daysAgo(3),
+    read: false,
+    links: { type: 'person', id: 'martinez' },
+    actions: [
+      { label: 'Send message', onClick: () => console.log('Send message') },
+    ],
+  },
+  {
+    id: 'notif-15',
+    title: 'Follow-up due',
+    message: 'Follow up with Sen. Davis office on HB90 position.',
+    category: 'Tasks',
+    priority: 'Info',
+    timestamp: daysAgo(5),
+    read: true,
+    links: { type: 'task', id: 'task-789' },
+  },
+  {
+    id: 'notif-16',
+    title: 'New press release',
+    message: 'Gov. office released statement on renewable energy targets.',
+    category: 'Intel',
+    priority: 'Info',
+    timestamp: daysAgo(8),
+    read: true,
+  },
+];

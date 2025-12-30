@@ -1,0 +1,45 @@
+/* Font imports must come first */
+@import url('https://fonts.googleapis.com/css2?family=Audiowide&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anta&display=swap');
+@import url('https://fonts.cdnfonts.com/css/corpline');
+@import './fonts.css';
+
+@import './tailwind.css';
+@import './theme.css';
+
+/* React Grid Layout Fixes */
+.react-grid-layout {
+  position: relative;
+  transition: height 200ms ease;
+}
+.react-grid-item {
+  transition: all 200ms ease;
+  transition-property: left, top;
+}
+.react-grid-item.cssTransforms {
+  transition-property: transform;
+}
+.react-grid-item.resizing {
+  z-index: 100;
+  will-change: width, height;
+}
+
+.react-grid-item.react-draggable-dragging {
+  transition: none;
+  z-index: 100;
+  will-change: transform;
+}
+
+.react-grid-item.react-grid-placeholder {
+  background: rgb(147 51 234 / 0.2);
+  opacity: 0.2;
+  transition-duration: 100ms;
+  z-index: 2;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+  border-radius: 8px;
+  border: 2px dashed rgb(147 51 234);
+}

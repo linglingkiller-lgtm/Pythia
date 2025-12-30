@@ -1,0 +1,482 @@
+{
+  "01": {
+    "districtLabel": "LD-01",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "02": {
+    "districtLabel": "LD-02",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "03": {
+    "districtLabel": "LD-03",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "04": {
+    "districtLabel": "LD-04",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "05": {
+    "districtLabel": "LD-05",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "06": {
+    "districtLabel": "LD-06",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "07": {
+    "districtLabel": "LD-07",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "08": {
+    "districtLabel": "LD-08",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "09": {
+    "districtLabel": "LD-09",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "10": {
+    "districtLabel": "LD-10",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "11": {
+    "districtLabel": "LD-11",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "12": {
+    "districtLabel": "LD-12",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "13": {
+    "districtLabel": "LD-13",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "14": {
+    "districtLabel": "LD-14",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "15": {
+    "districtLabel": "LD-15",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "16": {
+    "districtLabel": "LD-16",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "17": {
+    "districtLabel": "LD-17",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "18": {
+    "districtLabel": "LD-18",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "19": {
+    "districtLabel": "LD-19",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "20": {
+    "districtLabel": "LD-20",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "21": {
+    "districtLabel": "LD-21",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "22": {
+    "districtLabel": "LD-22",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "23": {
+    "districtLabel": "LD-23",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "24": {
+    "districtLabel": "LD-24",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "25": {
+    "districtLabel": "LD-25",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "26": {
+    "districtLabel": "LD-26",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "27": {
+    "districtLabel": "LD-27",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "28": {
+    "districtLabel": "LD-28",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "29": {
+    "districtLabel": "LD-29",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  },
+  "30": {
+    "districtLabel": "LD-30",
+    "demographics": {
+      "population": "TBD",
+      "urbanRural": "TBD",
+      "medianIncome": "TBD",
+      "keyIndustries": ["TBD", "TBD"],
+      "competitiveness": "TBD",
+      "notes": "TBD"
+    },
+    "house": [
+      { "name": "Rep Placeholder A", "party": "TBD", "email": "TBD", "committees": ["TBD"] },
+      { "name": "Rep Placeholder B", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+    ],
+    "senate": { "name": "Sen Placeholder", "party": "TBD", "email": "TBD", "committees": ["TBD"] }
+  }
+}

@@ -1,0 +1,16 @@
+/* Corpline Font - Professional Display Font for Headers */
+@font-face {
+  font-family: 'Corpline';
+  src: url('https://fonts.cdnfonts.com/s/100753/Corpline-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Corpline';
+  src: url('https://fonts.cdnfonts.com/s/100753/Corpline-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
