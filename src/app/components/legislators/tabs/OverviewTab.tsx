@@ -1,14 +1,27 @@
 import React from 'react';
 import { Legislator } from '../legislatorData';
-import { Users, MapPin, Sparkles, Clock } from 'lucide-react';
+import { Users, MapPin, Sparkles, Clock, TrendingUp, ChevronRight } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 
 interface OverviewTabProps {
   legislator: Legislator;
+  onNavigateToPredictive?: () => void;
 }
 
-export function OverviewTab({ legislator }: OverviewTabProps) {
+export function OverviewTab({ legislator, onNavigateToPredictive }: OverviewTabProps) {
   const { isDarkMode } = useTheme();
+  
+  // Get top 4 issue affinities
+  const topIssues = legislator.issueAffinities.slice(0, 4);
+  
+  // Determine stance based on strength (this is a simplified interpretation)
+  const getStanceFromStrength = (strength: number) => {
+    if (strength >= 90) return { label: 'Strong Support', color: '#10b981' }; // green
+    if (strength >= 75) return { label: 'Lean Support', color: '#14b8a6' }; // teal
+    if (strength >= 60) return { label: 'Mixed/Moderate', color: '#6b7280' }; // gray
+    if (strength >= 45) return { label: 'Lean Oppose', color: '#f97316' }; // orange
+    return { label: 'Strong Oppose', color: '#ef4444' }; // red
+  };
   
   return (
     <div className="space-y-6">
@@ -44,27 +57,77 @@ export function OverviewTab({ legislator }: OverviewTabProps) {
 
       {/* Issue Affinity */}
       <div>
-        <h3 className={`font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Issue Affinities</h3>
-        <div className="space-y-3">
-          {legislator.issueAffinities.map((affinity, idx) => (
-            <div key={idx}>
-              <div className="flex items-center justify-between mb-1">
-                <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{affinity.issue}</span>
-                <span className={`text-sm font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{affinity.strength}%</span>
-              </div>
-              <div className={`w-full rounded-full h-2 ${isDarkMode ? 'bg-slate-700' : 'bg-gray-200'}`}>
-                <div
-                  className={`h-2 rounded-full transition-all ${
-                    isDarkMode
-                      ? legislator.party === 'D' ? 'bg-blue-500' : 'bg-red-500'
-                      : legislator.party === 'D' ? 'bg-blue-600' : 'bg-red-600'
-                  }`}
-                  style={{ width: `${affinity.strength}%` }}
-                />
-              </div>
-            </div>
-          ))}
+        <div className="flex items-center justify-between mb-3">
+          <h3 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Issue Affinities</h3>
+          {onNavigateToPredictive && (
+            <button
+              onClick={onNavigateToPredictive}
+              className={`text-sm font-medium flex items-center gap-1 transition-colors ${
+                isDarkMode
+                  ? 'text-blue-400 hover:text-blue-300'
+                  : 'text-blue-600 hover:text-blue-700'
+              }`}
+            >
+              View All Insights
+              <ChevronRight size={14} />
+            </button>
+          )}
         </div>
+        <div className="grid grid-cols-2 gap-3">
+          {topIssues.map((affinity, idx) => {
+            const stance = getStanceFromStrength(affinity.strength);
+            return (
+              <button
+                key={idx}
+                onClick={onNavigateToPredictive}
+                className={`p-4 rounded-lg border backdrop-blur-sm text-left transition-all hover:scale-[1.02] group ${
+                  isDarkMode
+                    ? 'bg-slate-800/40 border-white/10 hover:border-white/20 hover:bg-slate-800/60'
+                    : 'bg-white/80 border-gray-200 hover:border-gray-300 hover:bg-white'
+                }`}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className={`text-sm font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                    {affinity.issue}
+                  </div>
+                  <ChevronRight 
+                    size={16} 
+                    className={`transition-transform group-hover:translate-x-0.5 ${
+                      isDarkMode ? 'text-gray-500' : 'text-gray-400'
+                    }`}
+                  />
+                </div>
+                
+                <div className="mb-2">
+                  <div className={`w-full rounded-full h-2 ${isDarkMode ? 'bg-slate-700' : 'bg-gray-200'}`}>
+                    <div
+                      className="h-2 rounded-full transition-all"
+                      style={{ 
+                        width: `${affinity.strength}%`,
+                        backgroundColor: stance.color
+                      }}
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {stance.label}
+                  </div>
+                  <div 
+                    className="text-xs font-bold"
+                    style={{ color: stance.color }}
+                  >
+                    {affinity.strength}%
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+        <p className={`text-xs mt-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+          Click any issue to view detailed predictive insights and evidence
+        </p>
       </div>
 
       {/* What They Care About */}
@@ -202,6 +265,24 @@ export function OverviewTab({ legislator }: OverviewTabProps) {
           </div>
         </div>
       </div>
+
+      {/* Predictive Analytics */}
+      {onNavigateToPredictive && (
+        <div className="mt-6">
+          <button
+            className={`w-full p-3 rounded border flex items-center justify-center ${
+              isDarkMode
+                ? 'bg-blue-900/20 border-blue-500/30 text-blue-300'
+                : 'bg-blue-50 border-blue-200 text-blue-900'
+            }`}
+            onClick={onNavigateToPredictive}
+          >
+            <TrendingUp size={16} className="mr-2" />
+            Predictive Analytics
+            <ChevronRight size={16} className="ml-2" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

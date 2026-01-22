@@ -1,37 +1,253 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Layout, ChevronDown, Bell, Search, Plus, Grid3x3, LayoutGrid, Eye, EyeOff, Lock, Unlock, Edit2, GripVertical, Settings, Maximize2, TrendingUp, Users, Calendar, FileText, AlertCircle, DollarSign, Target, Zap, LayoutDashboard, ChevronUp, Edit3, Save, RotateCcw, X } from 'lucide-react';
+import { Layout, ChevronDown, Inbox, Search, Plus, Grid3x3, LayoutGrid, Eye, EyeOff, Lock, Unlock, Edit2, GripVertical, Settings, Maximize2, TrendingUp, Users, Calendar, FileText, AlertCircle, DollarSign, Target, Zap, LayoutDashboard, ChevronUp, Edit3, Save, RotateCcw, X, Menu, CheckCircle2, Clock, Sparkles, User, LogOut, Mic, Sun, Moon } from 'lucide-react';
 import { motion, Reorder, AnimatePresence } from 'motion/react';
+import { Responsive } from 'react-grid-layout';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDashboard } from '../../contexts/DashboardContext';
 import { useToast } from '../../contexts/ToastContext';
 import { getPageTheme, getThemeStyles, hexToRgba } from '../../config/pageThemes';
 import { WarRoomModule } from './WarRoomModule';
 import { TasksModule } from './TasksModule';
+import { AlertsModule } from './AlertsModule';
+import { CommitteeCalendarModule } from './CommitteeCalendarModule';
 import { BillsWatchlistModule } from './BillsWatchlistModule';
 import { LegislatorWatchlistModule } from './LegislatorWatchlistModule';
 import { PlaceholderModule } from './PlaceholderModule';
 import { ModuleCard } from './ModuleCard';
-import { AddModuleModal } from './AddModuleModal';
+import { CustomizeDashboardModal } from './CustomizeDashboardModal';
+import { useAuth } from '../../contexts/AuthContext';
+import { useSupabaseAuth } from '../../contexts/SupabaseAuthContext';
+import { useAppMode } from '../../contexts/AppModeContext';
+import { useAskPythia } from '../../contexts/AskPythiaContext';
+import { generateBriefingContent, BriefingContent } from '../../services/AiBriefingService';
+import { PageLayout } from '../ui/PageLayout';
+import { sampleNotifications } from '../../data/sampleNotifications';
+
+// Custom Styles for Grid Layout
+const gridLayoutStyles = `
+  .react-grid-layout {
+    position: relative;
+    transition: height 200ms ease;
+  }
+  .react-grid-item {
+    transition: all 200ms ease;
+    transition-property: left, top, width, height;
+  }
+  .react-grid-item.cssTransforms {
+    transition-property: transform, width, height;
+  }
+  .react-grid-item.resizing {
+    z-index: 100;
+    will-change: width, height;
+  }
+  .react-grid-item.react-draggable-dragging {
+    transition: none;
+    z-index: 100;
+    will-change: transform;
+  }
+  .react-grid-item.dropping {
+    visibility: hidden;
+  }
+  .react-grid-item.react-grid-placeholder {
+    background: rgba(147, 51, 234, 0.15) !important;
+    opacity: 0.8 !important;
+    transition-duration: 100ms;
+    z-index: 2;
+    border-radius: 12px !important;
+    border: 2px dashed rgba(147, 51, 234, 0.4) !important;
+  }
+  .react-resizable-handle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    bottom: 0;
+    right: 0;
+    cursor: se-resize;
+    z-index: 100;
+  }
+  .react-resizable-handle::after {
+    content: "";
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid rgba(147, 51, 234, 0.5);
+    border-bottom: 2px solid rgba(147, 51, 234, 0.5);
+  }
+`;
 
 interface ModularDashboardProps {
   watchedLegislatorIds: Set<string>;
   onNavigateToLegislator: (id: string) => void;
+  createAlertTopic?: string;
+}
+
+// Custom hook for responsive width
+const MorningBriefingHero = () => {
+  const { isDarkMode } = useTheme();
+  
+  return (
+    <div className={`
+      flex items-center gap-2 px-3 py-1 rounded-full backdrop-blur-sm border transition-all duration-500
+      ${isDarkMode 
+        ? 'bg-orange-500/10 border-orange-500/20 text-orange-200' 
+        : 'bg-orange-50 border-orange-200 text-orange-800'
+      }
+    `}>
+      <Sparkles size={12} className={isDarkMode ? 'text-orange-400' : 'text-orange-500'} />
+      <span className="text-[10px] font-bold uppercase tracking-widest">Morning Briefing Active</span>
+    </div>
+  );
+};
+
+const EveningBriefingHero = () => {
+  const { isDarkMode } = useTheme();
+  
+  return (
+    <div className={`
+      flex items-center gap-2 px-3 py-1 rounded-full backdrop-blur-sm border transition-all duration-500
+      ${isDarkMode 
+        ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-200' 
+        : 'bg-indigo-50 border-indigo-200 text-indigo-800'
+      }
+    `}>
+      <Sparkles size={12} className={isDarkMode ? 'text-indigo-400' : 'text-indigo-500'} />
+      <span className="text-[10px] font-bold uppercase tracking-widest">Evening Briefing Active</span>
+    </div>
+  );
+};
+
+// Twinkling Stars Component
+const TwinklingStars = () => {
+  const stars = Array.from({ length: 50 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 60,
+    size: Math.random() * 2 + 1,
+    delay: Math.random() * 3,
+    duration: Math.random() * 2 + 2,
+  }));
+
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      {stars.map((star) => (
+        <motion.div
+          key={star.id}
+          className="absolute rounded-full bg-white"
+          style={{
+            left: `${star.x}%`,
+            top: `${star.y}%`,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+          }}
+          animate={{
+            opacity: [0.2, 1, 0.2],
+            scale: [0.8, 1.2, 0.8],
+          }}
+          transition={{
+            duration: star.duration,
+            delay: star.delay,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+function useContainerDimensions() {
+  const [width, setWidth] = useState(1200);
+  const gridContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const element = gridContainerRef.current;
+    if (!element) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0) {
+          setWidth(entry.contentRect.width);
+        }
+      }
+    });
+
+    resizeObserver.observe(element);
+    
+    // Initial measure
+    if (element.clientWidth > 0) {
+      setWidth(element.clientWidth);
+    }
+
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  return { width, gridContainerRef };
 }
 
 export function ModularDashboard({
   watchedLegislatorIds,
   onNavigateToLegislator,
+  createAlertTopic,
 }: ModularDashboardProps) {
-  const { layout, isEditMode, setEditMode, resetToPreset, saveLayout, updateModule } = useDashboard();
+  const { layout, isEditMode, isMorningBriefing, briefingMode, setEditMode, resetToPreset, saveLayout, updateModule, toggleMorningBriefing } = useDashboard();
   const { showToast } = useToast();
   const { isDarkMode } = useTheme();
+  const { currentUser } = useAuth();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showPresetSelector, setShowPresetSelector] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { width, gridContainerRef } = useContainerDimensions();
+  const [showCustomizeOptions, setShowCustomizeOptions] = useState(false);
+  
+  // Alert Creation State
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [alertTopic, setAlertTopic] = useState('');
+
+  useEffect(() => {
+    if (createAlertTopic) {
+      setAlertTopic(createAlertTopic);
+      setShowAlertModal(true);
+    }
+  }, [createAlertTopic]);
 
   // Get Dashboard page theme
   const dashboardTheme = getPageTheme('Dashboard');
+
+  // Convert dashboard modules to grid layout format
+  const generateLayout = (cols: number) => {
+    return layout.modules.map((module) => {
+       const w = module.size === 'small' ? 4 : module.size === 'medium' ? 6 : 12;
+       return {
+        i: module.id,
+        x: module.position.x,
+        y: module.position.y,
+        w: Math.min(w, cols),
+        h: module.size === 'small' ? 6 : module.size === 'medium' ? 8 : 10,
+        minW: 3,
+        minH: 4,
+      };
+    });
+  };
+
+  const [gridLayouts, setGridLayouts] = useState<ReactGridLayout.Layouts>({
+    lg: generateLayout(12),
+    md: generateLayout(10),
+    sm: generateLayout(6),
+    xs: generateLayout(4),
+    xxs: generateLayout(2),
+  });
+
+  // Update grid layouts when modules change
+  useEffect(() => {
+    setGridLayouts({
+      lg: generateLayout(12),
+      md: generateLayout(10),
+      sm: generateLayout(6),
+      xs: generateLayout(4),
+      xxs: generateLayout(2),
+    });
+  }, [layout.modules.length]);
 
   const handleSave = () => {
     saveLayout();
@@ -48,39 +264,125 @@ export function ModularDashboard({
     showToast(`Dashboard reset to ${preset} preset`, 'success');
   };
 
-  const handleMoveUp = (moduleId: string) => {
-    const moduleIndex = layout.modules.findIndex(m => m.id === moduleId);
-    if (moduleIndex > 0) {
-      const modules = [...layout.modules];
-      const temp = modules[moduleIndex];
-      modules[moduleIndex] = modules[moduleIndex - 1];
-      modules[moduleIndex - 1] = temp;
-      // Update y positions to maintain order
-      modules.forEach((m, idx) => {
-        updateModule(m.id, { position: { ...m.position, y: idx * 2 } });
+  const handleLayoutChange = (currentLayout: ReactGridLayout.Layout[], allLayouts: ReactGridLayout.Layouts) => {
+    if (isEditMode) {
+      // Update module positions based on grid layout
+      currentLayout.forEach(layoutItem => {
+        const module = layout.modules.find(m => m.id === layoutItem.i);
+        if (module) {
+          // Determine size based on width
+          let size: 'small' | 'medium' | 'large' = 'medium';
+          if (layoutItem.w <= 4) size = 'small';
+          else if (layoutItem.w >= 10) size = 'large';
+          
+          updateModule(module.id, {
+            position: { x: layoutItem.x, y: layoutItem.y },
+            size: size
+          });
+        }
       });
+      setGridLayouts(allLayouts);
     }
   };
 
-  const handleMoveDown = (moduleId: string) => {
-    const moduleIndex = layout.modules.findIndex(m => m.id === moduleId);
-    if (moduleIndex < layout.modules.length - 1) {
-      const modules = [...layout.modules];
-      const temp = modules[moduleIndex];
-      modules[moduleIndex] = modules[moduleIndex + 1];
-      modules[moduleIndex + 1] = temp;
-      // Update y positions to maintain order
-      modules.forEach((m, idx) => {
-        updateModule(m.id, { position: { ...m.position, y: idx * 2 } });
-      });
+  // Generate AI Briefing Content (memoized)
+  const briefingContent = React.useMemo<BriefingContent | null>(() => {
+    if (isMorningBriefing) {
+      return generateBriefingContent();
+    }
+    return null;
+  }, [isMorningBriefing]);
+
+  // Dashboard stats
+  const totalModules = layout.modules.length;
+  const activeModules = layout.modules.filter(m => m.enabled).length;
+  
+  // Get user's first name
+  const firstName = currentUser?.name?.split(' ')[0] || 'there';
+  
+  // Determine PageLayout props based on briefing mode
+  const getPageLayoutProps = () => {
+    if (briefingMode === 'morning') {
+      return {
+        title: 'Morning Briefing',
+        subtitle: `Good morning, ${firstName}`,
+        headerIcon: (
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          >
+            <Sun size={28} className={isDarkMode ? 'text-orange-400' : 'text-orange-500'} />
+          </motion.div>
+        ),
+        backgroundImage: (
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+          >
+            <Sun size={450} color={isDarkMode ? '#fb923c' : '#f97316'} strokeWidth={0.5} />
+          </motion.div>
+        ),
+        accentColor: '#f97316', // orange-500
+        backgroundPosition: 'center' as const,
+        briefingMode: 'morning' as const,
+      };
+    } else if (briefingMode === 'evening') {
+      return {
+        title: 'Evening Briefing',
+        subtitle: `Good evening, ${firstName}`,
+        headerIcon: (
+          <motion.div
+            animate={{ rotate: [0, 5, -5, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Moon size={28} className={isDarkMode ? 'text-indigo-400' : 'text-indigo-500'} />
+          </motion.div>
+        ),
+        backgroundImage: (
+          <motion.div
+            animate={{ rotate: [0, 5, -5, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Moon size={450} color={isDarkMode ? '#818cf8' : '#6366f1'} strokeWidth={0.5} />
+          </motion.div>
+        ),
+        accentColor: '#6366f1', // indigo-500
+        backgroundPosition: 'center' as const,
+        briefingMode: 'evening' as const,
+      };
+    } else {
+      // Normal dashboard
+      return {
+        title: 'Dashboard',
+        subtitle: `${activeModules} active modules • ${layout.preset ? `${layout.preset.replace('-', ' ')} view` : 'Custom view'}`,
+        headerIcon: <LayoutDashboard size={28} className={isDarkMode ? 'text-gray-300' : 'text-gray-600'} />,
+        backgroundImage: (
+          <LayoutDashboard size={450} color={isDarkMode ? 'white' : dashboardTheme.accent} strokeWidth={0.5} />
+        ),
+        accentColor: dashboardTheme.accent,
+        backgroundPosition: 'left' as const,
+        briefingMode: undefined,
+      };
     }
   };
-
-  // Sort modules by y position
-  const sortedModules = [...layout.modules].sort((a, b) => a.position.y - b.position.y);
+  
+  const pageLayoutProps = getPageLayoutProps();
 
   // Render module content based on type
   const renderModuleContent = (module: typeof layout.modules[0]) => {
+    // Handle Morning Briefing overrides
+    if (isMorningBriefing && briefingContent) {
+      if (module.id === 'briefing-alerts') {
+        return <AlertsModule module={module} alerts={briefingContent.alerts} />;
+      }
+      if (module.id === 'briefing-agenda') {
+        return <CommitteeCalendarModule module={module} agenda={briefingContent.agenda} />;
+      }
+      if (module.id === 'briefing-tasks') {
+        return <TasksModule module={module} tasks={briefingContent.tasks} />;
+      }
+    }
+
     switch (module.type) {
       case 'war-room':
         return <WarRoomModule module={module} />;
@@ -90,406 +392,154 @@ export function ModularDashboard({
         return <BillsWatchlistModule module={module} />;
       case 'legislator-watchlist':
         return <LegislatorWatchlistModule module={module} watchedLegislatorIds={watchedLegislatorIds} onNavigateToLegislator={onNavigateToLegislator} />;
+      case 'notifications':
+        return <AlertsModule module={module} alerts={sampleNotifications} />;
+      case 'committee-calendar':
+        // Pass empty or standard agenda if not briefing
+        return <CommitteeCalendarModule module={module} />;
       default:
         return <PlaceholderModule module={module} />;
     }
   };
 
-  useEffect(() => {
-    const currentRef = containerRef.current;
-    if (currentRef) {
-      const handleScroll = () => {
-        setIsScrolled(currentRef.scrollTop > 0);
-      };
-      currentRef.addEventListener('scroll', handleScroll);
-      return () => {
-        currentRef.removeEventListener('scroll', handleScroll);
-      };
-    }
-  }, []);
-
   return (
-    <div className={`h-full flex flex-col relative overflow-hidden transition-colors duration-500 ${
-      isDarkMode
-        ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'
-        : 'bg-gradient-to-br from-purple-50/30 via-white to-indigo-50/30'
-    }`}>
-      {/* Background Orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {isDarkMode ? (
-          <>
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[120px] animate-slow-pulse" />
-            <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-indigo-500/10 rounded-full blur-[130px] animate-slow-pulse" />
-          </>
-        ) : (
-          <>
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-purple-500/8 rounded-full blur-[120px]" />
-            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-500/8 rounded-full blur-[100px]" />
-          </>
-        )}
+    <PageLayout
+      title={pageLayoutProps.title}
+      subtitle={pageLayoutProps.subtitle}
+      headerIcon={pageLayoutProps.headerIcon}
+      backgroundImage={pageLayoutProps.backgroundImage}
+      backgroundPosition={pageLayoutProps.backgroundPosition}
+      accentColor={pageLayoutProps.accentColor}
+      contentClassName="flex-1 overflow-y-auto custom-scrollbar flex flex-col relative"
+      headerContent={
+        <div className="flex items-center gap-3">
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${isDarkMode ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' : 'bg-indigo-50 border-indigo-200 text-indigo-700'}`}>
+            <Grid3x3 size={14} strokeWidth={2.5} />
+            <span className="text-xs font-bold">{totalModules} Modules</span>
+          </div>
+        </div>
+      }
+      
+      // Customization Props hooked to Header
+      onCustomize={() => setEditMode(true)}
+      isCustomizing={isEditMode}
+      onSaveCustomization={handleSave}
+      onCancelCustomization={handleCancel}
+    >
+      <style>{gridLayoutStyles}</style>
+      
+      {/* Remove briefing overlays - visuals are now in the header */}
+
+      <div className="p-6 relative z-10">
+        <div ref={gridContainerRef} style={{ maxWidth: 1600, margin: '0 auto' }}>
+          <Responsive
+            className="layout"
+            layouts={gridLayouts}
+            breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+            cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+            rowHeight={60}
+            width={width}
+            onLayoutChange={handleLayoutChange}
+            isDraggable={isEditMode}
+            isResizable={isEditMode}
+            draggableHandle=".drag-handle"
+            margin={[24, 24]}
+          >
+            {layout.modules.map(module => (
+              <div key={module.id} className={isEditMode ? 'cursor-grab active:cursor-grabbing' : ''}>
+                <ModuleCard
+                  module={module}
+                >
+                  {renderModuleContent(module)}
+                </ModuleCard>
+              </div>
+            ))}
+          </Responsive>
+
+          {/* Add Module Placeholders in Edit Mode */}
+          {isEditMode && (
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={() => setShowAddModal(true)}
+                className={`
+                  flex flex-col items-center gap-3 p-8 rounded-2xl border-2 border-dashed transition-all
+                  ${isDarkMode 
+                    ? 'border-white/10 hover:border-purple-500/50 hover:bg-purple-500/5 text-gray-500 hover:text-purple-400' 
+                    : 'border-gray-300 hover:border-purple-500 hover:bg-purple-50 text-gray-400 hover:text-purple-600'
+                  }
+                `}
+              >
+                <div className={`p-4 rounded-full ${isDarkMode ? 'bg-white/5' : 'bg-gray-100'}`}>
+                  <Plus size={32} />
+                </div>
+                <span className="font-medium">Add Module</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Gradient overlay at top */}
-      <div className={`absolute top-0 left-0 right-0 h-40 pointer-events-none transition-opacity duration-500 ${
-        isDarkMode
-          ? 'bg-gradient-to-b from-purple-900/20 to-transparent'
-          : 'bg-gradient-to-b from-purple-50/40 to-transparent'
-      }`} />
-
-      {/* Header - Sticky with Glassmorphism */}
-      <motion.div
-        className={`sticky top-0 z-50 transition-all duration-300 ${
-          isDarkMode
-            ? 'bg-slate-900/40 border-b border-white/[0.08]'
-            : 'bg-white/40 border-b border-gray-200/50'
-        }`}
-        style={{
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-        }}
-        animate={{
-          paddingTop: isScrolled ? '12px' : '24px',
-          paddingBottom: isScrolled ? '12px' : '16px',
-        }}
-      >
-        {/* Subtle gradient accent line */}
-        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
-
-        <div className="px-8">
-          {/* Top Header Row */}
-          <div className="flex items-center justify-between mb-4">
-            {/* Left: Section Label (Pill) + Divider + Title + Subtitle */}
-            <div className="flex items-center gap-3">
-              {/* Section Label Pill - "Dashboard" */}
-              <motion.div
-                className="group relative flex items-center gap-2.5 px-5 py-2.5 rounded-2xl transition-all duration-300"
-                style={{
-                  background: isDarkMode
-                    ? `linear-gradient(135deg, ${hexToRgba(dashboardTheme.gradientFrom, 0.12)}, ${hexToRgba(dashboardTheme.gradientTo, 0.08)})`
-                    : `linear-gradient(135deg, ${hexToRgba(dashboardTheme.gradientFrom, 0.08)}, ${hexToRgba(dashboardTheme.gradientTo, 0.06)})`,
-                  borderWidth: '1px',
-                  borderStyle: 'solid',
-                  borderColor: isDarkMode
-                    ? hexToRgba(dashboardTheme.accent, 0.25)
-                    : hexToRgba(dashboardTheme.accent, 0.2),
-                  boxShadow: isDarkMode
-                    ? `0 0 18px ${hexToRgba(dashboardTheme.glow, 0.15)}, inset 0 1px 0 rgba(255, 255, 255, 0.08)`
-                    : `0 0 12px ${hexToRgba(dashboardTheme.glow, 0.08)}, inset 0 1px 0 rgba(255, 255, 255, 0.4)`,
-                }}
-                whileHover={{
-                  boxShadow: isDarkMode
-                    ? `0 0 24px ${hexToRgba(dashboardTheme.glow, 0.22)}, inset 0 1px 0 rgba(255, 255, 255, 0.12)`
-                    : `0 0 18px ${hexToRgba(dashboardTheme.glow, 0.12)}, inset 0 1px 0 rgba(255, 255, 255, 0.6)`,
-                }}
-              >
-                {/* Icon with subtle pulse */}
-                <div className="relative">
-                  <LayoutDashboard
-                    className="w-4 h-4"
-                    style={{
-                      color: isDarkMode ? dashboardTheme.glow : dashboardTheme.accent,
-                    }}
-                  />
-                  <div
-                    className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full animate-pulse"
-                    style={{
-                      backgroundColor: dashboardTheme.glow,
-                    }}
-                  />
-                </div>
-                <span
-                  className="text-sm font-bold tracking-wide"
-                  style={{
-                    color: isDarkMode ? dashboardTheme.glow : dashboardTheme.accent,
-                  }}
-                >
-                  Dashboard
-                </span>
-              </motion.div>
-
-              {/* Subtle breadcrumb-style divider */}
-              <span
-                className="text-sm font-medium"
-                style={{
-                  color: isDarkMode
-                    ? hexToRgba('#FFFFFF', 0.2)
-                    : hexToRgba('#000000', 0.15),
-                }}
-              >
-                /
-              </span>
-
-              {/* Title + Subtitle */}
-              <div>
-                <motion.h1
-                  className={`font-bold ${
-                    isDarkMode ? 'text-white' : 'text-gray-900'
-                  }`}
-                  animate={{
-                    fontSize: isScrolled ? '20px' : '28px',
-                    marginBottom: isScrolled ? '0px' : '4px',
-                  }}
-                  transition={{ duration: 0.25 }}
-                >
-                  Dashboard
-                </motion.h1>
-                <motion.p
-                  className={`text-xs ${
-                    isDarkMode ? 'text-slate-400' : 'text-gray-600'
-                  }`}
-                  animate={{
-                    opacity: isScrolled ? 0 : 1,
-                    height: isScrolled ? 0 : 'auto',
-                  }}
-                  transition={{ duration: 0.25 }}
-                >
-                  {layout.modules.length} Modules • Intelligence Overview
-                </motion.p>
-              </div>
-            </div>
-
-            {/* Right: Action Buttons */}
-            <div className="flex items-center gap-2">
-              {!isEditMode && (
-                <>
-                  <button
-                    onClick={() => setShowAddModal(true)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-                      isDarkMode
-                        ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30'
-                        : 'bg-purple-600 hover:bg-purple-700 text-white shadow-md'
-                    }`}
-                  >
-                    <Plus size={16} />
-                    <span className="text-sm font-medium">Add Module</span>
-                  </button>
-                  <button
-                    onClick={() => setEditMode(true)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 ${
-                      isDarkMode
-                        ? 'border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300'
-                        : 'border-gray-300 hover:bg-gray-50 text-gray-700'
-                    }`}
-                  >
-                    <Edit3 size={16} />
-                    <span className="text-sm font-medium">Customize</span>
-                  </button>
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowPresetSelector(!showPresetSelector)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 ${
-                        isDarkMode
-                          ? 'border-slate-600 bg-slate-800/50 hover:bg-slate-700/50 text-gray-300'
-                          : 'border-gray-300 hover:bg-gray-50 text-gray-700'
-                      }`}
-                    >
-                      <RotateCcw size={16} />
-                      <span className="text-sm font-medium">Preset</span>
-                    </button>
-                    {showPresetSelector && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-10"
-                          onClick={() => setShowPresetSelector(false)}
-                        />
-                        <div className={`absolute right-0 top-12 w-56 rounded-lg py-2 z-20 backdrop-blur-sm ${
-                          isDarkMode
-                            ? 'bg-slate-800/95 border border-purple-500/20 shadow-2xl'
-                            : 'bg-white border border-gray-200 shadow-lg'
-                        }`}>
-                          <div className={`px-3 py-2 border-b ${isDarkMode ? 'border-purple-500/20' : 'border-gray-100'}`}>
-                            <p className={`text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-purple-400' : 'text-gray-500'}`}>
-                              Dashboard Presets
-                            </p>
-                          </div>
-                          {(['executive', 'lobbying', 'campaign-services', 'public-affairs'] as const).map(preset => (
-                            <button
-                              key={preset}
-                              onClick={() => handleResetToPreset(preset)}
-                              className={`w-full px-3 py-2 text-left text-sm capitalize transition-all duration-200 ${
-                                isDarkMode
-                                  ? 'text-gray-300 hover:bg-purple-500/20 hover:text-purple-200'
-                                  : 'text-gray-700 hover:bg-gray-50'
-                              }`}
-                            >
-                              {preset.replace('-', ' ')}
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </>
-              )}
-
-              {isEditMode && (
-                <>
-                  <button
-                    onClick={handleSave}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-                      isDarkMode
-                        ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-lg shadow-emerald-500/20'
-                        : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md'
-                    }`}
-                  >
-                    <Save size={16} />
-                    <span className="text-sm font-medium">Save Layout</span>
-                  </button>
-                  <button
-                    onClick={handleCancel}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200 ${
-                      isDarkMode
-                        ? 'border-slate-600 bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 hover:border-red-500/50 hover:text-red-400'
-                        : 'border-gray-300 hover:bg-gray-50 text-gray-700'
-                    }`}
-                  >
-                    <X size={16} />
-                    <span className="text-sm font-medium">Cancel</span>
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Content Area */}
-      <div className="flex-1 overflow-y-auto px-8 py-6 relative z-10" ref={containerRef}>
-        {isEditMode && (
-          <div className={`
-            mb-6 p-4 border rounded-lg relative overflow-hidden
-            ${isDarkMode 
-              ? 'bg-gradient-to-br from-purple-900/30 via-purple-800/20 to-blue-900/30 border-purple-500/30 backdrop-blur-sm' 
-              : 'bg-purple-50 border-purple-200'
-            }
-          `}>
-            {isDarkMode && (
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-blue-500/5" />
-            )}
-            <div className="flex items-start gap-3 relative z-10">
-              <div className={`
-                w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
-                ${isDarkMode
-                  ? 'bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-500/50'
-                  : 'bg-purple-600'
-                }
-              `}>
-                <Edit3 className="w-4 h-4 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className={`font-medium ${isDarkMode ? 'text-purple-200' : 'text-purple-900'}`}>
-                  Edit Mode Active
-                </h3>
-                <p className={`text-sm mt-1 ${isDarkMode ? 'text-purple-300/90' : 'text-purple-700'}`}>
-                  Use up/down arrows to reorder modules, or click \"Save Layout\" when done.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Last Updated */}
-        <div className="mb-4">
-          <p className={`
-            text-xs flex items-center gap-2
-            ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}
-          `}>
-            {isDarkMode && <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-slow-pulse" />}
-            Last updated: {new Date().toLocaleString('en-US', { 
-              month: 'short', 
-              day: 'numeric', 
-              hour: 'numeric', 
-              minute: '2-digit',
-              hour12: true 
-            })}
-          </p>
-        </div>
-
-        {/* Simple Flex Layout (replaces react-grid-layout) */}
-        <div className="space-y-4">
-          {sortedModules.map((module, index) => (
-            <div key={module.id} className="relative">
-              {isEditMode && (
-                <div className="absolute -left-12 top-1/2 -translate-y-1/2 flex flex-col gap-1 z-10">
-                  <button
-                    onClick={() => handleMoveUp(module.id)}
-                    disabled={index === 0}
-                    className={`
-                      p-1 rounded transition-colors
-                      ${index === 0
-                        ? 'opacity-30 cursor-not-allowed'
-                        : isDarkMode
-                          ? 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-300'
-                          : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                      }
-                    `}
-                    aria-label="Move up"
-                  >
-                    <ChevronUp className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleMoveDown(module.id)}
-                    disabled={index === sortedModules.length - 1}
-                    className={`
-                      p-1 rounded transition-colors
-                      ${index === sortedModules.length - 1
-                        ? 'opacity-30 cursor-not-allowed'
-                        : isDarkMode
-                          ? 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-300'
-                          : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                      }
-                    `}
-                    aria-label="Move down"
-                  >
-                    <ChevronDown className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-              <ModuleCard module={module}>
-                {renderModuleContent(module)}
-              </ModuleCard>
-            </div>
-          ))}
-        </div>
-
-        {layout.modules.length === 0 && (
-          <div className="text-center py-16">
-            <div className={`
-              w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 relative
-              ${isDarkMode ? 'bg-gradient-to-br from-slate-800 to-slate-700 shadow-xl shadow-purple-500/10' : 'bg-gray-100'}
-            `}>
-              {isDarkMode && (
-                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-purple-500/20 to-transparent" />
-              )}
-              <Plus className={`w-8 h-8 relative z-10 ${isDarkMode ? 'text-purple-400' : 'text-gray-400'}`} />
-            </div>
-            <h3 className={`font-medium mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-              No modules added yet
-            </h3>
-            <p className={`text-sm mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Get started by adding modules to your dashboard
-            </p>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className={`
-                px-6 py-2.5 rounded-lg font-medium transition-all duration-300
-                ${isDarkMode
-                  ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50'
-                  : 'bg-purple-600 hover:bg-purple-700 text-white'
-                }
-              `}
-            >
-              Add Your First Module
-            </button>
-          </div>
-        )}
-
-        {/* Add Module Modal */}
-        <AddModuleModal
+      {/* Add Module Modal */}
+      {showAddModal && (
+        <CustomizeDashboardModal
           isOpen={showAddModal}
           onClose={() => setShowAddModal(false)}
+          onPresetSelect={handleResetToPreset}
         />
-      </div>
-    </div>
+      )}
+
+      {/* Create Alert Modal */}
+      {showAlertModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className={`w-full max-w-md rounded-xl shadow-2xl overflow-hidden ${isDarkMode ? 'bg-slate-800' : 'bg-white'}`}>
+            <div className={`p-4 border-b flex items-center justify-between ${isDarkMode ? 'border-white/10' : 'border-gray-100'}`}>
+              <div className="flex items-center gap-2">
+                <AlertCircle className="text-amber-500" size={20} />
+                <h3 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Create New Alert</h3>
+              </div>
+              <button onClick={() => setShowAlertModal(false)} className={`p-1 rounded-lg hover:bg-gray-100 ${isDarkMode ? 'hover:bg-white/10 text-gray-400' : 'text-gray-500'}`}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Alert Topic</label>
+                <input 
+                  type="text" 
+                  value={alertTopic}
+                  onChange={(e) => setAlertTopic(e.target.value)}
+                  className={`w-full px-4 py-2 rounded-lg border outline-none focus:ring-2 focus:ring-amber-500 ${isDarkMode ? 'bg-slate-900 border-white/10 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
+                />
+              </div>
+              <div>
+                <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Frequency</label>
+                <select className={`w-full px-4 py-2 rounded-lg border outline-none focus:ring-2 focus:ring-amber-500 ${isDarkMode ? 'bg-slate-900 border-white/10 text-white' : 'bg-white border-gray-200 text-gray-900'}`}>
+                  <option>Real-time</option>
+                  <option>Daily Digest</option>
+                  <option>Weekly Summary</option>
+                </select>
+              </div>
+            </div>
+            <div className={`p-4 border-t flex justify-end gap-3 ${isDarkMode ? 'border-white/10 bg-slate-900/50' : 'border-gray-100 bg-gray-50'}`}>
+              <button 
+                onClick={() => setShowAlertModal(false)}
+                className={`px-4 py-2 rounded-lg font-medium ${isDarkMode ? 'text-gray-300 hover:bg-white/5' : 'text-gray-600 hover:bg-gray-200'}`}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  showToast(`Alert created for "${alertTopic}"`, 'success');
+                  setShowAlertModal(false);
+                }}
+                className="px-4 py-2 rounded-lg font-medium bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20"
+              >
+                Create Alert
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </PageLayout>
   );
 }

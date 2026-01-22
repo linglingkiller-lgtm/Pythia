@@ -1,7 +1,9 @@
-import React from 'react';
-import { Eye, EyeOff, FileText, Users, TrendingUp, Calendar } from 'lucide-react';
+import React, { useState } from 'react';
+import { Eye, EyeOff, FileText, Users, TrendingUp, Calendar, ShieldAlert } from 'lucide-react';
 import { Legislator } from './legislatorData';
 import { useTheme } from '../../contexts/ThemeContext';
+import { ImageWithFallback } from '../figma/ImageWithFallback';
+import { OppositionDossierModal } from './OppositionDossierModal';
 
 interface LegislatorProfileHeaderProps {
   legislator: Legislator;
@@ -11,6 +13,7 @@ interface LegislatorProfileHeaderProps {
 
 export function LegislatorProfileHeader({ legislator, watchedLegislatorIds, onToggleWatch }: LegislatorProfileHeaderProps) {
   const { isDarkMode } = useTheme();
+  const [showDossier, setShowDossier] = useState(false);
   const isWatched = watchedLegislatorIds ? watchedLegislatorIds.has(legislator.id) : legislator.watched;
 
   const getPartyColor = (party: string) => {
@@ -32,11 +35,31 @@ export function LegislatorProfileHeader({ legislator, watchedLegislatorIds, onTo
   };
 
   return (
-    <div className={`border-b p-6 transition-colors duration-500 ${
+    <div className={`relative overflow-hidden border-b p-6 transition-colors duration-500 ${
       isDarkMode
         ? 'bg-slate-900/40 backdrop-blur-sm border-white/10'
         : 'bg-white border-gray-200'
     }`}>
+      {/* Watermark Logo - Chamber Seal */}
+      {legislator.chamber === 'House' && (
+        <div className="absolute right-8 top-1/2 -translate-y-1/2 w-64 h-64 opacity-[0.04] pointer-events-none">
+          <ImageWithFallback
+            src="https://th.bing.com/th/id/R.50337d6395f4276163efcad9847efc7b?rik=HZhUdlDFy0q6sg&riu=http%3a%2f%2fimages.shoutwiki.com%2fkobol%2fthumb%2f4%2f40%2fUS-AZ_seal-Arizona_State_House_of_Representatives.svg%2f1200px-US-AZ_seal-Arizona_State_House_of_Representatives.svg.png&ehk=OXwUOCWGPomYVaGNPwr3szDKy2Ba9AtvmyqjRuv5wgU%3d&risl=&pid=ImgRaw&r=0"
+            alt="Arizona House Seal"
+            className="w-full h-full object-contain"
+          />
+        </div>
+      )}
+      
+      {legislator.chamber === 'Senate' && (
+        <div className="absolute right-8 top-1/2 -translate-y-1/2 w-64 h-64 opacity-[0.04] pointer-events-none">
+          <ImageWithFallback
+            src="https://images.shoutwiki.com/kobol/thumb/7/75/US-AZ_seal-Arizona_State_Senate.svg/1200px-US-AZ_seal-Arizona_State_Senate.svg.png"
+            alt="Arizona Senate Seal"
+            className="w-full h-full object-contain"
+          />
+        </div>
+      )}      
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start gap-4">
           {/* Avatar */}
@@ -44,7 +67,12 @@ export function LegislatorProfileHeader({ legislator, watchedLegislatorIds, onTo
             isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-gray-200 text-gray-700'
           }`}>
             {legislator.photoUrl ? (
-              <img src={legislator.photoUrl} alt={legislator.name} className="w-full h-full rounded-full object-cover" />
+              <ImageWithFallback
+                src={legislator.photoUrl}
+                alt={legislator.name}
+                className="w-full h-full rounded-full object-cover"
+                fallback={legislator.initials}
+              />
             ) : (
               legislator.initials
             )}
@@ -93,9 +121,22 @@ export function LegislatorProfileHeader({ legislator, watchedLegislatorIds, onTo
           </div>
         </div>
 
-        {/* Watch Button */}
-        <button
-          onClick={() => onToggleWatch?.(legislator.id)}
+        {/* Actions Group */}
+        <div className="flex items-center gap-2">
+           <button
+             onClick={() => setShowDossier(true)}
+             className={`flex items-center gap-2 px-4 py-2 rounded border transition-colors ${
+               isDarkMode
+                 ? 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20'
+                 : 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
+             }`}
+           >
+             <ShieldAlert size={16} />
+             Dossier
+           </button>
+
+           <button
+            onClick={() => onToggleWatch?.(legislator.id)}
           className={`flex items-center gap-2 px-4 py-2 rounded border transition-colors ${
             isWatched
               ? isDarkMode
@@ -109,6 +150,7 @@ export function LegislatorProfileHeader({ legislator, watchedLegislatorIds, onTo
           {isWatched ? <Eye size={16} /> : <EyeOff size={16} />}
           {isWatched ? 'Watching' : 'Watch'}
         </button>
+      </div>
       </div>
 
       {/* Quick Stats */}
@@ -163,6 +205,14 @@ export function LegislatorProfileHeader({ legislator, watchedLegislatorIds, onTo
           </div>
         </div>
       </div>
+      
+      {showDossier && (
+        <OppositionDossierModal 
+          isOpen={showDossier} 
+          onClose={() => setShowDossier(false)} 
+          legislatorId={legislator.id} 
+        />
+      )}
     </div>
   );
 }

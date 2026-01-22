@@ -2,7 +2,7 @@
 
 export interface TeamMember {
   id: string;
-  name: 'Jordan Davis' | 'Matt Kenny' | 'Sarah Kim' | 'Emily Chen' | 'Alex Rodriguez' | 'Rachel Morrison';
+  name: 'Jordan Davis' | 'Matt Kenney' | 'Sarah Kim' | 'Emily Chen' | 'Alex Rodriguez' | 'Rachel Morrison';
   email: string;
   role: string;
   title: string;
@@ -177,7 +177,7 @@ export const mockTeamMembers: TeamMember[] = [
   },
   {
     id: 'user-002',
-    name: 'Matt Kenny',
+    name: 'Matt Kenney',
     email: 'matt@echocanyonconsulting.com',
     role: 'Government Relations Specialist',
     title: 'PA President',
@@ -532,9 +532,9 @@ export const mockManagerActions: ManagerAction[] = [
     priority: 1,
     type: 'reassign',
     title: 'Reassign Weekly Update',
-    description: 'Weekly update for Arizona Manufacturing due in 5 days - Matt Kenny is overloaded',
+    description: 'Weekly update for Arizona Manufacturing due in 5 days - Matt Kenney is overloaded',
     userId: 'user-002',
-    userName: 'Matt Kenny',
+    userName: 'Matt Kenney',
     deliverableId: 'deliv-weekly-001',
     dueDate: '2025-12-24T17:00:00Z',
     quickActions: [
@@ -562,9 +562,9 @@ export const mockManagerActions: ManagerAction[] = [
     priority: 3,
     type: 'add-collaborator',
     title: 'Add backup to HB 2847',
-    description: 'Matt Kenny is sole owner of critical HB 2847 work - assign backup',
+    description: 'Matt Kenney is sole owner of critical HB 2847 work - assign backup',
     userId: 'user-002',
-    userName: 'Matt Kenny',
+    userName: 'Matt Kenney',
     quickActions: [
       { label: 'Assign Sarah Kim', action: 'assign-user-003' },
       { label: 'Assign Jordan Davis', action: 'assign-user-001' }
@@ -577,7 +577,7 @@ export const mockManagerActions: ManagerAction[] = [
     title: 'Coalition Brief due in 7 days',
     description: 'Coalition Strategy Session Brief needs final review before Dec 26 meeting',
     userId: 'user-002',
-    userName: 'Matt Kenny',
+    userName: 'Matt Kenney',
     deliverableId: 'deliv-003',
     dueDate: '2025-12-26T14:00:00Z',
     quickActions: [

@@ -52,33 +52,46 @@ export function ConversationList({
   ];
 
   return (
-    <div className={`w-80 flex flex-col h-full ${isDarkMode ? 'bg-slate-900' : 'bg-white'}`}>
-      {/* Header */}
-      <div className="p-4">
-        <h2 className={`text-2xl font-bold ${textColor} mb-4`} style={{ fontFamily: '"Corpline", sans-serif' }}>
-          Messages
-        </h2>
+    <div className="h-full flex flex-col">
+      {/* Module Header */}
+      <div className={`flex-shrink-0 px-4 py-3 border-b flex items-center justify-between ${
+        isDarkMode ? 'bg-[#0a0a0b] border-white/10' : 'bg-gray-50 border-gray-200'
+      }`}>
+        <div className="flex items-center gap-2">
+            <MessageSquare size={14} className={isDarkMode ? 'text-blue-400' : 'text-blue-600'} />
+            <h2 className={`text-xs font-bold uppercase tracking-wider ${textColor}`}>
+            Messages
+            </h2>
+        </div>
+      </div>
 
+      {/* Filter/Search Bar (moved out of header to be part of the "body" top section or sticky under header) */}
+      <div className={`px-4 py-3 border-b ${
+         isDarkMode ? 'bg-[#0a0a0b]/50 border-white/5' : 'bg-gray-50/50 border-gray-200'
+      }`}>
         {/* Search */}
         <div className="relative mb-3">
           <div className={`
-            flex items-center gap-2 px-4 py-2.5 rounded-full transition-all
-            ${isDarkMode ? 'bg-slate-800' : 'bg-gray-100'}
+            flex items-center gap-2 px-3 py-2 rounded-lg transition-all border
+            ${isDarkMode 
+                ? 'bg-[#121214] border-white/5 focus-within:border-blue-500/50' 
+                : 'bg-white border-gray-200 focus-within:border-blue-500/50'
+            }
           `}>
-            <Search size={16} className={textMuted} />
+            <Search size={14} className={textMuted} />
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={`
-                flex-1 bg-transparent text-sm outline-none
-                ${isDarkMode ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'}
+                flex-1 bg-transparent text-xs outline-none font-medium
+                ${isDarkMode ? 'text-white placeholder-gray-600' : 'text-gray-900 placeholder-gray-400'}
               `}
             />
             {searchQuery && (
               <button onClick={() => setSearchQuery('')} className={textMuted}>
-                <X size={16} />
+                <X size={14} />
               </button>
             )}
           </div>
@@ -91,14 +104,14 @@ export function ConversationList({
               key={type}
               onClick={() => setFilterType(type)}
               className={`
-                px-3 py-1.5 text-xs font-medium rounded-full transition-all whitespace-nowrap
+                px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all whitespace-nowrap border
                 ${filterType === type
                   ? isDarkMode
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-blue-500 text-white'
+                    ? 'bg-blue-600 text-white border-blue-500'
+                    : 'bg-blue-600 text-white border-blue-600'
                   : isDarkMode
-                    ? 'bg-slate-800 text-gray-400 hover:text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-transparent border-white/10 text-gray-500 hover:text-gray-300'
+                    : 'bg-white border-gray-200 text-gray-500 hover:text-gray-700'
                 }
               `}
             >
@@ -108,10 +121,10 @@ export function ConversationList({
         </div>
       </div>
 
-      {/* Conversation List */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Conversation List Body (Transparent) */}
+      <div className={`flex-1 overflow-y-auto custom-scrollbar ${isDarkMode ? 'bg-transparent' : 'bg-transparent'}`}>
         {sortedConversations.length === 0 ? (
-          <div className={`p-8 text-center ${textMuted} text-sm`}>
+          <div className={`p-8 text-center ${textMuted} text-xs`}>
             No conversations found
           </div>
         ) : (
@@ -125,14 +138,14 @@ export function ConversationList({
               <div
                 key={conversation.conversationId}
                 className={`
-                  relative px-4 py-3 cursor-pointer transition-all group
+                  relative px-4 py-3 cursor-pointer transition-all border-b
                   ${isSelected
                     ? isDarkMode
-                      ? 'bg-slate-800'
-                      : 'bg-gray-100'
+                      ? 'bg-blue-500/10 border-blue-500/20'
+                      : 'bg-blue-50 border-blue-100'
                     : isDarkMode
-                      ? 'hover:bg-slate-800/50'
-                      : 'hover:bg-gray-50'
+                      ? 'bg-transparent border-white/5 hover:bg-white/5'
+                      : 'bg-transparent border-gray-100 hover:bg-gray-50'
                   }
                 `}
                 onClick={() => onSelectConversation(conversation.conversationId)}
@@ -140,16 +153,16 @@ export function ConversationList({
                 <div className="flex items-start gap-3">
                   {/* Avatar */}
                   <div className={`
-                    flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-xl font-semibold
+                    flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-sm
                     ${conversation.type === 'system'
-                      ? 'bg-gradient-to-br from-red-500 to-blue-500'
+                      ? 'bg-gradient-to-br from-red-500 to-blue-600 text-white'
                       : isDarkMode
-                        ? 'bg-slate-700 text-white'
-                        : 'bg-gray-200 text-gray-700'
+                        ? 'bg-[#1e1e20] text-gray-300 border border-white/10'
+                        : 'bg-white text-gray-700 border border-gray-200'
                     }
                   `}>
                     {conversation.type === 'system' ? (
-                      <img src={pythiaLogo} alt="Revere" className="w-7 h-7 object-contain brightness-0 invert" />
+                      <img src={pythiaLogo} alt="Revere" className="w-5 h-5 object-contain brightness-0 invert" />
                     ) : (
                       conversation.title.charAt(0)
                     )}
@@ -157,26 +170,26 @@ export function ConversationList({
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center justify-between mb-0.5">
                       <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <h3 className={`text-sm font-semibold ${textColor} truncate`}>
+                        <h3 className={`text-xs font-bold ${textColor} truncate`}>
                           {conversation.title}
                         </h3>
-                        {isPinned && <Pin size={12} className="text-yellow-500 flex-shrink-0" />}
+                        {isPinned && <Pin size={10} className="text-yellow-500 flex-shrink-0" />}
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                        <span className={`text-xs ${textMuted}`}>
+                        <span className={`text-[10px] ${textMuted}`}>
                           {formatMessageTime(conversation.lastMessageAt)}
                         </span>
                         {unreadCount > 0 && (
-                          <div className="bg-blue-500 text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1.5">
+                          <div className="bg-blue-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-[16px] flex items-center justify-center px-1">
                             {unreadCount > 9 ? '9+' : unreadCount}
                           </div>
                         )}
                       </div>
                     </div>
                     
-                    <p className={`text-sm ${textMuted} truncate`}>
+                    <p className={`text-xs ${isSelected ? (isDarkMode ? 'text-blue-200' : 'text-blue-700') : textMuted} truncate`}>
                       {conversation.lastMessagePreview}
                     </p>
                   </div>

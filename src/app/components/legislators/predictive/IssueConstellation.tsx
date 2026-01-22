@@ -10,6 +10,8 @@ interface IssueConstellationProps {
   legislatorName: string;
   legislatorPhotoUrl?: string;
   legislatorParty?: 'R' | 'D';
+  followedIssues?: Set<string>;
+  legislatorId?: string;
 }
 
 export function IssueConstellation({
@@ -18,7 +20,9 @@ export function IssueConstellation({
   onSelectIssue,
   legislatorName,
   legislatorPhotoUrl,
-  legislatorParty
+  legislatorParty,
+  followedIssues = new Set(),
+  legislatorId = ''
 }: IssueConstellationProps) {
   const { isDarkMode } = useTheme();
   const [hoveredIssue, setHoveredIssue] = React.useState<string | null>(null);
@@ -108,6 +112,15 @@ export function IssueConstellation({
           {/* Filters for glows */}
           <filter id="glow">
             <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          
+          {/* Gold glow filter for followed issues */}
+          <filter id="goldGlow">
+            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
             <feMerge>
               <feMergeNode in="coloredBlur"/>
               <feMergeNode in="SourceGraphic"/>
@@ -230,9 +243,37 @@ export function IssueConstellation({
           const color = getStanceColor(issue.stance);
           const isSelected = selectedIssue === issue.issue;
           const isHovered = hoveredIssue === issue.issue;
+          const isFollowed = followedIssues.has(`${legislatorId}-${issue.issue}`);
 
           return (
             <g key={index}>
+              {/* Gold glow ring for followed issues */}
+              {isFollowed && (
+                <circle
+                  cx={issue.x}
+                  cy={issue.y}
+                  r={nodeSize + 10}
+                  fill="none"
+                  stroke="#fbbf24"
+                  strokeWidth="3"
+                  opacity="0.6"
+                  filter="url(#goldGlow)"
+                >
+                  <animate
+                    attributeName="opacity"
+                    values="0.4;0.8;0.4"
+                    dur="2s"
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="r"
+                    values={`${nodeSize + 10};${nodeSize + 14};${nodeSize + 10}`}
+                    dur="2s"
+                    repeatCount="indefinite"
+                  />
+                </circle>
+              )}
+
               {/* Glow ring for selected/hovered */}
               {(isSelected || isHovered) && (
                 <circle

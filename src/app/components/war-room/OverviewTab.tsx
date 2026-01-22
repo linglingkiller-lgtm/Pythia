@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { LayoutGrid, AlertCircle, TrendingUp, Calendar, Users, Plus, Sparkles, UserPlus, ClipboardCheck, History, FileText, ChevronRight, Activity, ChevronDown, CheckSquare } from 'lucide-react';
+import { LayoutGrid, AlertCircle, TrendingUp, Calendar, Users, Plus, Sparkles, UserPlus, ClipboardCheck, History, FileText, ChevronRight, Activity, ChevronDown, CheckSquare, FileBarChart } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { aiWeeklyPlan } from '../../data/campaignData';
 import { CompetitiveTargetsPanel } from './competitive-targets/CompetitiveTargetsPanel';
 import { TargetActionConsole } from './competitive-targets/TargetActionConsole';
 import { TargetData } from './competitive-targets/TargetCard';
+import { DataReportTab } from './DataReportTab';
+import { DriversTab } from './DriversTab';
+import { HistoryTab } from './HistoryTab';
 import { useTheme } from '../../contexts/ThemeContext';
 import { motion } from 'motion/react';
 
@@ -27,7 +30,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const [selectedTarget, setSelectedTarget] = useState<TargetData | null>(null);
-  const [activeTab, setActiveTab] = useState<'actions' | 'drivers' | 'history' | 'notes'>('actions');
+  const [activeTab, setActiveTab] = useState<'actions' | 'drivers' | 'history' | 'notes' | 'data-report'>('actions');
   const [selectedTargetIds, setSelectedTargetIds] = useState<Set<string>>(new Set());
 
   // Bulk Mode Helpers
@@ -98,7 +101,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   { id: 'actions', label: 'Actions', icon: Sparkles },
                   { id: 'drivers', label: 'Drivers', icon: Activity },
                   { id: 'history', label: 'History', icon: History },
-                  { id: 'notes', label: 'Notes', icon: FileText }
+                  { id: 'notes', label: 'Notes', icon: FileText },
+                  { id: 'data-report', label: 'Data Report', icon: FileBarChart }
                 ].map((tab) => {
                   const Icon = tab.icon;
                   return (
@@ -133,21 +137,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 <TargetActionConsole target={selectedTarget} onExecuteAction={handleExecuteAction} />
               )}
               {activeTab === 'drivers' && (
-                <div className="space-y-4">
-                  <div className={`p-4 rounded-lg border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-gray-200'}`}>
-                    <h4 className={`font-medium mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Primary Pace Driver</h4>
-                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                      {selectedTarget.primaryBlocker 
-                        ? `Identified blocker: ${selectedTarget.primaryBlocker.replace('-', ' ')} is impacting daily throughput.` 
-                        : 'No primary blockers identified.'}
-                    </p>
-                  </div>
-                </div>
+                <DriversTab target={selectedTarget} />
               )}
               {activeTab === 'history' && (
-                <div className={`flex items-center justify-center h-48 rounded-lg border border-dashed ${isDarkMode ? 'border-slate-700 text-gray-500' : 'border-gray-300 text-gray-400'}`}>
-                  History Trend UI Placeholder
-                </div>
+                <HistoryTab target={selectedTarget} />
               )}
               {activeTab === 'notes' && (
                 <div className="space-y-4">
@@ -162,6 +155,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     <Button variant="primary" size="sm">Save Note</Button>
                   </div>
                 </div>
+              )}
+              {activeTab === 'data-report' && (
+                <DataReportTab target={selectedTarget} />
               )}
             </div>
           </div>

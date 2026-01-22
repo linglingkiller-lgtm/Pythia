@@ -6,7 +6,9 @@ import {
   DollarSign, 
   Users, 
   Database,
-  ChevronRight
+  ChevronRight,
+  GitBranch,
+  Share2
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { TabType } from './types';
@@ -26,6 +28,8 @@ export function WarRoomSidebar({ activeTab, onTabChange }: WarRoomSidebarProps) 
     { id: 'overview' as TabType, label: 'Overview', icon: LayoutGrid, description: 'Command center dashboard' },
     { id: 'projects' as TabType, label: 'Projects', icon: ListChecks, description: 'Task & milestone tracking' },
     { id: 'field-events' as TabType, label: 'Field & Events', icon: Calendar, description: 'Calendar & logistics' },
+    { id: 'scenarios' as TabType, label: 'War Games', icon: GitBranch, description: 'Scenario planning' },
+    { id: 'constellation' as TabType, label: 'Constellation', icon: Share2, description: 'Stakeholder mapping' },
     { id: 'budget' as TabType, label: 'Budget & Resources', icon: DollarSign, description: 'Financial allocation' },
     { id: 'applicants' as TabType, label: 'Applicants', icon: Users, description: 'Onboarding & pipeline' },
     { id: 'data-pulls' as TabType, label: 'Data Pulls', icon: Database, description: 'Reporting & analytics' }

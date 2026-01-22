@@ -1,11 +1,15 @@
-import React from 'react';
-import { Search, Download, FileText, Users, BarChart } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, Download, FileText, Users, BarChart, Plus, LayoutGrid, List, AlertCircle, Settings, CheckCircle2, Clock, Calendar, TrendingUp, Bell, Sparkles, Menu, ChevronDown, Mail, Target } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { TeamKpiStrip } from '../components/managers/TeamKpiStrip';
 import { TeamWorkloadTable } from '../components/managers/TeamWorkloadTable';
 import { ManagerActionCenter } from '../components/managers/ManagerActionCenter';
 import { EmployeeManagerDrawer } from '../components/managers/EmployeeManagerDrawer';
 import { WorkloadRebalanceWizard } from '../components/managers/WorkloadRebalanceWizard';
+import { NotificationDropdown } from '../components/notifications/NotificationDropdown';
+import { TeamDashboardGrid } from '../components/managers/TeamDashboardGrid';
+import { TeamRosterTab } from '../components/managers/TeamRosterTab';
+import { ApplicantsTab } from '../components/managers/ApplicantsTab';
 import { 
   mockTeamMembers, 
   mockManagerActions,
@@ -13,10 +17,14 @@ import {
   type TeamMember 
 } from '../data/teamData';
 import { useTheme } from '../contexts/ThemeContext';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { getPageTheme, hexToRgba } from '../config/pageThemes';
+import { useAuth } from '../contexts/AuthContext';
+import { useAskPythia } from '../contexts/AskPythiaContext';
+import avatarImage from 'figma:asset/c278fa1e6d9bae0e4f1b290e5476030cc0cf1f2f.png';
+import { PageLayout } from '../components/ui/PageLayout';
 
-type ViewMode = 'table' | 'kanban';
+type ViewMode = 'table' | 'kanban' | 'dashboard';
 type TimeWindow = 'week' | 'month' | 'quarter';
 
 export function ManagerConsolePage() {
@@ -25,31 +33,25 @@ export function ManagerConsolePage() {
   const [teamFilter, setTeamFilter] = React.useState<string>('all');
   const [timeWindow, setTimeWindow] = React.useState<TimeWindow>('week');
   const [statusFilter, setStatusFilter] = React.useState<string>('all');
-  const [viewMode, setViewMode] = React.useState<ViewMode>('table');
-  const [isScrolled, setIsScrolled] = React.useState(false);
-  const containerRef = React.useRef<HTMLDivElement>(null);
   
+  // Tab/View State
+  const [activeTab, setActiveTab] = React.useState('dashboard');
+  const viewMode = activeTab as ViewMode;
+
+  // Customization State
+  const [isEditMode, setIsEditMode] = React.useState(false);
+
   const [selectedEmployee, setSelectedEmployee] = React.useState<TeamMember | null>(null);
   const [showRebalanceWizard, setShowRebalanceWizard] = React.useState(false);
   const [showReviewNote, setShowReviewNote] = React.useState(false);
+  
+  // Header State
+  const { openPythia } = useAskPythia();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]); // Mock notifications
 
   const { isDarkMode } = useTheme();
-
-  // Get Team page theme
-  const teamTheme = getPageTheme('Team');
-
-  // Scroll detection
-  React.useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      setIsScrolled(container.scrollTop > 20);
-    };
-
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, []);
+  const currentTheme = getPageTheme('Team');
 
   // Filter team members
   const filteredMembers = React.useMemo(() => {
@@ -96,189 +98,213 @@ export function ManagerConsolePage() {
     setShowReviewNote(true);
   };
 
-  // Dynamic subtitle based on filters and stats
-  const getSubtitle = () => {
-    const total = filteredMembers.length;
-    const overloaded = filteredMembers.filter(m => m.status === 'overloaded').length;
-    return `${total} team members • ${overloaded} overloaded • ${timeWindow === 'week' ? 'Weekly' : timeWindow === 'month' ? 'Monthly' : 'Quarterly'} view`;
+  // Header Helpers
+  const getPageTitle = () => "Team & Operations";
+  const getTabSubtitle = () => {
+    switch(activeTab) {
+      case 'roster': return "Access Control & Invites";
+      case 'applicants': return "Pipeline & Recruiting";
+      default: return "Workforce & Capacity";
+    }
   };
+  
+  const tabs = [
+    { id: 'dashboard', label: 'Dashboard' },
+    { id: 'table', label: 'List View' },
+    { id: 'kanban', label: 'Board View' },
+    { id: 'roster', label: 'Roster & Access' },
+    { id: 'applicants', label: 'Applicants' }
+  ];
+
+  const ActiveIcon = activeTab === 'kanban' ? LayoutGrid : (activeTab === 'dashboard' ? BarChart : (activeTab === 'roster' ? Users : (activeTab === 'applicants' ? Users : List)));
+
+  const renderTabStats = () => (
+    <div className="flex items-center gap-6 text-sm font-medium">
+      <div className={`flex items-center gap-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+        <Users size={16} className={isDarkMode ? 'text-yellow-400' : 'text-yellow-600'} />
+        <span>{filteredMembers.length} Members</span>
+      </div>
+      <div className={`flex items-center gap-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+        <AlertCircle size={16} className={filteredMembers.some(m => m.status === 'overloaded') ? 'text-red-500' : 'text-gray-400'} />
+        <span>{filteredMembers.filter(m => m.status === 'overloaded').length} Overloaded</span>
+      </div>
+    </div>
+  );
+
+  // --------------------------------------------------------------------------
+  // Dynamic Island Notification Demo (Team Context)
+  // --------------------------------------------------------------------------
+  
+  interface DemoNotification {
+    id: string;
+    text: string;
+    icon: React.ElementType;
+    color: string;
+  }
+
+  const demoNotifications: DemoNotification[] = [
+    { id: '1', text: "Sarah requested PTO for next week", icon: Calendar, color: 'text-purple-500' },
+    { id: '2', text: "New hire onboarding 85% complete", icon: CheckCircle2, color: 'text-green-500' },
+    { id: '3', text: "Lobbying Team meeting in 15m", icon: Clock, color: 'text-orange-500' },
+    { id: '4', text: "3 Monthly Reviews due today", icon: FileText, color: 'text-blue-500' },
+    { id: '5', text: "Capacity alert: Policy Team at 95%", icon: AlertCircle, color: 'text-red-500' },
+  ];
+
+  const [dynamicNotification, setDynamicNotification] = useState<DemoNotification | null>(null);
+  const [demoIndex, setDemoIndex] = useState(0);
+
+  useEffect(() => {
+    // Start the loop
+    const interval = setInterval(() => {
+      const notif = demoNotifications[demoIndex];
+      setDynamicNotification(notif);
+      
+      // Advance index
+      setDemoIndex(prev => (prev + 1) % demoNotifications.length);
+
+      // Clear after 5 seconds
+      setTimeout(() => {
+        setDynamicNotification(null);
+      }, 5000);
+
+    }, 15000); // Every 15 seconds
+
+    return () => clearInterval(interval);
+  }, [demoIndex]);
 
   return (
-    <div className="h-full flex flex-col overflow-hidden relative">
-      {/* Background Gradient Orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {isDarkMode ? (
-          <>
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[120px] animate-slow-pulse" />
-            <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-indigo-500/10 rounded-full blur-[130px] animate-slow-pulse" />
-          </>
-        ) : (
-          <>
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-purple-500/8 rounded-full blur-[120px]" />
-            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-500/8 rounded-full blur-[100px]" />
-          </>
-        )}
-      </div>
+    <PageLayout
+      title={getPageTitle()}
+      subtitle={getTabSubtitle()}
+      headerIcon={<ActiveIcon size={28} className={isDarkMode ? 'text-yellow-400' : 'text-yellow-600'} />}
+      backgroundImage={<ActiveIcon size={450} color={isDarkMode ? 'white' : currentTheme.accent} strokeWidth={0.5} />}
+      accentColor={currentTheme.accent}
+      contentClassName="flex-1 overflow-y-auto custom-scrollbar flex flex-col"
+      
+      // Customization Hooks
+      onCustomize={activeTab === 'dashboard' ? () => setIsEditMode(true) : undefined}
+      isCustomizing={isEditMode}
+      onSaveCustomization={() => setIsEditMode(false)}
+      onCancelCustomization={() => setIsEditMode(false)}
 
-      {/* Sticky Header */}
-      <motion.div
-        className={`sticky top-0 z-40 transition-all duration-300 ${
-          isScrolled
-            ? isDarkMode
-              ? 'bg-slate-900/80 backdrop-blur-xl border-b border-white/10 shadow-lg'
-              : 'bg-white/80 backdrop-blur-xl border-b border-gray-200 shadow-lg'
-            : isDarkMode
-            ? 'bg-slate-900/40 backdrop-blur-sm'
-            : 'bg-white/40 backdrop-blur-sm'
-        }`}
-      >
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between mb-4">
-            {/* Left: Section Label (Pill) + Divider + Title + Subtitle */}
-            <div className="flex items-center gap-3">
-              {/* Section Label Pill - "Team" */}
-              <motion.div
-                className="group relative flex items-center gap-2.5 px-5 py-2.5 rounded-2xl transition-all duration-300"
-                style={{
-                  background: isDarkMode
-                    ? `linear-gradient(135deg, ${hexToRgba(teamTheme.gradientFrom, 0.12)}, ${hexToRgba(teamTheme.gradientTo, 0.08)})`
-                    : `linear-gradient(135deg, ${hexToRgba(teamTheme.gradientFrom, 0.08)}, ${hexToRgba(teamTheme.gradientTo, 0.06)})`,
-                  borderWidth: '1px',
-                  borderStyle: 'solid',
-                  borderColor: isDarkMode
-                    ? hexToRgba(teamTheme.accent, 0.25)
-                    : hexToRgba(teamTheme.accent, 0.2),
-                  boxShadow: isDarkMode
-                    ? `0 0 18px ${hexToRgba(teamTheme.glow, 0.15)}, inset 0 1px 0 rgba(255, 255, 255, 0.08)`
-                    : `0 0 12px ${hexToRgba(teamTheme.glow, 0.08)}, inset 0 1px 0 rgba(255, 255, 255, 0.4)`,
-                }}
-                whileHover={{
-                  boxShadow: isDarkMode
-                    ? `0 0 24px ${hexToRgba(teamTheme.glow, 0.22)}, inset 0 1px 0 rgba(255, 255, 255, 0.12)`
-                    : `0 0 18px ${hexToRgba(teamTheme.glow, 0.12)}, inset 0 1px 0 rgba(255, 255, 255, 0.6)`,
-                }}
-              >
-                {/* Icon with subtle pulse */}
-                <div className="relative">
-                  <Users
-                    className="w-4 h-4"
+      headerContent={
+        <div className="flex flex-col items-center gap-4">
+            <AnimatePresence mode="wait">
+                <motion.div 
+                key={dynamicNotification ? 'notification' : activeTab}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                className={`hidden xl:flex items-center h-10`}
+                >
+                    {dynamicNotification ? (
+                        // Dynamic Island Notification State
+                        <motion.div 
+                            layoutId="dynamicIsland"
+                            className={`
+                            flex items-center gap-3 px-4 py-2 rounded-full shadow-lg overflow-hidden relative
+                            ${isDarkMode 
+                                ? 'bg-white text-black' 
+                                : 'bg-black text-white'
+                            }
+                            `}
+                            style={{ minWidth: '320px' }}
+                        >
+                            {/* Glowing pulse effect behind */}
+                            <div className={`absolute inset-0 opacity-20 animate-pulse ${
+                                dynamicNotification.color.replace('text-', 'bg-')
+                            }`} />
+
+                            {/* Icon Container with Background */}
+                            <div className={`p-1.5 rounded-full ${
+                                isDarkMode 
+                                ? 'bg-white/10' 
+                                : 'bg-black/5'
+                            }`}>
+                                <div className={`p-1 rounded-full ${dynamicNotification.color.replace('text-', 'bg-')}/20`}>
+                                    <dynamicNotification.icon size={14} className={dynamicNotification.color} strokeWidth={3} />
+                                </div>
+                            </div>
+                            
+                            <span className="text-sm font-bold truncate pr-2">
+                                {dynamicNotification.text}
+                            </span>
+
+                            {/* Close/Action indicator */}
+                            <div className={`ml-auto w-1 h-4 rounded-full opacity-20 ${isDarkMode ? 'bg-black' : 'bg-white'}`} />
+                        </motion.div>
+                    ) : (
+                        // Default Tab Stats
+                        renderTabStats()
+                    )}
+                </motion.div>
+            </AnimatePresence>
+
+            {/* Navigation Tabs */}
+            <div className="flex items-center gap-8">
+            {tabs.map(tab => {
+                const isActive = activeTab === tab.id;
+                return (
+                <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className="relative py-2 outline-none group"
+                >
+                    <span 
+                    className="relative z-10 text-xs font-bold uppercase tracking-widest transition-colors duration-300"
                     style={{
-                      color: isDarkMode ? teamTheme.glow : teamTheme.accent,
+                        color: isActive 
+                            ? (isDarkMode ? 'white' : '#000000') 
+                            : (isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)')
                     }}
-                  />
-                  <div
-                    className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full animate-pulse"
-                    style={{
-                      backgroundColor: teamTheme.glow,
-                    }}
-                  />
-                </div>
-                <span
-                  className="text-sm font-bold tracking-wide"
-                  style={{
-                    color: isDarkMode ? teamTheme.glow : teamTheme.accent,
-                  }}
-                >
-                  Team
-                </span>
-              </motion.div>
+                    >
+                    {tab.label}
+                    </span>
 
-              {/* Subtle breadcrumb-style divider */}
-              <span
-                className="text-sm font-medium"
-                style={{
-                  color: isDarkMode
-                    ? hexToRgba('#FFFFFF', 0.2)
-                    : hexToRgba('#000000', 0.15),
-                }}
-              >
-                /
-              </span>
-
-              {/* Title + Subtitle */}
-              <div>
-                <motion.h1
-                  initial={{ fontSize: '2rem', lineHeight: '2.5rem' }}
-                  animate={{ 
-                    fontSize: isScrolled ? '1.5rem' : '2rem',
-                    lineHeight: isScrolled ? '2rem' : '2.5rem'
-                  }}
-                  transition={{ duration: 0.3, ease: 'easeInOut' }}
-                  className={isDarkMode ? 'text-white' : 'text-gray-900'}
-                  style={{ fontFamily: '"Corpline", sans-serif' }}
-                >
-                  Team Overview
-                </motion.h1>
-                <motion.p
-                  initial={{ opacity: 1, height: 'auto' }}
-                  animate={{ 
-                    opacity: isScrolled ? 0 : 1,
-                    height: isScrolled ? 0 : 'auto'
-                  }}
-                  transition={{ duration: 0.2 }}
-                  className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} overflow-hidden`}
-                >
-                  {getSubtitle()}
-                </motion.p>
-              </div>
+                    {/* Active Indicator */}
+                    {isActive && (
+                    <motion.div 
+                        layoutId="activeTabIndicator"
+                        className="absolute -bottom-1.5 left-0 right-0 h-[2px]"
+                        style={{
+                            backgroundColor: isDarkMode ? 'white' : currentTheme.accent,
+                            boxShadow: isDarkMode ? '0 0 15px rgba(255,255,255,0.8)' : `0 0 10px ${hexToRgba(currentTheme.accent, 0.4)}`
+                        }}
+                        initial={false}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    />
+                    )}
+                </button>
+                );
+            })}
             </div>
-
-            {/* Right: Action Buttons */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleExportSnapshot}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  isDarkMode
-                    ? 'bg-slate-800/50 text-gray-300 hover:bg-slate-700/50 border border-white/10'
-                    : 'bg-white/80 text-gray-700 hover:bg-gray-50 border border-gray-200'
-                } shadow-sm hover:shadow-md`}
-              >
-                <Download size={16} />
-                Weekly Snapshot
-              </button>
-              <button
-                onClick={handleCreateReviewNote}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  isDarkMode
-                    ? 'bg-slate-800/50 text-gray-300 hover:bg-slate-700/50 border border-white/10'
-                    : 'bg-white/80 text-gray-700 hover:bg-gray-50 border border-gray-200'
-                } shadow-sm hover:shadow-md`}
-              >
-                <FileText size={16} />
-                Create Review Note
-              </button>
-              <button
-                onClick={() => setShowRebalanceWizard(true)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-all shadow-md hover:shadow-lg ${
-                  isDarkMode
-                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
-                    : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
-                }`}
-              >
-                <BarChart size={16} />
-                Rebalance
-              </button>
-            </div>
-          </div>
-
-          {/* Gradient Accent Line */}
-          <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-4" />
-
-          {/* Search & Filters */}
-          <div className="flex items-center gap-4">
+        </div>
+      }
+    >
+      {/* Filters & Actions Bar */}
+      <div className={`px-8 py-3 border-b flex items-center justify-between gap-4 sticky top-0 z-30 transition-colors duration-300 ${
+           isDarkMode 
+             ? 'bg-[#0a0a0b]/90 backdrop-blur-xl border-white/5' 
+             : 'bg-white/90 backdrop-blur-xl border-gray-200'
+      }`}>
+          {/* Left: Filters */}
+          <div className="flex items-center gap-3">
             {/* Search */}
-            <div className="flex-1 relative">
-              <Search className={`absolute left-3 top-1/2 -translate-y-1/2 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} size={18} />
+            <div className="relative">
+              <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`} />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search employee, client, project…"
-                className={`w-full pl-10 pr-4 py-2 rounded-lg text-sm transition-all ${
-                  isDarkMode
-                    ? 'bg-slate-800/50 border border-white/10 text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
-                    : 'bg-white/80 border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
-                } focus:outline-none`}
+                placeholder="Search team..."
+                className={`
+                   pl-8 pr-3 py-1.5 text-xs rounded-lg outline-none border transition-all w-48
+                   ${isDarkMode 
+                      ? 'bg-[#121214] border-white/10 focus:border-purple-500/50 text-white placeholder:text-gray-600' 
+                      : 'bg-white border-gray-200 focus:border-purple-500/50 text-gray-900 placeholder:text-gray-400'
+                   }
+                `}
               />
             </div>
 
@@ -286,11 +312,11 @@ export function ManagerConsolePage() {
             <select
               value={departmentFilter}
               onChange={(e) => setDepartmentFilter(e.target.value)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`px-2 py-1.5 rounded-lg text-xs font-medium border outline-none cursor-pointer ${
                 isDarkMode
-                  ? 'bg-slate-800/50 border border-white/10 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
-                  : 'bg-white/80 border border-gray-200 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
-              } focus:outline-none`}
+                  ? 'bg-[#121214] border-white/10 text-gray-300 focus:border-purple-500/50'
+                  : 'bg-white border-gray-200 text-gray-700 focus:border-purple-500/50'
+              }`}
             >
               <option value="all">All Departments</option>
               <option value="lobbying">Lobbying</option>
@@ -302,11 +328,11 @@ export function ManagerConsolePage() {
             <select
               value={teamFilter}
               onChange={(e) => setTeamFilter(e.target.value)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`px-2 py-1.5 rounded-lg text-xs font-medium border outline-none cursor-pointer ${
                 isDarkMode
-                  ? 'bg-slate-800/50 border border-white/10 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
-                  : 'bg-white/80 border border-gray-200 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
-              } focus:outline-none`}
+                  ? 'bg-[#121214] border-white/10 text-gray-300 focus:border-purple-500/50'
+                  : 'bg-white border-gray-200 text-gray-700 focus:border-purple-500/50'
+              }`}
             >
               <option value="all">All Teams</option>
               <option value="Lobbying Team">Lobbying Team</option>
@@ -314,181 +340,127 @@ export function ManagerConsolePage() {
               <option value="Canvassing Operations">Canvassing Operations</option>
               <option value="Communications Team">Communications Team</option>
             </select>
-
+            
             {/* Time Window */}
             <select
               value={timeWindow}
               onChange={(e) => setTimeWindow(e.target.value as TimeWindow)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`px-2 py-1.5 rounded-lg text-xs font-medium border outline-none cursor-pointer ${
                 isDarkMode
-                  ? 'bg-slate-800/50 border border-white/10 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
-                  : 'bg-white/80 border border-gray-200 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
-              } focus:outline-none`}
+                  ? 'bg-[#121214] border-white/10 text-gray-300 focus:border-purple-500/50'
+                  : 'bg-white border-gray-200 text-gray-700 focus:border-purple-500/50'
+              }`}
             >
               <option value="week">This Week</option>
               <option value="month">This Month</option>
               <option value="quarter">This Quarter</option>
             </select>
+          </div>
 
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                isDarkMode
-                  ? 'bg-slate-800/50 border border-white/10 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
-                  : 'bg-white/80 border border-gray-200 text-gray-900 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
-              } focus:outline-none`}
+          {/* Right: Actions */}
+          <div className="flex items-center gap-2">
+            <Button 
+              onClick={handleExportSnapshot}
+              variant="outline" 
+              size="sm" 
+              className={`
+                h-8 text-xs font-medium gap-1.5
+                ${isDarkMode ? 'border-white/10 bg-white/5 hover:bg-white/10' : ''}
+              `}
             >
-              <option value="all">All Status</option>
-              <option value="overloaded">Overloaded</option>
-              <option value="on-track">On Track</option>
-              <option value="underutilized">Underutilized</option>
-            </select>
-
-            {/* View Mode Toggle */}
-            <div className={`flex items-center gap-1 p-1 rounded-lg ${
-              isDarkMode ? 'bg-slate-800/50' : 'bg-gray-100'
-            }`}>
-              <button
-                onClick={() => setViewMode('table')}
-                className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
-                  viewMode === 'table'
-                    ? isDarkMode
-                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg'
-                      : 'bg-white text-purple-700 shadow-md'
-                    : isDarkMode
-                    ? 'text-gray-400 hover:text-white'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Table
-              </button>
-              <button
-                onClick={() => setViewMode('kanban')}
-                className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
-                  viewMode === 'kanban'
-                    ? isDarkMode
-                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg'
-                      : 'bg-white text-purple-700 shadow-md'
-                    : isDarkMode
-                    ? 'text-gray-400 hover:text-white'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Kanban
-              </button>
-            </div>
+              <Download size={14} />
+              Export
+            </Button>
+            <Button 
+              onClick={() => setShowRebalanceWizard(true)}
+              variant="default" 
+              size="sm" 
+              className="h-8 text-xs font-medium gap-1.5 bg-yellow-600 hover:bg-yellow-700 text-black border-none"
+            >
+              <Users size={14} />
+              Rebalance Workload
+            </Button>
           </div>
-        </div>
-      </motion.div>
-
-      {/* KPI Strip */}
-      <TeamKpiStrip kpis={kpis} />
-
-      {/* Scrollable Content Area */}
-      <div ref={containerRef} className="flex-1 overflow-y-auto">
-        {/* Main Body: Split View */}
-        <div className="flex gap-6 p-6">
-          {/* Left: Team Workload (70%) */}
-          <div className="flex-[7] overflow-hidden">
-            <TeamWorkloadTable
-              members={filteredMembers}
-              viewMode={viewMode}
-              onSelectEmployee={setSelectedEmployee}
-            />
-          </div>
-
-          {/* Right: Manager Actions (30%) */}
-          <div className="flex-[3] overflow-hidden">
-            <ManagerActionCenter
-              actions={mockManagerActions}
-              onActionClick={(action) => {
-                console.log('Action clicked:', action);
-              }}
-            />
-          </div>
-        </div>
       </div>
 
-      {/* Employee Manager Drawer */}
+      {/* Main Content */}
+      <div className="p-6 space-y-6">
+          
+          {/* KPI Strip */}
+          <TeamKpiStrip kpis={kpis} />
+
+          {activeTab === 'dashboard' && (
+            <div className="space-y-6">
+                {isEditMode && (
+                    <div className="flex justify-center">
+                        <button
+                            className={`
+                                flex flex-col items-center gap-3 p-8 rounded-2xl border-2 border-dashed transition-all w-full max-w-2xl
+                                ${isDarkMode 
+                                ? 'border-white/10 hover:border-yellow-500/50 hover:bg-yellow-500/5 text-gray-500 hover:text-yellow-400' 
+                                : 'border-gray-300 hover:border-yellow-500 hover:bg-yellow-50 text-gray-400 hover:text-yellow-600'
+                                }
+                            `}
+                        >
+                            <div className={`p-4 rounded-full ${isDarkMode ? 'bg-white/5' : 'bg-gray-100'}`}>
+                                <Plus size={32} />
+                            </div>
+                            <span className="font-medium">Add Widget</span>
+                        </button>
+                    </div>
+                )}
+                <TeamDashboardGrid 
+                    members={filteredMembers} 
+                    kpis={kpis}
+                    onSelectEmployee={setSelectedEmployee}
+                />
+            </div>
+          )}
+
+          {activeTab === 'table' && (
+            <TeamWorkloadTable 
+              members={filteredMembers} 
+              onSelectEmployee={setSelectedEmployee}
+            />
+          )}
+
+          {activeTab === 'kanban' && (
+            <ManagerActionCenter 
+              actions={mockManagerActions}
+              onResolve={(id) => console.log('Resolve', id)}
+            />
+          )}
+
+          {activeTab === 'roster' && (
+            <TeamRosterTab 
+              members={mockTeamMembers}
+              onSelectMember={setSelectedEmployee}
+            />
+          )}
+
+          {activeTab === 'applicants' && (
+            <ApplicantsTab />
+          )}
+      </div>
+
+      {/* Employee Drawer */}
       {selectedEmployee && (
-        <EmployeeManagerDrawer
+        <EmployeeManagerDrawer 
           employee={selectedEmployee}
           onClose={() => setSelectedEmployee(null)}
+          onCreateReview={handleCreateReviewNote}
         />
       )}
 
-      {/* Workload Rebalance Wizard */}
+      {/* Rebalance Wizard */}
       {showRebalanceWizard && (
         <WorkloadRebalanceWizard
-          members={mockTeamMembers}
+          isOpen={showRebalanceWizard}
           onClose={() => setShowRebalanceWizard(false)}
-          onSave={(plan) => {
-            console.log('Rebalance plan:', plan);
-            setShowRebalanceWizard(false);
-          }}
+          overloadedMembers={filteredMembers.filter(m => m.status === 'overloaded')}
+          availableMembers={filteredMembers.filter(m => m.status === 'underutilized')}
         />
       )}
-
-      {/* Review Note Modal */}
-      {showReviewNote && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className={`rounded-lg shadow-xl max-w-2xl w-full p-6 ${
-            isDarkMode ? 'bg-slate-800' : 'bg-white'
-          }`}>
-            <h3 className={`text-lg mb-4 ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`} style={{ fontFamily: '"Corpline", sans-serif' }}>
-              Create Review Note
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${
-                  isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}>
-                  Employee
-                </label>
-                <select className={`w-full px-3 py-2 border rounded-lg ${
-                  isDarkMode
-                    ? 'bg-slate-700 border-white/10 text-white'
-                    : 'bg-white border-gray-300 text-gray-900'
-                }`}>
-                  {mockTeamMembers.map(member => (
-                    <option key={member.id} value={member.id}>
-                      {member.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${
-                  isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}>
-                  Note
-                </label>
-                <textarea
-                  rows={6}
-                  className={`w-full px-3 py-2 border rounded-lg ${
-                    isDarkMode
-                      ? 'bg-slate-700 border-white/10 text-white placeholder-gray-500'
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                  }`}
-                  placeholder="Enter review note or observation..."
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 mt-6">
-              <Button variant="secondary" onClick={() => setShowReviewNote(false)}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={() => setShowReviewNote(false)}>
-                Save Note
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    </PageLayout>
   );
 }

@@ -4,7 +4,7 @@ import { useClient } from '../../hooks/useClients';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Chip } from '../ui/Chip';
-import { ArrowLeft, DollarSign, Calendar, AlertTriangle, FileText, TrendingUp, Users, Settings, BarChart } from 'lucide-react';
+import { Sparkles, ArrowLeft, DollarSign, Calendar, AlertTriangle, FileText, TrendingUp, Users, Settings, BarChart } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ClientPulseHeader } from './ClientPulseHeader';
 import { WeeklyChangeDigest } from './WeeklyChangeDigest';
@@ -20,6 +20,9 @@ import { OpportunitiesPipeline } from './OpportunitiesPipeline';
 import { AIRecommendationsPanel } from './AIRecommendationsPanel';
 import { LoadingScreen } from '../LoadingScreen';
 import { ClientUpdateGenerator } from '../client-updates/ClientUpdateGenerator';
+import { useAskPythia } from '../../contexts/AskPythiaContext';
+import { PageLayout } from '../ui/PageLayout';
+import { getPageTheme } from '../../config/pageThemes';
 
 type SectionType = 'overview' | 'issues' | 'bills' | 'projects' | 'team' | 'contract' | 'reports' | 'opportunities';
 
@@ -31,11 +34,14 @@ interface ClientDetailPageProps {
 
 export function ClientDetailPage({ clientId, onNavigateBack, onNavigateToBill }: ClientDetailPageProps) {
   const { isDarkMode } = useTheme();
+  const { openPythia } = useAskPythia();
   const [activeSection, setActiveSection] = React.useState<SectionType>('overview');
   const [isGeneratorOpen, setIsGeneratorOpen] = React.useState(false);
   
   const { client, loading, error } = useClient(clientId);
   
+  const clientsTheme = getPageTheme('Clients');
+
   if (loading) {
     return (
        <div className={`h-full flex items-center justify-center ${
@@ -93,39 +99,53 @@ export function ClientDetailPage({ clientId, onNavigateBack, onNavigateToBill }:
     { id: 'opportunities' as const, label: 'Opportunities', icon: TrendingUp },
   ];
 
-  return (
-    <div className={`h-full flex flex-col transition-colors duration-300 ${
-      isDarkMode 
-        ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950' 
-        : 'bg-gradient-to-br from-emerald-50/30 via-white to-teal-50/30'
-    }`}>
-      {/* Header */}
-      <div className={`border-b px-6 py-4 backdrop-blur-xl transition-colors ${
-        isDarkMode
-          ? 'bg-slate-900/40 border-white/10'
-          : 'bg-white/80 border-gray-200'
-      }`}>
-        <div className="flex items-center gap-3 mb-3">
-          <Button variant="secondary" size="sm" onClick={onNavigateBack}>
+  const headerIcon = (
+    <div className="flex items-center gap-3">
+        <Button variant="secondary" size="sm" onClick={onNavigateBack}>
             <ArrowLeft size={16} />
-            Back
-          </Button>
-          <div className="flex-1">
-            <h1 className={`text-2xl font-bold ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>{client.name}</h1>
-            <div className="flex items-center gap-2 mt-1">
-              {client.tags.map(tag => (
-                <Chip key={tag} variant="neutral" size="sm">{tag}</Chip>
-              ))}
-            </div>
-          </div>
-          <Button variant="primary" onClick={() => setIsGeneratorOpen(true)}>
-            Generate Client Update
-          </Button>
+        </Button>
+        {/* Placeholder for Client Logo if available */}
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${isDarkMode ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-700'}`}>
+            {client.name.charAt(0)}
         </div>
-      </div>
+    </div>
+  );
 
+  const headerContent = (
+    <div className="flex items-center gap-3">
+        <Button variant="secondary" size="sm" className="h-8" onClick={() => openPythia({ type: 'client', id: client.id, label: `Client: ${client.name}` })}>
+            <Sparkles size={14} className={isDarkMode ? 'text-yellow-400' : 'text-purple-600'} />
+            Ask Intelligence
+        </Button>
+        {client.tags.map(tag => (
+            <Chip key={tag} variant="neutral" size="sm">{tag}</Chip>
+        ))}
+    </div>
+  );
+
+  const pageActions = (
+    <Button variant="primary" onClick={() => setIsGeneratorOpen(true)}>
+        Generate Client Update
+    </Button>
+  );
+
+  return (
+    <PageLayout
+      title={client.name}
+      subtitle="Client Detail"
+      accentColor={clientsTheme.accent}
+      headerIcon={headerIcon}
+      headerContent={headerContent}
+      pageActions={pageActions}
+      backgroundImage={
+        <BarChart 
+            size={450} 
+            color={isDarkMode ? "white" : clientsTheme.accent} 
+            strokeWidth={0.5}
+        />
+      }
+      contentClassName="flex-1 overflow-hidden flex"
+    >
       <ClientUpdateGenerator 
         isOpen={isGeneratorOpen} 
         onClose={() => setIsGeneratorOpen(false)} 
@@ -133,7 +153,6 @@ export function ClientDetailPage({ clientId, onNavigateBack, onNavigateToBill }:
       />
 
       {/* 3-Zone Layout */}
-      <div className="flex-1 flex overflow-hidden">
         {/* Left Navigation */}
         <div className={`w-64 border-r overflow-y-auto backdrop-blur-xl transition-colors ${
           isDarkMode
@@ -355,7 +374,6 @@ export function ClientDetailPage({ clientId, onNavigateBack, onNavigateToBill }:
             )}
           </div>
         </div>
-      </div>
-    </div>
+    </PageLayout>
   );
 }

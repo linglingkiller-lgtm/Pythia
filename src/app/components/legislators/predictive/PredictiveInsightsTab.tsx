@@ -129,6 +129,8 @@ export function PredictiveInsightsTab({ legislator }: PredictiveInsightsTabProps
               legislatorName={legislator.name}
               legislatorPhotoUrl={legislator.photoUrl}
               legislatorParty={legislator.party}
+              followedIssues={followedIssues}
+              legislatorId={legislator.id}
             />
           </motion.div>
 

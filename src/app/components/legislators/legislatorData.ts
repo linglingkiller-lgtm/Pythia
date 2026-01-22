@@ -1351,7 +1351,7 @@ export const mockLegislators: Legislator[] = [
         title: 'Email: Grid modernization briefing materials',
         date: 'Dec 5, 2025',
         time: '9:00 AM',
-        owner: 'Matt Kenny',
+        owner: 'Matt Kenney',
         linkedBills: ['HB 2098'],
         linkedIssues: ['Clean Energy'],
       },
@@ -1361,7 +1361,7 @@ export const mockLegislators: Legislator[] = [
         title: 'Coffee meeting at Capitol (annual catch-up)',
         date: 'Nov 28, 2025',
         time: '8:00 AM',
-        owner: 'Matt Kenny',
+        owner: 'Matt Kenney',
         notes: 'Relationship building. Discussed session priorities.',
       },
       {
@@ -1503,7 +1503,7 @@ export const mockLegislators: Legislator[] = [
     ],
     
     districtSnapshot: 'LD-23 covers North Scottsdale and Cave Creek with affluent, fiscally conservative voters.',
-    relationshipOwner: 'Matt Kenny',
+    relationshipOwner: 'Matt Kenney',
     
     staff: [
       {
@@ -1578,7 +1578,7 @@ export const mockLegislators: Legislator[] = [
         title: 'Meeting note: Budget priorities discussion',
         date: 'Nov 15, 2025',
         time: '10:00 AM',
-        owner: 'Matt Kenny',
+        owner: 'Matt Kenney',
         linkedBills: ['SB 1789'],
         notes: 'Covered session budget outlook. Senator open to energy infrastructure spending if framed as economic development.',
       },
@@ -1588,7 +1588,7 @@ export const mockLegislators: Legislator[] = [
         title: 'Email: Tax credit analysis for renewable energy',
         date: 'Oct 28, 2025',
         time: '2:15 PM',
-        owner: 'Matt Kenny',
+        owner: 'Matt Kenney',
         linkedIssues: ['Energy', 'Fiscal Policy'],
       },
     ],

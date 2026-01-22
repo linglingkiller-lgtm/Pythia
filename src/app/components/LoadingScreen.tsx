@@ -1,5 +1,5 @@
 import React from 'react';
-import { Server, CheckCircle2, ShieldCheck, UserCheck } from 'lucide-react';
+import { Server, CheckCircle2, ShieldCheck, UserCheck, Check } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import pythiaLogo from 'figma:asset/e9e0c1ac0931dcb43912f4570079500e566ef87a.png';
 
@@ -25,10 +25,17 @@ export function LoadingScreen({
   const isDarkMode = propIsDarkMode ?? theme.isDarkMode;
 
   const steps = [
-    { number: 1, label: 'Signal', icon: ShieldCheck },
-    { number: 2, label: 'Synthesis', icon: Server },
+    { number: 1, label: 'Fetching', icon: ShieldCheck },
+    { number: 2, label: 'Loading', icon: Server },
     { number: 3, label: 'Ready', icon: UserCheck },
   ];
+
+  const getSegmentGradient = (index: number) => {
+    // Blue -> Purple -> Emerald/Teal for completion
+    if (index === 0) return 'bg-gradient-to-r from-blue-500 to-blue-600';
+    if (index === 1) return 'bg-gradient-to-r from-purple-500 to-purple-600';
+    return 'bg-gradient-to-r from-emerald-500 to-emerald-600';
+  };
 
   return (
     <div className={`fixed inset-0 z-[100] flex items-center justify-center overflow-hidden transition-colors duration-700 ${
@@ -130,7 +137,7 @@ export function LoadingScreen({
                 isDarkMode ? 'border-white/5' : 'border-gray-100'
               }`}>
                 <div className="flex items-center justify-center gap-2 text-xs font-mono uppercase tracking-wider opacity-70">
-                  <span className={isDarkMode ? 'text-blue-400' : 'text-blue-600'}>
+                  <span className={isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}>
                     {userRole || 'Member'}
                   </span>
                   <span className={isDarkMode ? 'text-slate-600' : 'text-slate-300'}>|</span>
@@ -142,55 +149,75 @@ export function LoadingScreen({
             )}
           </div>
 
-          {/* Progress Steps */}
-          <div className="relative flex justify-between items-center w-full px-4">
-            {/* Connecting Line */}
-            <div className={`absolute top-3 left-4 right-4 h-[1px] -z-10 ${
-              isDarkMode ? 'bg-white/10' : 'bg-gray-200'
-            }`} />
-            
-            {/* Progress Fill */}
-            <div 
-              className={`absolute top-3 left-4 h-[1px] -z-10 transition-all duration-700 ease-out bg-gradient-to-r from-blue-500 to-purple-500`}
-              style={{ width: `calc(${(step - 1) / 2 * 100}% - 32px)` }}
-            />
+          {/* Segmented Progress Bar (Bill Style) */}
+          <div className="space-y-3">
+             <div className="flex items-center gap-2">
+               {steps.map((s, index) => {
+                 const isCompleted = s.number < step;
+                 const isCurrent = s.number === step;
+                 const isActive = isCompleted || isCurrent;
+                 
+                 return (
+                   <div key={s.number} className="flex-1 relative">
+                     <div
+                       className={`h-3 rounded-full transition-all duration-500 ease-out relative overflow-hidden ${
+                         isActive 
+                            ? getSegmentGradient(index)
+                            : (isDarkMode ? 'bg-slate-800' : 'bg-gray-200')
+                       } ${
+                         isCurrent 
+                            ? (isDarkMode ? 'ring-2 ring-blue-400 ring-offset-1 ring-offset-slate-900' : 'ring-2 ring-blue-300 ring-offset-1') 
+                            : ''
+                       }`}
+                     >
+                       {/* Shimmer effect for current stage */}
+                       {isCurrent && (
+                         <div 
+                           className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                           style={{
+                             backgroundSize: '200% 100%',
+                             animation: 'shimmer 2s infinite'
+                           }}
+                         />
+                       )}
+                       
+                       {/* Check icon for completed stages */}
+                       {isCompleted && (
+                         <div className="absolute inset-0 flex items-center justify-center animate-in zoom-in duration-300">
+                           <Check size={10} className="text-white" strokeWidth={3} />
+                         </div>
+                       )}
+                     </div>
+                   </div>
+                 );
+               })}
+             </div>
 
-            {steps.map((s) => {
-              const isActive = s.number === step;
-              const isCompleted = s.number < step;
-              const Icon = s.icon;
-
-              return (
-                <div key={s.number} className="flex flex-col items-center gap-2">
-                  <div className={`
-                    relative w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-500
-                    ${isActive 
-                      ? (isDarkMode ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)] scale-110' : 'bg-blue-600 text-white shadow-lg shadow-blue-200 scale-110') 
-                      : isCompleted 
-                        ? (isDarkMode ? 'bg-slate-800 text-blue-400 border border-blue-500/30' : 'bg-white text-blue-600 border border-blue-200')
-                        : (isDarkMode ? 'bg-slate-900 text-slate-600 border border-white/5' : 'bg-gray-100 text-gray-400')
-                    }
-                  `}>
-                    {isCompleted ? (
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                    ) : isActive ? (
-                      <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                    ) : (
-                      <span>{s.number}</span>
-                    )}
-                  </div>
-                  <span className={`text-[10px] uppercase tracking-wider font-medium transition-colors duration-300 ${
-                    isActive 
-                      ? (isDarkMode ? 'text-blue-400' : 'text-blue-600')
-                      : isCompleted
-                        ? (isDarkMode ? 'text-slate-400' : 'text-slate-500')
-                        : (isDarkMode ? 'text-slate-700' : 'text-gray-300')
-                  }`}>
-                    {s.label}
-                  </span>
-                </div>
-              );
-            })}
+             {/* Labels */}
+             <div className="flex justify-between px-1">
+               {steps.map((s, index) => {
+                 const isCompleted = s.number < step;
+                 const isCurrent = s.number === step;
+                 
+                 return (
+                    <div 
+                      key={s.number} 
+                      className="flex flex-col items-center flex-1"
+                    >
+                      <div className={`flex items-center gap-1.5 transition-colors duration-300 ${
+                         isCurrent 
+                            ? (isDarkMode ? 'text-blue-400 font-semibold' : 'text-blue-600 font-semibold')
+                            : isCompleted
+                              ? (isDarkMode ? 'text-slate-300' : 'text-slate-600')
+                              : (isDarkMode ? 'text-slate-600' : 'text-gray-300')
+                      }`}>
+                         <s.icon size={12} />
+                         <span className="text-[10px] uppercase tracking-wider">{s.label}</span>
+                      </div>
+                    </div>
+                 );
+               })}
+             </div>
           </div>
 
         </div>
@@ -206,6 +233,10 @@ export function LoadingScreen({
         }
         .animate-pulse-slow {
           animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
       `}</style>
     </div>

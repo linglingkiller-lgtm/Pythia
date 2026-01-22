@@ -7,9 +7,10 @@ export interface OrgSwitcherProps {
   variant?: 'header' | 'sidebar';
   direction?: 'up' | 'down';
   children?: React.ReactNode;
+  collapsed?: boolean;
 }
 
-export const OrgSwitcher: React.FC<OrgSwitcherProps> = ({ variant = 'header', direction = 'down', children }) => {
+export const OrgSwitcher: React.FC<OrgSwitcherProps> = ({ variant = 'header', direction = 'down', children, collapsed = false }) => {
   const { orgMemberships, activeOrgId, setActiveOrgId, activeRole } = useSupabaseAuth();
   const { isDarkMode } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
@@ -76,6 +77,17 @@ export const OrgSwitcher: React.FC<OrgSwitcherProps> = ({ variant = 'header', di
     ? 'bottom-full mb-2' 
     : 'top-full mt-2';
 
+  // If sidebar is collapsed, position dropdown to the right (popover style)
+  // Otherwise default to right-aligned within the sidebar (or header)
+  const alignmentClasses = (variant === 'sidebar' && collapsed)
+    ? 'left-full ml-2 bottom-0 mb-0' // Pop out to the side
+    : 'right-0'; // Default align right edge
+
+  // Override position if collapsed and sidebar variant (to act more like a tooltip/popover)
+  const containerClasses = (variant === 'sidebar' && collapsed)
+    ? `absolute bottom-0 left-full ml-2 w-72 ${dropdownBg} border ${dropdownBorder} rounded-lg shadow-xl z-50 overflow-hidden`
+    : `absolute ${positionClasses} ${alignmentClasses} w-72 ${dropdownBg} border ${dropdownBorder} rounded-lg shadow-xl z-50 overflow-hidden`;
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -102,9 +114,7 @@ export const OrgSwitcher: React.FC<OrgSwitcherProps> = ({ variant = 'header', di
       </button>
 
       {isOpen && (
-        <div
-          className={`absolute ${positionClasses} right-0 w-72 ${dropdownBg} border ${dropdownBorder} rounded-lg shadow-xl z-50 overflow-hidden`}
-        >
+        <div className={containerClasses}>
           <div className={`px-3 py-2 border-b ${dropdownBorder}`}>
             <div className={`text-xs font-medium ${textMuted} uppercase tracking-wide`}>
               Switch Organization

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Clock } from 'lucide-react';
+import { X, Clock, Sun, Moon } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { NotificationCategory } from './NotificationDropdown';
+import { useDashboard } from '../../contexts/DashboardContext';
 
 interface NotificationSettingsProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ interface CategorySettings {
 }
 
 export function NotificationSettings({ isOpen, onClose }: NotificationSettingsProps) {
+  const { briefingMode, setBriefingMode } = useDashboard();
   const [digestMode, setDigestMode] = useState(false);
   const [digestTime, setDigestTime] = useState('09:00');
   
@@ -65,6 +67,74 @@ export function NotificationSettings({ isOpen, onClose }: NotificationSettingsPr
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* Briefing Mode */}
+          <div className="pb-6 border-b border-gray-200">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">Dashboard Briefing Mode</h3>
+                <p className="text-sm text-gray-600">
+                  Toggle between morning and evening briefing views for a time-appropriate dashboard experience.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 mt-4">
+              <button
+                onClick={() => setBriefingMode(null)}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  briefingMode === null
+                    ? 'border-cyan-600 bg-cyan-50'
+                    : 'border-gray-200 hover:border-gray-300 bg-gray-50'
+                }`}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <div className={`p-2 rounded-full ${briefingMode === null ? 'bg-cyan-100' : 'bg-gray-200'}`}>
+                    <X size={20} className={briefingMode === null ? 'text-cyan-600' : 'text-gray-500'} />
+                  </div>
+                  <span className={`text-sm font-medium ${briefingMode === null ? 'text-cyan-900' : 'text-gray-700'}`}>
+                    Off
+                  </span>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setBriefingMode('morning')}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  briefingMode === 'morning'
+                    ? 'border-orange-500 bg-orange-50'
+                    : 'border-gray-200 hover:border-gray-300 bg-gray-50'
+                }`}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <div className={`p-2 rounded-full ${briefingMode === 'morning' ? 'bg-orange-100' : 'bg-gray-200'}`}>
+                    <Sun size={20} className={briefingMode === 'morning' ? 'text-orange-500' : 'text-gray-500'} />
+                  </div>
+                  <span className={`text-sm font-medium ${briefingMode === 'morning' ? 'text-orange-900' : 'text-gray-700'}`}>
+                    Morning
+                  </span>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setBriefingMode('evening')}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  briefingMode === 'evening'
+                    ? 'border-indigo-600 bg-indigo-50'
+                    : 'border-gray-200 hover:border-gray-300 bg-gray-50'
+                }`}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <div className={`p-2 rounded-full ${briefingMode === 'evening' ? 'bg-indigo-100' : 'bg-gray-200'}`}>
+                    <Moon size={20} className={briefingMode === 'evening' ? 'text-indigo-600' : 'text-gray-500'} />
+                  </div>
+                  <span className={`text-sm font-medium ${briefingMode === 'evening' ? 'text-indigo-900' : 'text-gray-700'}`}>
+                    Evening
+                  </span>
+                </div>
+              </button>
+            </div>
+          </div>
+
           {/* Digest Mode */}
           <div className="pb-6 border-b border-gray-200">
             <div className="flex items-start justify-between mb-4">

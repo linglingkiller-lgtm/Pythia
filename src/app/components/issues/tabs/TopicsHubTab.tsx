@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
+import jsPDF from 'jspdf';
 import {
   X,
   Search,
@@ -25,6 +27,8 @@ import {
   Clock,
   Scale,
   Gavel,
+  Lightbulb,
+  Zap,
 } from 'lucide-react';
 import {
   topicsByIssue,
@@ -33,6 +37,11 @@ import {
   peopleByTopic,
   pythiaInsightsByRegionTopic,
 } from '../../../data/issuesMockData';
+
+// Helper function to generate sparkline data
+const generateSparkline = () => {
+  return Array.from({ length: 7 }, () => Math.floor(Math.random() * 60 + 20));
+};
 
 interface Props {
   isDarkMode: boolean;
@@ -59,11 +68,6 @@ export function TopicsHubTab({ isDarkMode, selectedIssue, currentScope }: Props)
       topic.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       topic.descriptionShort.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  // Generate sparkline data
-  const generateSparkline = () => {
-    return Array.from({ length: 7 }, () => Math.floor(Math.random() * 60 + 20));
-  };
 
   const handleTopicClick = (topic: any) => {
     setSelectedTopic(topic);
@@ -1154,6 +1158,8 @@ function BriefGenerationModal({
   const [briefFormat, setBriefFormat] = useState<'executive' | 'detailed' | 'presentation'>(
     'executive'
   );
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedBrief, setGeneratedBrief] = useState<any>(null);
 
   const toggleTopic = (topicId: string) => {
     if (selectedTopics.includes(topicId)) {
@@ -1163,12 +1169,35 @@ function BriefGenerationModal({
     }
   };
 
-  return (
+  const handleGenerateBrief = () => {
+    setIsGenerating(true);
+    
+    // Simulate brief generation with a delay
+    setTimeout(() => {
+      const selectedTopicData = topics.filter(t => selectedTopics.includes(t.topicId));
+      const brief = generateBriefData(selectedIssue, selectedTopicData, briefFormat);
+      setGeneratedBrief(brief);
+      setIsGenerating(false);
+    }, 1500);
+  };
+
+  if (generatedBrief) {
+    return (
+      <BriefViewerModal
+        isDarkMode={isDarkMode}
+        brief={generatedBrief}
+        onClose={onClose}
+        onBack={() => setGeneratedBrief(null)}
+      />
+    );
+  }
+
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-6"
       onClick={onClose}
     >
       <motion.div
@@ -1347,13 +1376,548 @@ function BriefGenerationModal({
                   ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
                   : 'bg-orange-600 hover:bg-orange-500 text-white'
               }`}
+              onClick={handleGenerateBrief}
             >
-              <Download className="w-4 h-4" />
+              {isGenerating ? (
+                <div className="animate-spin">
+                  <Zap className="w-4 h-4" />
+                </div>
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
               Generate Brief ({selectedTopics.length} topics)
             </button>
           </div>
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
+  );
+}
+
+// Function to simulate brief generation
+function generateBriefData(issue: string, topics: any[], format: 'executive' | 'detailed' | 'presentation') {
+  // Simulate brief data
+  const brief = {
+    issue: issue,
+    topics: topics.map(topic => ({
+      name: topic.name,
+      description: topic.descriptionShort,
+      heatScore: topic.heatScore,
+      mentionCountLastWeek: topic.mentionCountLastWeek,
+      sentimentNetPercent: topic.sentimentNetPercent,
+      momentumDelta: topic.momentumDelta,
+      bills: billsByTopic[topic.topicId] || [],
+      people: peopleByTopic[topic.topicId] || [],
+      pythiaInsights:
+        pythiaInsightsByRegionTopic[`${'California'}_${topic.topicId}`] ||
+        pythiaInsightsByRegionTopic['California_t01'],
+    })),
+    format: format,
+    generatedAt: new Date().toISOString(),
+  };
+
+  return brief;
+}
+
+// PDF Generation Function
+function downloadBriefAsPDF(brief: any) {
+  const doc = new jsPDF();
+  let yPos = 20;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 20;
+  const contentWidth = pageWidth - 2 * margin;
+
+  // Helper function to add text with word wrap
+  const addText = (text: string, fontSize: number, isBold: boolean = false, color: number[] = [0, 0, 0]) => {
+    doc.setFontSize(fontSize);
+    doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+    doc.setTextColor(color[0], color[1], color[2]);
+    const lines = doc.splitTextToSize(text, contentWidth);
+    
+    lines.forEach((line: string) => {
+      if (yPos > 270) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.text(line, margin, yPos);
+      yPos += fontSize * 0.5;
+    });
+    yPos += 3;
+  };
+
+  // Header
+  doc.setFillColor(220, 38, 38);
+  doc.rect(0, 0, pageWidth, 30, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(22);
+  doc.setFont('helvetica', 'bold');
+  doc.text('REVERE INTELLIGENCE BRIEF', margin, 20);
+  
+  yPos = 45;
+
+  // Issue Title
+  addText(`ISSUE: ${brief.issue.toUpperCase()}`, 14, true, [220, 38, 38]);
+  yPos += 3;
+
+  // Format & Date
+  doc.setTextColor(100, 116, 139);
+  doc.setFontSize(10);
+  doc.text(`Format: ${brief.format.charAt(0).toUpperCase() + brief.format.slice(1)}`, margin, yPos);
+  doc.text(`Generated: ${new Date(brief.generatedAt).toLocaleString()}`, pageWidth - margin - 80, yPos);
+  yPos += 10;
+
+  // Divider
+  doc.setDrawColor(220, 38, 38);
+  doc.setLineWidth(0.5);
+  doc.line(margin, yPos, pageWidth - margin, yPos);
+  yPos += 10;
+
+  // Topics
+  brief.topics.forEach((topic: any, index: number) => {
+    // Check if we need a new page
+    if (yPos > 240) {
+      doc.addPage();
+      yPos = 20;
+    }
+
+    // Topic Header
+    addText(`${index + 1}. ${topic.name}`, 14, true, [0, 0, 0]);
+    addText(topic.description, 10, false, [71, 85, 105]);
+    
+    // Heat Score Badge
+    const heatScore = topic.heatScore;
+    const heatColor = heatScore >= 80 ? [220, 38, 38] : heatScore >= 60 ? [234, 88, 12] : [202, 138, 4];
+    doc.setFillColor(heatColor[0], heatColor[1], heatColor[2]);
+    doc.roundedRect(margin, yPos, 30, 8, 2, 2, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Heat: ${heatScore}`, margin + 3, yPos + 5.5);
+    yPos += 12;
+
+    // Metrics
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(`Mentions: ${topic.mentionCountLastWeek}`, margin, yPos);
+    doc.text(`Sentiment: ${topic.sentimentNetPercent > 0 ? '+' : ''}${topic.sentimentNetPercent}%`, margin + 60, yPos);
+    doc.text(`Momentum: ${topic.momentumDelta > 0 ? '+' : ''}${topic.momentumDelta}%`, margin + 120, yPos);
+    yPos += 8;
+
+    // Legislative Section
+    if (topic.bills && topic.bills.length > 0) {
+      yPos += 3;
+      addText('Legislative Activity:', 11, true, [88, 28, 135]);
+      topic.bills.slice(0, 3).forEach((bill: any) => {
+        if (yPos > 260) {
+          doc.addPage();
+          yPos = 20;
+        }
+        doc.setFontSize(9);
+        doc.setTextColor(71, 85, 105);
+        doc.text(`• ${bill.billId}: ${bill.title}`, margin + 5, yPos);
+        yPos += 5;
+      });
+      yPos += 3;
+    }
+
+    // Key People
+    if (topic.people && topic.people.length > 0) {
+      yPos += 3;
+      addText('Key People:', 11, true, [88, 28, 135]);
+      topic.people.slice(0, 3).forEach((person: any) => {
+        if (yPos > 260) {
+          doc.addPage();
+          yPos = 20;
+        }
+        doc.setFontSize(9);
+        doc.setTextColor(71, 85, 105);
+        doc.text(`• ${person.name} (${person.officeTitle})`, margin + 5, yPos);
+        yPos += 5;
+      });
+      yPos += 3;
+    }
+
+    // Revere Strategy
+    if (topic.pythiaInsights) {
+      yPos += 3;
+      addText('Revere Strategic Intelligence:', 11, true, [147, 51, 234]);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(147, 51, 234);
+      doc.text(`Confidence: ${topic.pythiaInsights.confidence0to100}%`, margin + 5, yPos);
+      yPos += 6;
+
+      if (topic.pythiaInsights.keyPatterns && topic.pythiaInsights.keyPatterns.length > 0) {
+        doc.setFontSize(9);
+        doc.setTextColor(71, 85, 105);
+        topic.pythiaInsights.keyPatterns.slice(0, 2).forEach((pattern: string) => {
+          if (yPos > 260) {
+            doc.addPage();
+            yPos = 20;
+          }
+          const lines = doc.splitTextToSize(`• ${pattern}`, contentWidth - 10);
+          lines.forEach((line: string) => {
+            doc.text(line, margin + 5, yPos);
+            yPos += 5;
+          });
+        });
+      }
+      
+      yPos += 3;
+    }
+
+    // Divider between topics
+    if (index < brief.topics.length - 1) {
+      yPos += 5;
+      doc.setDrawColor(203, 213, 225);
+      doc.setLineWidth(0.3);
+      doc.line(margin, yPos, pageWidth - margin, yPos);
+      yPos += 10;
+    }
+  });
+
+  // Footer on last page
+  const pageCount = doc.internal.pages.length - 1;
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.text(
+      `Revere Intelligence Platform • Page ${i} of ${pageCount}`,
+      pageWidth / 2,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: 'center' }
+    );
+  }
+
+  // Download
+  const fileName = `Revere-Brief-${brief.issue.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
+  doc.save(fileName);
+}
+
+// Brief Viewer Modal
+function BriefViewerModal({
+  isDarkMode,
+  brief,
+  onClose,
+  onBack,
+}: {
+  isDarkMode: boolean;
+  brief: any;
+  onClose: () => void;
+  onBack: () => void;
+}) {
+  return createPortal(
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-6"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
+        onClick={e => e.stopPropagation()}
+        className={`w-full max-w-3xl rounded-2xl border shadow-2xl overflow-hidden ${
+          isDarkMode ? 'bg-slate-900 border-white/10' : 'bg-white border-gray-200'
+        }`}
+      >
+        {/* Header */}
+        <div className={`p-6 border-b ${isDarkMode ? 'border-white/10' : 'border-gray-200'}`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className={`text-xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                Generated Brief
+              </h3>
+              <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-gray-600'}`}>
+                {brief.format === 'executive' ? 'Executive Summary' : 'Detailed Report'}
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className={`p-2 rounded-xl transition-all ${
+                isDarkMode
+                  ? 'hover:bg-white/10 text-slate-400'
+                  : 'hover:bg-gray-100 text-gray-600'
+              }`}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6 max-h-[60vh] overflow-auto">
+          {/* Issue Title */}
+          <div className="flex items-center gap-2 mb-4">
+            <Flame className="w-5 h-5 text-orange-500" />
+            <h3 className={`font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              {brief.issue}
+            </h3>
+          </div>
+
+          {/* Topics */}
+          {brief.topics.map((topic: any, idx: number) => (
+            <motion.div
+              key={topic.name}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              className={`p-5 rounded-2xl border ${
+                isDarkMode ? 'bg-slate-900/40 border-white/10' : 'bg-white border-gray-200'
+              }`}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className={`font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                    {topic.name}
+                  </div>
+                  <div className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-gray-600'}`}>
+                    {topic.description}
+                  </div>
+                </div>
+                <div
+                  className={`px-3 py-1 rounded-lg text-xs font-bold ${
+                    topic.heatScore >= 80
+                      ? 'bg-red-600 text-white'
+                      : topic.heatScore >= 60
+                      ? 'bg-orange-600 text-white'
+                      : 'bg-yellow-600 text-white'
+                  }`}
+                >
+                  {topic.heatScore}
+                </div>
+              </div>
+
+              {/* Metrics Row */}
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <div
+                  className={`p-2 rounded-lg ${isDarkMode ? 'bg-white/5' : 'bg-gray-50'}`}
+                >
+                  <div className="flex items-center gap-1 mb-0.5">
+                    <MessageSquare className="w-3 h-3 text-blue-500" />
+                    <span
+                      className={`text-xs font-semibold ${
+                        isDarkMode ? 'text-slate-400' : 'text-gray-600'
+                      }`}
+                    >
+                      Mentions
+                    </span>
+                  </div>
+                  <div
+                    className={`text-lg font-bold ${
+                      isDarkMode ? 'text-white' : 'text-gray-900'
+                    }`}
+                  >
+                    {topic.mentionCountLastWeek}
+                  </div>
+                </div>
+                <div
+                  className={`p-2 rounded-lg ${isDarkMode ? 'bg-white/5' : 'bg-gray-50'}`}
+                >
+                  <div className="flex items-center gap-1 mb-0.5">
+                    <Scale className="w-3 h-3 text-orange-500" />
+                    <span
+                      className={`text-xs font-semibold ${
+                        isDarkMode ? 'text-slate-400' : 'text-gray-600'
+                      }`}
+                    >
+                      Sentiment
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {topic.sentimentNetPercent > 0 ? (
+                      <ThumbsUp className="w-3 h-3 text-green-500" />
+                    ) : topic.sentimentNetPercent < 0 ? (
+                      <ThumbsDown className="w-3 h-3 text-red-500" />
+                    ) : (
+                      <Minus className="w-3 h-3 text-gray-500" />
+                    )}
+                    <span
+                      className={`text-sm font-bold ${
+                        topic.sentimentNetPercent > 0
+                          ? 'text-green-500'
+                          : topic.sentimentNetPercent < 0
+                          ? 'text-red-500'
+                          : 'text-gray-500'
+                      }`}
+                    >
+                      {topic.sentimentNetPercent > 0 ? '+' : ''}
+                      {topic.sentimentNetPercent}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Momentum with Sparkline */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1">
+                  {topic.momentumDelta > 0 ? (
+                    <TrendingUp className="w-3 h-3 text-green-500" />
+                  ) : (
+                    <TrendingDown className="w-3 h-3 text-red-500" />
+                  )}
+                  <span
+                    className={`text-xs font-semibold ${
+                      topic.momentumDelta > 0 ? 'text-green-500' : 'text-red-500'
+                    }`}
+                  >
+                    {topic.momentumDelta > 0 ? '+' : ''}
+                    {topic.momentumDelta}%
+                  </span>
+                </div>
+                {/* Sparkline */}
+                <div className="flex items-end gap-0.5 h-6">
+                  {generateSparkline().map((val, i) => (
+                    <div
+                      key={i}
+                      className="w-1 bg-orange-600 rounded-t"
+                      style={{ height: `${(val / 80) * 100}%` }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Legislative */}
+              {topic.bills.length > 0 && (
+                <div className="mt-4">
+                  <div
+                    className={`text-sm font-semibold mb-3 ${
+                      isDarkMode ? 'text-slate-400' : 'text-gray-600'
+                    }`}
+                  >
+                    LEGISLATIVE
+                  </div>
+                  <ul className="space-y-2">
+                    {topic.bills.map((bill: any, idx: number) => (
+                      <li
+                        key={idx}
+                        className={`flex items-start gap-2 text-sm ${
+                          isDarkMode ? 'text-slate-300' : 'text-gray-700'
+                        }`}
+                      >
+                        <FileText className="w-4 h-4 mt-0.5 text-blue-500 flex-shrink-0" />
+                        <span>{bill.title}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* People */}
+              {topic.people.length > 0 && (
+                <div className="mt-4">
+                  <div
+                    className={`text-sm font-semibold mb-3 ${
+                      isDarkMode ? 'text-slate-400' : 'text-gray-600'
+                    }`}
+                  >
+                    KEY PEOPLE
+                  </div>
+                  <ul className="space-y-2">
+                    {topic.people.map((person: any, idx: number) => (
+                      <li
+                        key={idx}
+                        className={`flex items-start gap-2 text-sm ${
+                          isDarkMode ? 'text-slate-300' : 'text-gray-700'
+                        }`}
+                      >
+                        <Users className="w-4 h-4 mt-0.5 text-blue-500 flex-shrink-0" />
+                        <span>{person.name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Revere Strategy */}
+              {topic.pythiaInsights && (
+                <div className="mt-4">
+                  <div
+                    className={`text-sm font-semibold mb-3 ${
+                      isDarkMode ? 'text-slate-400' : 'text-gray-600'
+                    }`}
+                  >
+                    REVERE STRATEGY
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div
+                        className={`text-xs font-semibold mb-1 ${
+                          isDarkMode ? 'text-slate-400' : 'text-gray-600'
+                        }`}
+                      >
+                        CONFIDENCE
+                      </div>
+                      <div className="text-2xl font-bold text-purple-500">
+                        {topic.pythiaInsights.confidence0to100}%
+                      </div>
+                    </div>
+                    <div>
+                      <div
+                        className={`text-xs font-semibold mb-1 ${
+                          isDarkMode ? 'text-slate-400' : 'text-gray-600'
+                        }`}
+                      >
+                        KEY PATTERNS
+                      </div>
+                      <ul className="space-y-2">
+                        {topic.pythiaInsights.keyPatterns.map((pattern: string, idx: number) => (
+                          <li
+                            key={idx}
+                            className={`flex items-start gap-2 text-sm ${
+                              isDarkMode ? 'text-slate-300' : 'text-gray-700'
+                            }`}
+                          >
+                            <Target className="w-4 h-4 mt-0.5 text-blue-500 flex-shrink-0" />
+                            <span>{pattern}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div
+          className={`p-6 border-t ${
+            isDarkMode ? 'border-white/10 bg-slate-800/50' : 'border-gray-200 bg-gray-50'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <button
+              onClick={onBack}
+              className={`px-4 py-2 rounded-xl font-semibold transition-all ${
+                isDarkMode
+                  ? 'bg-white/5 hover:bg-white/10 text-white'
+                  : 'bg-white hover:bg-gray-100 text-gray-900 border border-gray-200'
+              }`}
+            >
+              Back
+            </button>
+            <button
+              onClick={() => downloadBriefAsPDF(brief)}
+              className={`px-6 py-2 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                isDarkMode
+                  ? 'bg-purple-600 hover:bg-purple-500 text-white'
+                  : 'bg-purple-600 hover:bg-purple-700 text-white'
+              }`}
+            >
+              <Download className="w-4 h-4" />
+              Download Brief
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>,
+    document.body
   );
 }

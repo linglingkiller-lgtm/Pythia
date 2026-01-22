@@ -148,6 +148,27 @@ export function generateSeedMessages(orgId: string, currentUserId: string): Mess
       editedAt: null,
       version: 1,
     },
+    // Demo Trigger Message
+    {
+      messageId: 'm_demo_trigger',
+      conversationId: 'c_general',
+      orgId,
+      senderUserId: 'user_strategist',
+      senderName: 'Sarah Chen',
+      senderAvatarUrl: null,
+      kind: 'text',
+      text: 'We need data pulls for CA-45 and CA-92. The memo needs to be drafted with that data and sent to Mike by tomorrow night.',
+      attachments: [],
+      mentions: [],
+      tags: [],
+      linked: { projectId: null, taskId: null, billId: null, legislatorId: null, recordId: null },
+      replyToMessageId: null,
+      reactions: {},
+      pinned: false,
+      createdAt: new Date(now - 300000).toISOString(),
+      editedAt: null,
+      version: 1,
+    },
 
     // Campaign Ops Messages
     {

@@ -12,7 +12,12 @@ import { VotingPatterns } from './VotingPatterns';
 import { BillMomentumCard } from './BillMomentumCard';
 import { MediaNarrative } from './MediaNarrative';
 import { ActionPlan } from './ActionPlan';
+import { WhipCountBoard } from '../legislators/WhipCountBoard';
 import { useTheme } from '../../contexts/ThemeContext';
+import { PageLayout } from '../ui/PageLayout';
+import { getPageTheme } from '../../config/pageThemes';
+
+import { useAskPythia } from '../../contexts/AskPythiaContext';
 
 interface BillDetailPageProps {
   billId: string;
@@ -22,11 +27,16 @@ interface BillDetailPageProps {
 
 export function BillDetailPage({ billId, onBack, onNavigateToLegislator }: BillDetailPageProps) {
   const { isDarkMode } = useTheme();
+  const { openPythia } = useAskPythia();
   const bill = mockBills.find(b => b.id === billId);
   const aiReview = mockBillAIReviews[billId];
   const memberInsights = mockMemberInsights[billId] || [];
   const momentum = mockBillMomentum[billId];
   const mentions = mockMentions[billId] || [];
+
+  const [activeTab, setActiveTab] = React.useState<'overview' | 'whip-count'>('overview');
+  
+  const billsTheme = getPageTheme('Bills');
 
   if (!bill) {
     return (
@@ -79,133 +89,157 @@ export function BillDetailPage({ billId, onBack, onNavigateToLegislator }: BillD
     return `in ${diffDays} days`;
   };
 
+  // Header Props
+  const headerIcon = (
+    <div className="flex items-center gap-3">
+        <Button variant="secondary" size="sm" onClick={onBack}>
+            <ArrowLeft size={16} />
+        </Button>
+        <span className="font-bold text-2xl">{bill.billId}</span>
+    </div>
+  );
+
+  const headerContent = (
+    <div className="flex items-center gap-2">
+        {bill.isPinned && <Pin size={18} className="text-red-600 fill-red-600" />}
+        <Chip variant="neutral" size="sm">{getStatusLabel(bill.status)}</Chip>
+        <Chip variant={getStanceColor(bill.stance) as any} size="sm">
+        {bill.stance.charAt(0).toUpperCase() + bill.stance.slice(1)}
+        </Chip>
+        {bill.flags.map(flag => (
+        <Chip key={flag.label} variant="warning" size="sm">
+            {flag.label}
+        </Chip>
+        ))}
+    </div>
+  );
+
+  const pageActions = (
+    <div className="flex items-center gap-2">
+        <Button variant="secondary" size="sm">
+        <Eye size={16} />
+        {bill.isPinned ? 'Watching' : 'Watch'}
+        </Button>
+        <Button variant="primary" size="sm" onClick={() => openPythia({ type: 'bill', id: bill.id, label: `Bill: ${bill.billId}` })}>
+        <FileText size={16} />
+        Generate Brief
+        </Button>
+        <Button variant="secondary" size="sm">
+        <Download size={16} />
+        Export
+        </Button>
+    </div>
+  );
+
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-slate-900' : 'bg-gradient-shift-subtle'}`}>
-      {/* Top Header Bar */}
-      <div className={`border-b sticky top-0 z-10 shadow-sm backdrop-blur-xl ${
-        isDarkMode
-          ? 'bg-slate-800/95 border-white/10'
-          : 'bg-white border-gray-200'
-      }`}>
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between mb-3">
-            <Button variant="secondary" size="sm" onClick={onBack}>
-              <ArrowLeft size={16} />
-              Back to Bills
-            </Button>
-
-            <div className="flex items-center gap-2">
-              <Button variant="secondary" size="sm">
-                <Eye size={16} />
-                {bill.isPinned ? 'Watching' : 'Watch'}
-              </Button>
-              <Button variant="secondary" size="sm">
-                <Bell size={16} />
-                Add Note
-              </Button>
-              <Button variant="primary" size="sm">
-                <FileText size={16} />
-                Generate Brief
-              </Button>
-              <Button variant="secondary" size="sm">
-                <Plus size={16} />
-                Create Task
-              </Button>
-              <Button variant="secondary" size="sm">
-                <Download size={16} />
-                Export
-              </Button>
+    <PageLayout
+      title={bill.shortTitle}
+      subtitle={bill.title}
+      accentColor={billsTheme.accent}
+      headerIcon={headerIcon}
+      headerContent={headerContent}
+      pageActions={pageActions}
+      backgroundImage={
+        <FileText 
+            size={450} 
+            color={isDarkMode ? "white" : billsTheme.accent} 
+            strokeWidth={0.5}
+        />
+      }
+      contentClassName="flex-1 overflow-y-auto"
+    >
+        <div className="p-6">
+            {/* Next Action & Timeline */}
+            <div className="mb-6 flex flex-col md:flex-row gap-6">
+                <div className={`flex-1 flex items-center gap-4 px-6 py-4 border rounded-xl ${
+                    isDarkMode
+                    ? 'bg-red-500/10 border-red-500/30'
+                    : 'bg-red-50 border-red-200'
+                }`}>
+                    <div className="flex-1">
+                        <span className={`text-sm font-medium block mb-1 ${
+                        isDarkMode ? 'text-red-300' : 'text-red-900'
+                        }`}>Next Action Required</span>
+                        <span className={`text-lg font-bold ${
+                        isDarkMode ? 'text-red-200' : 'text-red-700'
+                        }`}>{bill.nextActionDescription}</span>
+                    </div>
+                    <div className={`text-right`}>
+                        <span className={`text-2xl font-bold block ${
+                        isDarkMode ? 'text-red-300' : 'text-red-900'
+                        }`}>{daysUntilAction()}</span>
+                    </div>
+                </div>
+                
+                <div className="flex-1">
+                    {/* Tab Navigation */}
+                    <div className="flex items-center gap-6 border-b border-gray-200 dark:border-white/10 h-full px-4">
+                        <button 
+                            onClick={() => setActiveTab('overview')}
+                            className={`h-full pb-4 border-b-2 font-medium text-sm transition-all ${activeTab === 'overview' ? (isDarkMode ? 'border-white text-white' : 'border-blue-600 text-blue-600') : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+                        >
+                            Overview & Analysis
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('whip-count')}
+                            className={`h-full pb-4 border-b-2 font-medium text-sm transition-all ${activeTab === 'whip-count' ? (isDarkMode ? 'border-white text-white' : 'border-blue-600 text-blue-600') : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+                        >
+                            Whip Count & Votes
+                        </button>
+                    </div>
+                </div>
             </div>
-          </div>
 
-          {/* Bill Identity */}
-          <div className="mb-3">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className={`text-2xl font-bold tracking-tight ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>{bill.billId}</h1>
-              {bill.isPinned && <Pin size={18} className="text-red-600 fill-red-600" />}
-              <Chip variant="neutral" size="sm">{getStatusLabel(bill.status)}</Chip>
-              <Chip variant={getStanceColor(bill.stance) as any} size="sm">
-                {bill.stance.charAt(0).toUpperCase() + bill.stance.slice(1)}
-              </Chip>
-              {bill.flags.map(flag => (
-                <Chip key={flag.label} variant="warning" size="sm">
-                  {flag.label}
-                </Chip>
-              ))}
-            </div>
-            <h2 className={`text-lg font-medium mb-2 ${
-              isDarkMode ? 'text-gray-300' : 'text-gray-700'
-            }`}>{bill.shortTitle}</h2>
-            <p className={`text-sm ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-600'
-            }`}>{bill.title}</p>
-          </div>
-
-          {/* Next Action */}
-          <div className={`flex items-center gap-2 px-3 py-2 border rounded-lg ${
-            isDarkMode
-              ? 'bg-red-500/10 border-red-500/30'
-              : 'bg-red-50 border-red-200'
-          }`}>
-            <span className={`text-sm font-medium ${
-              isDarkMode ? 'text-red-300' : 'text-red-900'
-            }`}>Next Action:</span>
-            <span className={`text-sm ${
-              isDarkMode ? 'text-red-200' : 'text-red-700'
-            }`}>{bill.nextActionDescription}</span>
-            <span className={`text-sm font-semibold ${
-              isDarkMode ? 'text-red-300' : 'text-red-900'
-            }`}>{daysUntilAction()}</span>
-          </div>
-        </div>
-
-        {/* Timeline */}
-        <div className="px-6 pb-4">
-          <BillTimeline bill={bill} />
-        </div>
-      </div>
-
-      {/* Main Content: 3-Column Layout */}
-      <div className="p-6">
-        <div className="grid grid-cols-12 gap-6">
-          {/* Left Main Column */}
-          <div className="col-span-8 space-y-6">
-            {/* Revere Bill Review */}
-            {aiReview && <AIBillReview billId={billId} review={aiReview} />}
-
-            {/* Version Tracking */}
-            <VersionTracking bill={bill} />
-
-            {/* Media & Narrative */}
-            <MediaNarrative mentions={mentions} billId={billId} />
-          </div>
-
-          {/* Right Rail */}
-          <div className="col-span-4 space-y-6">
-            {/* Bill Momentum */}
-            {momentum && <BillMomentumCard momentum={momentum} />}
-
-            {/* Key Actors */}
-            <KeyActors
-              sponsorIds={bill.sponsorIds}
-              sponsorNames={bill.sponsorNames}
-              committeeName={bill.committeeName}
-              memberInsights={memberInsights}
-              onNavigateToLegislator={onNavigateToLegislator}
-            />
-
-            {/* Voting Patterns */}
-            {memberInsights.length > 0 && (
-              <VotingPatterns memberInsights={memberInsights} />
+            {activeTab === 'overview' && (
+                <div className="mb-8">
+                    <BillTimeline bill={bill} />
+                </div>
             )}
 
-            {/* Action Plan */}
-            <ActionPlan billId={billId} />
-          </div>
+            {activeTab === 'whip-count' ? (
+                <div className="h-[calc(100vh-350px)]">
+                    <WhipCountBoard billId={billId} />
+                </div>
+            ) : (
+            /* Main Content: 3-Column Layout */
+            <div className="grid grid-cols-12 gap-6">
+                {/* Left Main Column */}
+                <div className="col-span-8 space-y-6">
+                    {/* Revere Bill Review */}
+                    {aiReview && <AIBillReview billId={billId} review={aiReview} />}
+
+                    {/* Version Tracking */}
+                    <VersionTracking bill={bill} />
+
+                    {/* Media & Narrative */}
+                    <MediaNarrative mentions={mentions} billId={billId} />
+                </div>
+
+                {/* Right Rail */}
+                <div className="col-span-4 space-y-6">
+                    {/* Bill Momentum */}
+                    {momentum && <BillMomentumCard momentum={momentum} />}
+
+                    {/* Key Actors */}
+                    <KeyActors
+                    sponsorIds={bill.sponsorIds}
+                    sponsorNames={bill.sponsorNames}
+                    committeeName={bill.committeeName}
+                    memberInsights={memberInsights}
+                    onNavigateToLegislator={onNavigateToLegislator}
+                    />
+
+                    {/* Voting Patterns */}
+                    {memberInsights.length > 0 && (
+                    <VotingPatterns memberInsights={memberInsights} />
+                    )}
+
+                    {/* Action Plan */}
+                    <ActionPlan billId={billId} />
+                </div>
+            </div>
+            )}
         </div>
-      </div>
-    </div>
+    </PageLayout>
   );
 }

@@ -97,14 +97,12 @@ export function ManagerActionCenter({ actions, onActionClick }: ManagerActionCen
   );
 
   return (
-    <div className={`rounded-lg border overflow-hidden flex flex-col h-full ${
-      isDarkMode ? 'bg-slate-800/50 border-white/10' : 'bg-white border-gray-200'
-    }`}>
+    <div className="flex flex-col h-full bg-transparent">
       {/* Header */}
-      <div className={`border-b px-4 py-3 ${
-        isDarkMode ? 'border-white/10 bg-slate-700/50' : 'border-gray-200 bg-gray-50'
+      <div className={`flex-shrink-0 px-4 py-3 border-b ${
+        isDarkMode ? 'bg-[#0a0a0b] border-white/10' : 'bg-gray-50 border-gray-200'
       }`}>
-        <h2 className={`text-sm font-semibold uppercase tracking-wider ${
+        <h2 className={`text-xs font-bold uppercase tracking-wider ${
           isDarkMode ? 'text-white' : 'text-gray-900'
         }`}>
           Manager Actions
@@ -231,7 +229,7 @@ export function ManagerActionCenter({ actions, onActionClick }: ManagerActionCen
 
       {/* Footer - Quick Stats */}
       <div className={`border-t p-4 ${
-        isDarkMode ? 'border-white/10 bg-slate-700/50' : 'border-gray-200 bg-gray-50'
+        isDarkMode ? 'bg-[#0a0a0b] border-white/10' : 'bg-gray-50 border-gray-200'
       }`}>
         <div className="grid grid-cols-3 gap-3 text-center">
           <div>

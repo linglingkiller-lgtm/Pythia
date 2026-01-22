@@ -55,7 +55,11 @@ interface LayoutPosition {
 interface DashboardContextType {
   layout: DashboardLayout;
   isEditMode: boolean;
+  isMorningBriefing: boolean;
+  briefingMode: 'morning' | 'evening' | null;
   setEditMode: (enabled: boolean) => void;
+  toggleMorningBriefing: () => void;
+  setBriefingMode: (mode: 'morning' | 'evening' | null) => void;
   addModule: (module: Omit<DashboardModule, 'id' | 'position'>) => void;
   updateModule: (id: string, updates: Partial<DashboardModule>) => void;
   removeModule: (id: string) => void;
@@ -64,16 +68,6 @@ interface DashboardContextType {
   resetToPreset: (preset: DashboardLayout['preset']) => void;
   saveLayout: () => void;
 }
-
-const DashboardContext = createContext<DashboardContextType | null>(null);
-
-export const useDashboard = () => {
-  const context = useContext(DashboardContext);
-  if (!context) {
-    throw new Error('useDashboard must be used within DashboardProvider');
-  }
-  return context;
-};
 
 // Default preset layouts
 const PRESET_LAYOUTS: Record<string, DashboardModule[]> = {
@@ -294,15 +288,52 @@ const PRESET_LAYOUTS: Record<string, DashboardModule[]> = {
   ],
 };
 
+const DashboardContext = createContext<DashboardContextType | null>(null);
+
+const defaultDashboardContext: DashboardContextType = {
+  layout: {
+    userId: 'guest',
+    preset: 'executive',
+    modules: PRESET_LAYOUTS.executive,
+  },
+  isEditMode: false,
+  isMorningBriefing: false,
+  briefingMode: null,
+  setEditMode: () => console.warn('DashboardProvider not found'),
+  toggleMorningBriefing: () => console.warn('DashboardProvider not found'),
+  setBriefingMode: () => console.warn('DashboardProvider not found'),
+  addModule: () => console.warn('DashboardProvider not found'),
+  updateModule: () => console.warn('DashboardProvider not found'),
+  removeModule: () => console.warn('DashboardProvider not found'),
+  duplicateModule: () => console.warn('DashboardProvider not found'),
+  updateModulePositions: () => console.warn('DashboardProvider not found'),
+  resetToPreset: () => console.warn('DashboardProvider not found'),
+  saveLayout: () => console.warn('DashboardProvider not found'),
+};
+
+export const useDashboard = () => {
+  const context = useContext(DashboardContext);
+  if (!context) {
+    // Return default context instead of throwing to prevent crashes in isolated renders
+    return defaultDashboardContext;
+  }
+  return context;
+};
+
 const STORAGE_KEY = 'pythia-dashboard-layout';
 
 export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  useEffect(() => {
+    console.log('✅ DashboardProvider Mounted');
+  }, []);
+
   const [layout, setLayout] = useState<DashboardLayout>(() => {
     // Try to load from localStorage
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        return parsed;
       } catch (e) {
         console.error('Failed to parse saved layout:', e);
       }
@@ -316,14 +347,116 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   });
 
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isMorningBriefing, setIsMorningBriefing] = useState(false);
+  const [previousLayout, setPreviousLayout] = useState<DashboardLayout | null>(null);
+  const [briefingMode, setBriefingModeState] = useState<'morning' | 'evening' | null>(null);
 
-  // Save to localStorage whenever layout changes
+  // Save to localStorage whenever layout changes (only if not in briefing mode)
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(layout));
-  }, [layout]);
+    if (!isMorningBriefing && !briefingMode) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(layout));
+    }
+  }, [layout, isMorningBriefing, briefingMode]);
 
   const setEditMode = (enabled: boolean) => {
     setIsEditMode(enabled);
+  };
+
+  const setBriefingMode = (mode: 'morning' | 'evening' | null) => {
+    if (mode === null) {
+      // Exit Briefing Mode
+      if (previousLayout) {
+        setLayout(previousLayout);
+      }
+      setIsMorningBriefing(false);
+      setBriefingModeState(null);
+    } else if (mode === 'morning') {
+      // Enter Morning Briefing Mode
+      setPreviousLayout(layout);
+      setLayout({
+        ...layout,
+        preset: undefined,
+        modules: [
+          {
+            id: 'briefing-alerts',
+            type: 'notifications',
+            title: 'Critical Overnight Alerts',
+            size: 'large',
+            position: { x: 0, y: 0, w: 12, h: 4 },
+            filters: {},
+            pinned: false,
+          },
+          {
+            id: 'briefing-agenda',
+            type: 'committee-calendar',
+            title: 'Today\'s Agenda',
+            size: 'medium',
+            position: { x: 0, y: 4, w: 6, h: 4 },
+            filters: { timeRange: '7d' },
+            pinned: false,
+          },
+          {
+            id: 'briefing-tasks',
+            type: 'tasks',
+            title: 'Urgent Actions',
+            size: 'medium',
+            position: { x: 6, y: 4, w: 6, h: 4 },
+            filters: { showOnlyMine: true },
+            pinned: false,
+          }
+        ],
+      });
+      setIsMorningBriefing(true);
+      setBriefingModeState('morning');
+    } else if (mode === 'evening') {
+      // Enter Evening Briefing Mode
+      setPreviousLayout(layout);
+      setLayout({
+        ...layout,
+        preset: undefined,
+        modules: [
+          {
+            id: 'briefing-alerts',
+            type: 'notifications',
+            title: 'Evening Updates',
+            size: 'large',
+            position: { x: 0, y: 0, w: 12, h: 4 },
+            filters: {},
+            pinned: false,
+          },
+          {
+            id: 'briefing-agenda',
+            type: 'committee-calendar',
+            title: 'Tomorrow\'s Schedule',
+            size: 'medium',
+            position: { x: 0, y: 4, w: 6, h: 4 },
+            filters: { timeRange: '7d' },
+            pinned: false,
+          },
+          {
+            id: 'briefing-tasks',
+            type: 'tasks',
+            title: 'Pending Actions',
+            size: 'medium',
+            position: { x: 6, y: 4, w: 6, h: 4 },
+            filters: { showOnlyMine: true },
+            pinned: false,
+          }
+        ],
+      });
+      setIsMorningBriefing(true); // Keep this true for now to reuse briefing logic
+      setBriefingModeState('evening');
+    }
+  };
+
+  const toggleMorningBriefing = () => {
+    if (!isMorningBriefing) {
+      // Enter Morning Briefing Mode via old toggle
+      setBriefingMode('morning');
+    } else {
+      // Exit Morning Briefing Mode via old toggle
+      setBriefingMode(null);
+    }
   };
 
   const addModule = (module: Omit<DashboardModule, 'id' | 'position'>) => {
@@ -419,7 +552,11 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       value={{
         layout,
         isEditMode,
+        isMorningBriefing,
+        briefingMode,
         setEditMode,
+        toggleMorningBriefing,
+        setBriefingMode,
         addModule,
         updateModule,
         removeModule,

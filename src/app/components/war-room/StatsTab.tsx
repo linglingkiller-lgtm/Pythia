@@ -1,5 +1,6 @@
 import React from 'react';
 import { Home, Phone, MessageSquare, BarChart3, Mic, Zap, Tag, Users, TrendingUp, TrendingDown } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface StatsTabProps {
   projectId: string;
@@ -138,32 +139,35 @@ const formatNumber = (num: number): string => {
 };
 
 export const StatsTab: React.FC<StatsTabProps> = ({ projectId, projectName }) => {
+  const { isDarkMode } = useTheme();
   const stats = mockStatsData[projectId] || mockStatsData['ca-45'];
 
   const statCards = [
-    { icon: Home, label: 'Doors', value: stats.totalDoors, color: 'text-orange-600', bgColor: 'bg-orange-50' },
-    { icon: Phone, label: 'Calls', value: stats.calls, color: 'text-green-600', bgColor: 'bg-green-50' },
-    { icon: MessageSquare, label: 'Texts', value: stats.texts, color: 'text-blue-600', bgColor: 'bg-blue-50' },
-    { icon: BarChart3, label: 'Text Surveys', value: stats.textSurveys, color: 'text-yellow-600', bgColor: 'bg-yellow-50' },
-    { icon: Mic, label: 'IVRs', value: stats.ivrs, color: 'text-purple-600', bgColor: 'bg-purple-50' },
-    { icon: Zap, label: 'Surveys', value: stats.surveys, color: 'text-amber-600', bgColor: 'bg-amber-50' },
-    { icon: Tag, label: 'Tags', value: stats.tags, color: 'text-gray-600', bgColor: 'bg-gray-50' },
-    { icon: Users, label: 'Relational Texts', value: stats.relationalTexts, color: 'text-indigo-600', bgColor: 'bg-indigo-50' }
+    { icon: Home, label: 'Doors', value: stats.totalDoors, color: 'text-orange-600', bgColor: isDarkMode ? 'bg-orange-500/10' : 'bg-orange-50' },
+    { icon: Phone, label: 'Calls', value: stats.calls, color: 'text-green-600', bgColor: isDarkMode ? 'bg-green-500/10' : 'bg-green-50' },
+    { icon: MessageSquare, label: 'Texts', value: stats.texts, color: 'text-blue-600', bgColor: isDarkMode ? 'bg-blue-500/10' : 'bg-blue-50' },
+    { icon: BarChart3, label: 'Text Surveys', value: stats.textSurveys, color: 'text-yellow-600', bgColor: isDarkMode ? 'bg-yellow-500/10' : 'bg-yellow-50' },
+    { icon: Mic, label: 'IVRs', value: stats.ivrs, color: 'text-purple-600', bgColor: isDarkMode ? 'bg-purple-500/10' : 'bg-purple-50' },
+    { icon: Zap, label: 'Surveys', value: stats.surveys, color: 'text-amber-600', bgColor: isDarkMode ? 'bg-amber-500/10' : 'bg-amber-50' },
+    { icon: Tag, label: 'Tags', value: stats.tags, color: 'text-gray-600', bgColor: isDarkMode ? 'bg-gray-500/10' : 'bg-gray-50' },
+    { icon: Users, label: 'Relational Texts', value: stats.relationalTexts, color: 'text-indigo-600', bgColor: isDarkMode ? 'bg-indigo-500/10' : 'bg-indigo-50' }
   ];
 
   return (
     <div className="space-y-6">
       {/* Team Overview Stats */}
       <div>
-        <h3 className="text-gray-900 mb-4">Team Overview</h3>
+        <h3 className={`mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Team Overview</h3>
         <div className="grid grid-cols-4 gap-3">
           {statCards.map((card, idx) => (
-            <div key={idx} className="bg-white border border-gray-200 rounded-lg p-4">
+            <div key={idx} className={`rounded-lg p-4 border ${
+              isDarkMode ? 'bg-slate-800/50 border-white/10' : 'bg-white border-gray-200'
+            }`}>
               <div className={`w-10 h-10 rounded-full ${card.bgColor} flex items-center justify-center mb-3`}>
                 <card.icon size={20} className={card.color} />
               </div>
-              <div className="text-xs text-gray-500 mb-1">{card.label}</div>
-              <div className="text-2xl font-semibold text-gray-900">{formatNumber(card.value)}</div>
+              <div className={`text-xs mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{card.label}</div>
+              <div className={`text-2xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{formatNumber(card.value)}</div>
             </div>
           ))}
         </div>
@@ -171,72 +175,84 @@ export const StatsTab: React.FC<StatsTabProps> = ({ projectId, projectName }) =>
 
       {/* Activity Breakdown */}
       <div>
-        <h3 className="text-gray-900 mb-4">Activity Breakdown</h3>
-        <div className="bg-white border border-gray-200 rounded-lg p-5">
+        <h3 className={`mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Activity Breakdown</h3>
+        <div className={`rounded-lg p-5 border ${
+          isDarkMode ? 'bg-slate-800/50 border-white/10' : 'bg-white border-gray-200'
+        }`}>
           <div className="space-y-3">
-            <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div className={`flex items-center justify-between py-3 border-b ${
+              isDarkMode ? 'border-white/10' : 'border-gray-100'
+            }`}>
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                <span className="text-sm text-gray-700">Not Home</span>
+                <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Not Home</span>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-gray-900">{stats.breakdown.notHome.count.toLocaleString()}</span>
-                <span className="text-xs text-gray-500 w-12 text-right">({stats.breakdown.notHome.percentage}%)</span>
+                <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{stats.breakdown.notHome.count.toLocaleString()}</span>
+                <span className={`text-xs w-12 text-right ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>({stats.breakdown.notHome.percentage}%)</span>
               </div>
             </div>
 
-            <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div className={`flex items-center justify-between py-3 border-b ${
+              isDarkMode ? 'border-white/10' : 'border-gray-100'
+            }`}>
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                <span className="text-sm text-gray-700">Canvassed</span>
+                <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Canvassed</span>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-gray-900">{stats.breakdown.canvassed.count.toLocaleString()}</span>
-                <span className="text-xs text-gray-500 w-12 text-right">({stats.breakdown.canvassed.percentage}%)</span>
+                <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{stats.breakdown.canvassed.count.toLocaleString()}</span>
+                <span className={`text-xs w-12 text-right ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>({stats.breakdown.canvassed.percentage}%)</span>
               </div>
             </div>
 
-            <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div className={`flex items-center justify-between py-3 border-b ${
+              isDarkMode ? 'border-white/10' : 'border-gray-100'
+            }`}>
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                <span className="text-sm text-gray-700">Refused</span>
+                <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Refused</span>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-gray-900">{stats.breakdown.refused.count.toLocaleString()}</span>
-                <span className="text-xs text-gray-500 w-12 text-right">({stats.breakdown.refused.percentage}%)</span>
+                <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{stats.breakdown.refused.count.toLocaleString()}</span>
+                <span className={`text-xs w-12 text-right ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>({stats.breakdown.refused.percentage}%)</span>
               </div>
             </div>
 
-            <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div className={`flex items-center justify-between py-3 border-b ${
+              isDarkMode ? 'border-white/10' : 'border-gray-100'
+            }`}>
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                <span className="text-sm text-gray-700">Inaccessible Address</span>
+                <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Inaccessible Address</span>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-gray-900">{stats.breakdown.inaccessible.count.toLocaleString()}</span>
-                <span className="text-xs text-gray-500 w-12 text-right">({stats.breakdown.inaccessible.percentage}%)</span>
+                <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{stats.breakdown.inaccessible.count.toLocaleString()}</span>
+                <span className={`text-xs w-12 text-right ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>({stats.breakdown.inaccessible.percentage}%)</span>
               </div>
             </div>
 
-            <div className="flex items-center justify-between py-3 border-b border-gray-100">
+            <div className={`flex items-center justify-between py-3 border-b ${
+              isDarkMode ? 'border-white/10' : 'border-gray-100'
+            }`}>
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                <span className="text-sm text-gray-700">Dropped Literature</span>
+                <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Dropped Literature</span>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-gray-900">{stats.breakdown.droppedLit.count.toLocaleString()}</span>
-                <span className="text-xs text-gray-500 w-12 text-right">({stats.breakdown.droppedLit.percentage}%)</span>
+                <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{stats.breakdown.droppedLit.count.toLocaleString()}</span>
+                <span className={`text-xs w-12 text-right ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>({stats.breakdown.droppedLit.percentage}%)</span>
               </div>
             </div>
 
             <div className="flex items-center justify-between py-3">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                <span className="text-sm text-gray-700">Wrong Address</span>
+                <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Wrong Address</span>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-gray-900">{stats.breakdown.wrongAddress.count.toLocaleString()}</span>
-                <span className="text-xs text-gray-500 w-12 text-right">({stats.breakdown.wrongAddress.percentage}%)</span>
+                <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{stats.breakdown.wrongAddress.count.toLocaleString()}</span>
+                <span className={`text-xs w-12 text-right ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>({stats.breakdown.wrongAddress.percentage}%)</span>
               </div>
             </div>
           </div>
@@ -245,48 +261,70 @@ export const StatsTab: React.FC<StatsTabProps> = ({ projectId, projectName }) =>
 
       {/* Leaderboard */}
       <div>
-        <h3 className="text-gray-900 mb-4">Canvasser Leaderboard</h3>
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <h3 className={`mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Canvasser Leaderboard</h3>
+        <div className={`rounded-lg overflow-hidden border ${
+          isDarkMode ? 'bg-slate-800/50 border-white/10' : 'bg-white border-gray-200'
+        }`}>
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left text-xs font-medium text-gray-600 px-4 py-3">Name</th>
-                <th className="text-center text-xs font-medium text-gray-600 px-3 py-3">
+              <tr className={`border-b ${
+                isDarkMode ? 'bg-slate-800 border-white/10' : 'bg-gray-50 border-gray-200'
+              }`}>
+                <th className={`text-left text-xs font-medium px-4 py-3 ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}>Name</th>
+                <th className={`text-center text-xs font-medium px-3 py-3 ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}>
                   <div className="flex items-center justify-center gap-1">
                     <Home size={12} className="text-orange-600" />
                   </div>
                 </th>
-                <th className="text-center text-xs font-medium text-gray-600 px-3 py-3">
+                <th className={`text-center text-xs font-medium px-3 py-3 ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}>
                   <div className="flex items-center justify-center gap-1">
                     <Phone size={12} className="text-green-600" />
                   </div>
                 </th>
-                <th className="text-center text-xs font-medium text-gray-600 px-3 py-3">
+                <th className={`text-center text-xs font-medium px-3 py-3 ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}>
                   <div className="flex items-center justify-center gap-1">
                     <MessageSquare size={12} className="text-blue-600" />
                   </div>
                 </th>
-                <th className="text-center text-xs font-medium text-gray-600 px-3 py-3">
+                <th className={`text-center text-xs font-medium px-3 py-3 ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}>
                   <div className="flex items-center justify-center gap-1">
                     <BarChart3 size={12} className="text-yellow-600" />
                   </div>
                 </th>
-                <th className="text-center text-xs font-medium text-gray-600 px-3 py-3">
+                <th className={`text-center text-xs font-medium px-3 py-3 ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}>
                   <div className="flex items-center justify-center gap-1">
                     <Mic size={12} className="text-purple-600" />
                   </div>
                 </th>
-                <th className="text-center text-xs font-medium text-gray-600 px-3 py-3">
+                <th className={`text-center text-xs font-medium px-3 py-3 ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}>
                   <div className="flex items-center justify-center gap-1">
                     <Zap size={12} className="text-amber-600" />
                   </div>
                 </th>
-                <th className="text-center text-xs font-medium text-gray-600 px-3 py-3">
+                <th className={`text-center text-xs font-medium px-3 py-3 ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}>
                   <div className="flex items-center justify-center gap-1">
                     <Tag size={12} className="text-gray-600" />
                   </div>
                 </th>
-                <th className="text-center text-xs font-medium text-gray-600 px-3 py-3">
+                <th className={`text-center text-xs font-medium px-3 py-3 ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}>
                   <div className="flex items-center justify-center gap-1">
                     <Users size={12} className="text-indigo-600" />
                   </div>
@@ -295,23 +333,45 @@ export const StatsTab: React.FC<StatsTabProps> = ({ projectId, projectName }) =>
             </thead>
             <tbody>
               {stats.leaderboard.map((person: any, idx: number) => (
-                <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
+                <tr key={idx} className={`border-b ${
+                  isDarkMode 
+                    ? 'border-white/5 hover:bg-slate-700/50' 
+                    : 'border-gray-100 hover:bg-gray-50'
+                }`}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-xs font-medium">
                         {person.name.split(' ').map((n: string) => n[0]).join('')}
                       </div>
-                      <span className="text-sm font-medium text-gray-900">{person.name}</span>
+                      <span className={`text-sm font-medium ${
+                        isDarkMode ? 'text-white' : 'text-gray-900'
+                      }`}>{person.name}</span>
                     </div>
                   </td>
-                  <td className="text-center text-sm text-gray-700 px-3 py-3">{person.doors.toLocaleString()}</td>
-                  <td className="text-center text-sm text-gray-700 px-3 py-3">{person.calls}</td>
-                  <td className="text-center text-sm text-gray-700 px-3 py-3">{person.texts}</td>
-                  <td className="text-center text-sm text-gray-700 px-3 py-3">{person.textSurveys}</td>
-                  <td className="text-center text-sm text-gray-700 px-3 py-3">{person.ivrs}</td>
-                  <td className="text-center text-sm text-gray-700 px-3 py-3">{person.surveys.toLocaleString()}</td>
-                  <td className="text-center text-sm text-gray-700 px-3 py-3">{person.tags.toLocaleString()}</td>
-                  <td className="text-center text-sm text-gray-700 px-3 py-3">{person.relationalTexts}</td>
+                  <td className={`text-center text-sm px-3 py-3 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>{person.doors.toLocaleString()}</td>
+                  <td className={`text-center text-sm px-3 py-3 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>{person.calls}</td>
+                  <td className={`text-center text-sm px-3 py-3 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>{person.texts}</td>
+                  <td className={`text-center text-sm px-3 py-3 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>{person.textSurveys}</td>
+                  <td className={`text-center text-sm px-3 py-3 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>{person.ivrs}</td>
+                  <td className={`text-center text-sm px-3 py-3 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>{person.surveys.toLocaleString()}</td>
+                  <td className={`text-center text-sm px-3 py-3 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>{person.tags.toLocaleString()}</td>
+                  <td className={`text-center text-sm px-3 py-3 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>{person.relationalTexts}</td>
                 </tr>
               ))}
             </tbody>

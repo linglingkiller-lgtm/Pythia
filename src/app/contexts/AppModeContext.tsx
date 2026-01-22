@@ -18,8 +18,8 @@ const defaultContextValue: AppModeContextType = {
 
 const AppModeContext = createContext<AppModeContextType>(defaultContextValue);
 
-const LOCAL_STORAGE_KEY = 'pythia_app_mode';
-const ORG_LABEL_KEY = 'pythia_org_label';
+const LOCAL_STORAGE_KEY = 'pythia_app_mode_v2'; // v2 forces reset to demo default
+const ORG_LABEL_KEY = 'pythia_org_label_v2';
 
 export function AppModeProvider({ children }: { children: React.ReactNode }) {
   // Default to 'demo' for safety

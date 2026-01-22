@@ -123,6 +123,93 @@
   scrollbar-color: rgba(71, 85, 105, 0.4) transparent;
 }
 
+/* Custom Scrollbar Utility Class */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+
+.dark .custom-scrollbar {
+  scrollbar-color: rgba(71, 85, 105, 0.4) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.4);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(71, 85, 105, 0.6);
+}
+
+/* Slow Pulse Animation */
+@keyframes slow-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+.animate-slow-pulse {
+  animation: slow-pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Glassmorphism System */
+.glass-panel {
+  @apply backdrop-blur-xl transition-colors duration-300;
+  background-color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.dark .glass-panel {
+  background-color: rgba(5, 5, 5, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-header {
+  @apply backdrop-blur-xl transition-all duration-300;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.dark .glass-header {
+  background-color: rgba(5, 5, 5, 0.7);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-modal {
+  @apply backdrop-blur-2xl shadow-2xl;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(226, 232, 240, 1);
+}
+
+.dark .glass-modal {
+  background-color: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

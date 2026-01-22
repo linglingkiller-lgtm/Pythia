@@ -165,7 +165,7 @@ export const mockRecords: Record[] = [
         recordId: 'rec-001',
         action: 'edited',
         userId: 'user-002',
-        userName: 'Matt Kenny',
+        userName: 'Matt Kenney',
         timestamp: '2025-12-18T09:15:00Z',
         details: 'Updated Q&A section'
       },
@@ -204,7 +204,7 @@ export const mockRecords: Record[] = [
     department: 'public-affairs',
     version: 1,
     createdBy: 'user-002',
-    createdByName: 'Matt Kenny',
+    createdByName: 'Matt Kenney',
     createdAt: '2025-12-16T11:00:00Z',
     lastModifiedAt: '2025-12-16T11:00:00Z',
     isStarred: false,
@@ -217,7 +217,7 @@ export const mockRecords: Record[] = [
         recordId: 'rec-002',
         action: 'created',
         userId: 'user-002',
-        userName: 'Matt Kenny',
+        userName: 'Matt Kenney',
         timestamp: '2025-12-16T11:00:00Z',
         details: 'Auto-generated from deliverable deliv-003'
       }
@@ -443,7 +443,7 @@ export const mockRecords: Record[] = [
     department: 'lobbying',
     version: 1,
     createdBy: 'user-002',
-    createdByName: 'Matt Kenny',
+    createdByName: 'Matt Kenney',
     createdAt: '2025-12-17T13:00:00Z',
     lastModifiedAt: '2025-12-18T10:30:00Z',
     isStarred: true,
@@ -456,7 +456,7 @@ export const mockRecords: Record[] = [
         recordId: 'rec-007',
         action: 'created',
         userId: 'user-002',
-        userName: 'Matt Kenny',
+        userName: 'Matt Kenney',
         timestamp: '2025-12-17T13:00:00Z'
       },
       {
@@ -549,7 +549,7 @@ export const mockRecords: Record[] = [
     department: 'lobbying',
     version: 1,
     createdBy: 'user-002',
-    createdByName: 'Matt Kenny',
+    createdByName: 'Matt Kenney',
     createdAt: '2025-12-12T15:00:00Z',
     lastModifiedAt: '2025-12-12T15:00:00Z',
     isStarred: false,
@@ -562,7 +562,7 @@ export const mockRecords: Record[] = [
         recordId: 'rec-009',
         action: 'created',
         userId: 'user-002',
-        userName: 'Matt Kenny',
+        userName: 'Matt Kenney',
         timestamp: '2025-12-12T15:00:00Z'
       }
     ],

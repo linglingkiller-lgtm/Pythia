@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { motion } from 'motion/react';
 import { Pin, FileText, Calendar, Plus, ChevronRight, TrendingUp, TrendingDown, Minus, Clock, CheckCircle2, AlertTriangle, Sparkles } from 'lucide-react';
 import { Bill } from '../../data/billsData';
@@ -9,9 +9,12 @@ interface BillRowProps {
   isSelected: boolean;
   onSelect: (billId: string) => void;
   onNavigate: (billId: string) => void;
+  // Index and isDarkMode are optional as they are not used but might be passed
+  index?: number;
+  isDarkMode?: boolean;
 }
 
-export function BillRow({ bill, isSelected, onSelect, onNavigate }: BillRowProps) {
+export const BillRow = forwardRef<HTMLDivElement, BillRowProps & React.ComponentProps<typeof motion.div>>(({ bill, isSelected, onSelect, onNavigate, ...props }, ref) => {
   const { isDarkMode } = useTheme();
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -131,6 +134,8 @@ export function BillRow({ bill, isSelected, onSelect, onNavigate }: BillRowProps
 
   return (
     <motion.div
+      ref={ref}
+      {...props}
       whileHover={prefersReducedMotion ? {} : { scale: 1.01, x: 4 }}
       transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
       className={`
@@ -154,6 +159,29 @@ export function BillRow({ bill, isSelected, onSelect, onNavigate }: BillRowProps
           : 'bg-gradient-to-r from-transparent via-blue-50/50 to-transparent'
         }
       `} />
+
+      {/* Large Watermark - Bill ID */}
+      <div className="absolute top-1/2 right-4 -translate-y-1/2 pointer-events-none select-none">
+        <div 
+          className={`font-black text-[100px] leading-none tracking-tighter transition-all duration-500 ${
+            isDarkMode ? 'opacity-[0.03]' : 'opacity-[0.04]'
+          }`}
+          style={{ 
+            color: isHighPriority 
+              ? (isDarkMode ? '#ef4444' : '#dc2626')
+              : (isDarkMode ? '#3b82f6' : '#2563eb'),
+            textShadow: isHighPriority
+              ? (isDarkMode 
+                ? '0 0 60px #ef444440, 0 0 100px #ef444420, 0 0 140px #ef444410'
+                : '0 0 50px #dc262625, 0 0 80px #dc262615')
+              : (isDarkMode 
+                ? '0 0 60px #3b82f640, 0 0 100px #3b82f620, 0 0 140px #3b82f610'
+                : '0 0 50px #2563eb25, 0 0 80px #2563eb15')
+          }}
+        >
+          {bill.billId.replace(/\s/g, '')}
+        </div>
+      </div>
 
       <div className="flex items-start gap-4 relative z-10">
         {/* Checkbox */}
@@ -380,4 +408,6 @@ export function BillRow({ bill, isSelected, onSelect, onNavigate }: BillRowProps
       </div>
     </motion.div>
   );
-}
+});
+
+BillRow.displayName = 'BillRow';

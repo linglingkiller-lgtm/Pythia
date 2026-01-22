@@ -52,7 +52,7 @@ export const LiveModeGate: React.FC<LiveModeGateProps> = ({
           </p>
           <div className={`mt-4 flex items-center gap-2 text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
             <AlertCircle className="w-3 h-3" />
-            <span>Switch to Demo mode to explore without signing in</span>
+            <span>Switch to Demo mode to explore the platform</span>
           </div>
           {/* Live Login Help */}
           <div className={`mt-3 px-4 py-2 rounded-md text-xs ${

@@ -84,3 +84,13 @@ export interface MessageIndex {
   messageIds: string[];
   version: number;
 }
+
+export interface Insight {
+  id: string;
+  type: 'task_recommendation' | 'general';
+  title: string;
+  description: string;
+  sourceMessageId?: string;
+  metadata?: any;
+  createdAt: string;
+}

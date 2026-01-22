@@ -1,0 +1,303 @@
+/**
+ * Responsive Utilities for Browser Zoom Optimization
+ * 
+ * These utilities ensure content scales properly at different zoom levels
+ * and fits within the viewport regardless of browser zoom.
+ */
+
+/* Container max-widths that scale with viewport */
+.container-responsive {
+  max-width: min(1800px, 95vw);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.container-lg {
+  max-width: min(1400px, 92vw);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.container-md {
+  max-width: min(1200px, 90vw);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.container-sm {
+  max-width: min(800px, 88vw);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Responsive padding that scales */
+.p-responsive {
+  padding: clamp(1rem, 2vw, 2rem);
+}
+
+.px-responsive {
+  padding-left: clamp(1rem, 2vw, 2rem);
+  padding-right: clamp(1rem, 2vw, 2rem);
+}
+
+.py-responsive {
+  padding-top: clamp(1rem, 2vw, 2rem);
+  padding-bottom: clamp(1rem, 2vw, 2rem);
+}
+
+.p-responsive-sm {
+  padding: clamp(0.75rem, 1.5vw, 1.5rem);
+}
+
+.p-responsive-lg {
+  padding: clamp(1.5rem, 3vw, 3rem);
+}
+
+/* Responsive gap utilities */
+.gap-responsive {
+  gap: clamp(0.75rem, 1.5vw, 1.5rem);
+}
+
+.gap-responsive-sm {
+  gap: clamp(0.5rem, 1vw, 1rem);
+}
+
+.gap-responsive-lg {
+  gap: clamp(1rem, 2vw, 2rem);
+}
+
+/* Grid layouts that respond to zoom */
+.grid-responsive-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: clamp(0.75rem, 1.5vw, 1.5rem);
+}
+
+.grid-responsive-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: clamp(0.75rem, 1.5vw, 1.5rem);
+}
+
+.grid-responsive-4 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+  gap: clamp(0.75rem, 1.5vw, 1.5rem);
+}
+
+/* Card sizing that adapts */
+.card-responsive {
+  min-width: min(280px, 100%);
+  max-width: 100%;
+}
+
+/* Ensure modals fit viewport at any zoom */
+.modal-responsive {
+  max-width: min(90vw, 1200px);
+  max-height: min(90vh, 900px);
+}
+
+.modal-responsive-lg {
+  max-width: min(95vw, 1600px);
+  max-height: min(90vh, 1000px);
+}
+
+.modal-responsive-sm {
+  max-width: min(90vw, 600px);
+  max-height: min(85vh, 700px);
+}
+
+/* Flexible text sizing */
+.text-responsive {
+  font-size: clamp(0.875rem, 1vw, 1rem);
+}
+
+.text-responsive-lg {
+  font-size: clamp(1rem, 1.25vw, 1.25rem);
+}
+
+.text-responsive-xl {
+  font-size: clamp(1.125rem, 1.5vw, 1.5rem);
+}
+
+/* Ensure images and media scale properly */
+.media-responsive {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Flex layouts that wrap at smaller zooms */
+.flex-responsive {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.5rem, 1vw, 1rem);
+}
+
+/* Page content that always fits */
+.page-content {
+  width: 100%;
+  min-width: 0; /* Allow flex children to shrink */
+  overflow-x: hidden;
+}
+
+/* Sidebar-aware main content */
+.main-content-responsive {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Horizontal scrolling prevention */
+.no-horizontal-overflow {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Responsive table wrapper */
+.table-responsive {
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Dashboard module sizing */
+.dashboard-module {
+  min-width: min(320px, 100%);
+  width: 100%;
+}
+
+/* Button groups that stack on zoom */
+.button-group-responsive {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.5rem, 1vw, 0.75rem);
+}
+
+/* Ensure drawers/sidebars fit */
+.drawer-responsive {
+  max-width: min(800px, 90vw);
+  height: 100%;
+}
+
+.drawer-responsive-lg {
+  max-width: min(1000px, 92vw);
+  height: 100%;
+}
+
+/* Card grid that always fits */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+  width: 100%;
+}
+
+/* Kanban board columns */
+.kanban-column {
+  min-width: min(320px, 85vw);
+  flex-shrink: 0;
+}
+
+/* Stats grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+}
+
+/* Form layouts */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+}
+
+/* Ensure scrollable containers work properly */
+.scroll-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 100%;
+}
+
+/* Header that compresses on scroll */
+.header-responsive {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  max-width: 100vw;
+}
+
+/* Page sections with proper spacing */
+.section-responsive {
+  padding: clamp(1.5rem, 3vw, 3rem) clamp(1rem, 2vw, 2rem);
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Nested containers */
+.nested-container {
+  width: 100%;
+  max-width: min(1400px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Prevent content overflow in flex containers */
+.flex-item-min {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Responsive spacing utilities */
+.space-y-responsive > * + * {
+  margin-top: clamp(0.75rem, 1.5vw, 1.25rem);
+}
+
+.space-x-responsive > * + * {
+  margin-left: clamp(0.75rem, 1.5vw, 1.25rem);
+}
+
+/* Mobile-friendly touch targets */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ensure proper aspect ratios */
+.aspect-responsive {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  object-fit: cover;
+}
+
+/* Prevent layout shift */
+.layout-stable {
+  contain: layout;
+}
+
+/* Optimize for zoom levels */
+@media (min-resolution: 1.5dppx) {
+  .container-responsive {
+    max-width: min(1600px, 96vw);
+  }
+}
+
+@media (min-resolution: 2dppx) {
+  .container-responsive {
+    max-width: min(1400px, 97vw);
+  }
+}
+
+/* Ensure content is always visible */
+.visible-overflow {
+  overflow: visible;
+}
+
+.clip-overflow {
+  overflow: clip;
+}

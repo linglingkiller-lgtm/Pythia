@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '@/app/contexts/AuthContext';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
 import { useAppMode } from '../contexts/AppModeContext';
 

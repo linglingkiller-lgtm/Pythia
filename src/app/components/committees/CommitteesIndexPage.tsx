@@ -3,6 +3,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { motion } from 'motion/react';
 import { committeesDemoData, Committee, searchCommittees } from '../../../demo/committeesDemoData';
 import { Search, Filter, GitBranch, Users, Calendar, TrendingUp, Sparkles, ChevronRight } from 'lucide-react';
+import { PageLayout } from '../ui/PageLayout';
 
 interface CommitteesIndexPageProps {
   initialCommitteeId?: string | null;
@@ -70,25 +71,8 @@ export function CommitteesIndexPage({
   };
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-[1800px] mx-auto">
-        {/* Page Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <GitBranch size={32} className={isDarkMode ? 'text-blue-400' : 'text-blue-600'} />
-            <h1 className={`text-4xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`} style={{ fontFamily: '"Corpline", sans-serif' }}>
-              Committees
-            </h1>
-          </div>
-          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Track committee activity, predicted focus areas, and legislative intelligence
-          </p>
-        </motion.div>
-
+    <>
+      <div className="p-6 max-w-[1800px] mx-auto">
         {/* 3-Column Layout */}
         <div className="grid grid-cols-12 gap-6">
           {/* Left Column - Committee List */}
@@ -420,6 +404,6 @@ export function CommitteesIndexPage({
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { SettingsSidebar, SettingsTab } from './SettingsSidebar';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppMode } from '../../contexts/AppModeContext';
+import { Settings } from 'lucide-react';
+import { PageLayout } from '../ui/PageLayout';
 
 // Tabs
 import { ProfileTab } from './tabs/ProfileTab';
@@ -48,21 +50,13 @@ export function SettingsPage() {
   };
 
   return (
-    <div className={`h-full flex flex-col ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-      {/* Top Header */}
-      <div className={`
-        px-8 py-5 border-b transition-colors duration-300 flex items-center justify-between
-        ${isDarkMode ? 'border-white/10 bg-slate-900/50' : 'border-gray-200 bg-white/50'}
-        backdrop-blur-sm sticky top-0 z-10
-      `}>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight mb-1">Settings</h1>
-          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Manage account, organization, security, and preferences
-          </p>
-        </div>
-        
-        {/* Org / Mode Chip */}
+    <PageLayout
+      title="Settings"
+      subtitle="Preferences & Configuration"
+      headerIcon={<Settings size={28} className={isDarkMode ? 'text-gray-300' : 'text-gray-600'} />}
+      backgroundImage={<Settings size={450} color={isDarkMode ? 'white' : '#4F46E5'} strokeWidth={0.5} />}
+      accentColor={isDarkMode ? '#A0AEC0' : '#4B5563'}
+      pageActions={
         <div className={`
           hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium
           ${isDarkMode 
@@ -76,22 +70,20 @@ export function SettingsPage() {
             {appMode === 'demo' ? 'Demo Mode' : 'Live Mode'}
           </span>
         </div>
-      </div>
+      }
+      contentClassName="flex-1 overflow-hidden"
+    >
+      <div className="h-full flex flex-col md:flex-row w-full">
+        {/* Sidebar */}
+        <SettingsSidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Main Layout */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full flex flex-col md:flex-row w-full">
-          {/* Sidebar */}
-          <SettingsSidebar activeTab={activeTab} onTabChange={setActiveTab} />
-
-          {/* Content Panel */}
-          <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gradient-to-br from-transparent via-transparent to-black/[0.02]">
-            <div className="max-w-6xl mx-auto space-y-6">
-              {renderContent()}
-            </div>
+        {/* Content Panel */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gradient-to-br from-transparent via-transparent to-black/[0.02]">
+          <div className="max-w-6xl mx-auto space-y-6">
+            {renderContent()}
           </div>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 }

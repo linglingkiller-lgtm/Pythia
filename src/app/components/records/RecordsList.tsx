@@ -39,7 +39,7 @@ interface RecordsListProps {
 
 export function RecordsList({
   records,
-  selectedRecords,
+  selectedRecords = new Set(),
   selectedRecord,
   onSelectRecord,
   onToggleSelect,

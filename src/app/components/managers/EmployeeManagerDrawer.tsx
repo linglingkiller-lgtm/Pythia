@@ -1180,7 +1180,7 @@ function ViewRecordModal({ deliverable, onClose }: any) {
     ],
     accessLog: [
       { user: 'Jordan Davis', action: 'Created', timestamp: '2025-12-17T14:30:00Z' },
-      { user: 'Matt Kenny', action: 'Reviewed', timestamp: '2025-12-17T15:15:00Z' },
+      { user: 'Matt Kenney', action: 'Reviewed', timestamp: '2025-12-17T15:15:00Z' },
       { user: 'Jordan Davis', action: 'Finalized', timestamp: '2025-12-17T16:45:00Z' }
     ]
   };

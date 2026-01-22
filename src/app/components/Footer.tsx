@@ -4,7 +4,7 @@ import pythiaStarLogo from 'figma:asset/e9e0c1ac0931dcb43912f4570079500e566ef87a
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppMode } from '../contexts/AppModeContext';
 import { useSupabaseAuth } from '../contexts/SupabaseAuthContext';
-import { Database, Settings, Wifi, WifiOff, FileText, Activity, UserCheck, TestTube2, Zap } from 'lucide-react';
+import { Database, Settings, Wifi, WifiOff, FileText, Activity, UserCheck, TestTube2, Zap, Mic } from 'lucide-react';
 import { SupabaseEnvCheck } from './debug/SupabaseEnvCheck';
 import { Phase1Report } from './debug/Phase1Report';
 import { Phase15Report } from './debug/Phase15Report';
@@ -12,6 +12,8 @@ import { AuthOrgDiagnostics } from './debug/AuthOrgDiagnostics';
 import { LiveSignInReport } from './debug/LiveSignInReport';
 import { LiveAuthMembershipCheck } from './debug/LiveAuthMembershipCheck';
 import { LiveSignInSmokeTest } from './debug/LiveSignInSmokeTest';
+import { MsalAuthDebugger } from './debug/MsalAuthDebugger';
+import { VoiceCommandsReference } from './debug/VoiceCommandsReference';
 
 export const Footer: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -25,6 +27,8 @@ export const Footer: React.FC = () => {
   const [showLiveSignInReport, setShowLiveSignInReport] = React.useState(false);
   const [showLiveAuthMembershipCheck, setShowLiveAuthMembershipCheck] = React.useState(false);
   const [showLiveSignInSmokeTest, setShowLiveSignInSmokeTest] = React.useState(false);
+  const [showMsalDebugger, setShowMsalDebugger] = React.useState(false);
+  const [showVoiceCommands, setShowVoiceCommands] = React.useState(false);
   const debugButtonRef = React.useRef<HTMLButtonElement>(null);
   const [menuPosition, setMenuPosition] = React.useState({ bottom: 0, right: 0 });
   const debugMenuRef = React.useRef<HTMLDivElement>(null);
@@ -102,16 +106,8 @@ export const Footer: React.FC = () => {
       <div className="relative z-10 flex items-center justify-between">
         {/* Left Side - Branding and Links */}
         <div className="flex items-center gap-8">
-          {/* Logo with glow effect and festive ornament */}
+          {/* Logo with glow effect */}
           <div className="relative group">
-            {/* Small festive ornament hanging from logo */}
-            <div className="absolute -top-2 left-1/2 -translate-x-1/2 flex flex-col items-center">
-              <div className="w-0.5 h-3 bg-gradient-to-b from-yellow-400/60 to-transparent" />
-              <div 
-                className="w-2 h-2 rounded-full bg-gradient-to-br from-red-500 to-red-600 animate-slow-pulse"
-                style={{ boxShadow: '0 0 8px rgba(239, 68, 68, 0.6)' }}
-              />
-            </div>
             
             <div 
               className="absolute inset-0 blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-500"
@@ -389,6 +385,36 @@ export const Footer: React.FC = () => {
                     <Zap className="w-3.5 h-3.5" />
                     Live Sign-In Smoke Test
                   </button>
+
+                  <button
+                    onClick={() => setShowMsalDebugger(true)}
+                    className={`
+                      w-full flex items-center gap-2 px-3 py-2 rounded text-xs font-semibold transition-all
+                      ${isDarkMode
+                        ? 'bg-blue-600/80 text-white hover:bg-blue-600'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                      }
+                    `}
+                  >
+                    <Activity className="w-3.5 h-3.5" />
+                    MSAL Auth Debugger
+                  </button>
+
+                  <div className={`my-2 border-t ${isDarkMode ? 'border-white/10' : 'border-gray-200'}`} />
+
+                  <button
+                    onClick={() => setShowVoiceCommands(true)}
+                    className={`
+                      w-full flex items-center gap-2 px-3 py-2 rounded text-xs font-semibold transition-all
+                      ${isDarkMode
+                        ? 'bg-purple-600/80 text-white hover:bg-purple-600'
+                        : 'bg-purple-600 text-white hover:bg-purple-700'
+                      }
+                    `}
+                  >
+                    <Mic className="w-3.5 h-3.5" />
+                    Voice Commands Ref
+                  </button>
                 </div>
               </div>,
               document.body
@@ -416,6 +442,12 @@ export const Footer: React.FC = () => {
       <SupabaseEnvCheck 
         isOpen={showEnvCheck}
         onClose={() => setShowEnvCheck(false)}
+      />
+
+      {/* Voice Commands Reference Modal */}
+      <VoiceCommandsReference
+        isOpen={showVoiceCommands}
+        onClose={() => setShowVoiceCommands(false)}
       />
 
       {/* Phase 1 Report Modal */}
@@ -452,6 +484,12 @@ export const Footer: React.FC = () => {
       <LiveSignInSmokeTest 
         isOpen={showLiveSignInSmokeTest}
         onClose={() => setShowLiveSignInSmokeTest(false)}
+      />
+
+      {/* MSAL Auth Debugger Modal */}
+      <MsalAuthDebugger 
+        isOpen={showMsalDebugger}
+        onClose={() => setShowMsalDebugger(false)}
       />
     </footer>
   );

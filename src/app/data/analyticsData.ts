@@ -148,7 +148,7 @@ export const mockClientPerformance: ClientPerformanceMetric[] = [
     contractValue: 240000,
     hoursInvested: 1120,
     estimatedROI: 295,
-    primaryOwner: 'Matt Kenny',
+    primaryOwner: 'Matt Kenney',
     teamMembersAssigned: 4,
     avgResponseTime: 3.1
   },
@@ -324,7 +324,7 @@ export const mockTeamUtilization: TeamUtilizationMetric[] = [
   },
   {
     userId: 'user-002',
-    userName: 'Matt Kenny',
+    userName: 'Matt Kenney',
     department: 'Lobbying',
     avgWorkloadScore: 84,
     peakWorkloadScore: 96,

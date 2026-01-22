@@ -10,7 +10,7 @@ interface LegislatorListProps {
   watchedLegislatorIds?: Set<string>;
 }
 
-export function LegislatorList({ legislators, selectedLegislator, onSelectLegislator, watchedLegislatorIds }: LegislatorListProps) {
+export const LegislatorList = React.memo(function LegislatorList({ legislators, selectedLegislator, onSelectLegislator, watchedLegislatorIds }: LegislatorListProps) {
   const { isDarkMode } = useTheme();
   
   return (
@@ -26,7 +26,7 @@ export function LegislatorList({ legislators, selectedLegislator, onSelectLegisl
       ))}
     </div>
   );
-}
+});
 
 interface LegislatorListItemProps {
   legislator: Legislator;

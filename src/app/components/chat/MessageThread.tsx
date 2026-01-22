@@ -149,36 +149,38 @@ export function MessageThread({
   }
 
   return (
-    <div className={`flex-1 flex flex-col ${isDarkMode ? 'bg-slate-900/80' : 'bg-white/80'} backdrop-blur-sm ${isCelebrating ? 'animate-dance' : ''}`}>
+    <div className={`h-full flex flex-col ${isCelebrating ? 'animate-dance' : ''}`}>
       {/* 🎉 Confetti Overlay */}
       <Confetti active={showConfetti} onComplete={() => setShowConfetti(false)} />
 
-      {/* Header - Minimal iMessage style */}
-      <div className={`px-6 py-4 flex items-center justify-between ${isDarkMode ? 'border-b border-white/5' : 'border-b border-gray-100'} ${isCelebrating ? 'animate-wiggle' : ''}`}>
-        <div className="flex items-center gap-3 flex-1 min-w-0">
+      {/* Module Header */}
+      <div className={`flex-shrink-0 px-4 py-3 border-b flex items-center justify-between ${isCelebrating ? 'animate-wiggle' : ''} ${
+        isDarkMode ? 'bg-[#0a0a0b] border-white/10' : 'bg-gray-50 border-gray-200'
+      }`}>
+        <div className="flex items-center gap-3 min-w-0">
           {/* Avatar */}
           <div className={`
-            flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg font-semibold
+            flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-sm
             ${conversation.type === 'system'
-              ? 'bg-gradient-to-br from-red-500 to-blue-500'
+              ? 'bg-gradient-to-br from-red-500 to-blue-600 text-white'
               : isDarkMode
-                ? 'bg-slate-700 text-white'
-                : 'bg-gray-200 text-gray-700'
+                ? 'bg-[#1e1e20] text-gray-300 border border-white/10'
+                : 'bg-white text-gray-700 border border-gray-200'
             }
           `}>
             {conversation.type === 'system' ? (
-              <img src={pythiaLogo} alt="Revere" className="w-6 h-6 object-contain brightness-0 invert" />
+              <img src={pythiaLogo} alt="Revere" className="w-5 h-5 object-contain brightness-0 invert" />
             ) : (
               conversation.title.charAt(0)
             )}
           </div>
           
           <div className="flex-1 min-w-0">
-            <h2 className={`text-base font-semibold ${textColor} truncate`}>
+            <h2 className={`text-xs font-bold uppercase tracking-wider ${textColor} truncate`}>
               {conversation.title}
             </h2>
             {conversation.subtitle && (
-              <p className={`text-xs ${textMuted} truncate`}>{conversation.subtitle}</p>
+              <p className={`text-[10px] ${textMuted} truncate`}>{conversation.subtitle}</p>
             )}
           </div>
         </div>
@@ -187,32 +189,34 @@ export function MessageThread({
         <button
           onClick={() => setShowActions(!showActions)}
           className={`
-            p-2 rounded-full transition-colors
-            ${isDarkMode ? 'hover:bg-slate-800' : 'hover:bg-gray-100'}
+            p-1.5 rounded-lg transition-colors
+            ${isDarkMode ? 'hover:bg-white/10 text-gray-400' : 'hover:bg-gray-200 text-gray-500'}
           `}
         >
-          <ChevronDown size={20} className={textMuted} />
+          <ChevronDown size={16} />
         </button>
       </div>
 
       {/* Actions Bar (collapsible) */}
       {showActions && (
-        <div className={`px-6 py-3 flex items-center gap-2 ${isDarkMode ? 'bg-slate-800/50 border-b border-white/5' : 'bg-gray-50 border-b border-gray-100'}`}>
+        <div className={`px-4 py-2 flex items-center gap-2 border-b ${
+            isDarkMode ? 'bg-[#0a0a0b] border-white/10' : 'bg-gray-50 border-gray-200'
+        }`}>
           <button
             onClick={onSaveToRecord}
             className={`
-              flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-full transition-colors
-              ${isDarkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-white text-gray-900 hover:bg-gray-200 border border-gray-200'}
+              flex items-center gap-2 px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors border
+              ${isDarkMode ? 'bg-transparent border-white/10 text-white hover:bg-white/5' : 'bg-white text-gray-900 hover:bg-gray-50 border-gray-200'}
             `}
           >
-            <Save size={14} />
+            <Save size={12} />
             Save to Records
           </button>
         </div>
       )}
 
-      {/* Messages - iMessage style bubbles */}
-      <div className={`flex-1 overflow-y-auto px-6 py-4 ${isDarkMode ? 'bg-slate-900/80' : 'bg-white/80'}`}>
+      {/* Messages Body (Transparent) */}
+      <div className={`flex-1 overflow-y-auto px-6 py-4 custom-scrollbar ${isDarkMode ? 'bg-transparent' : 'bg-transparent'}`}>
         {messages.map((message, index) => {
           const previousMessage = index > 0 ? messages[index - 1] : null;
           const showDateSeparator = shouldShowDateSeparator(message, previousMessage);
@@ -229,8 +233,10 @@ export function MessageThread({
             <div key={message.messageId}>
               {/* Date Separator */}
               {showDateSeparator && (
-                <div className="flex items-center justify-center my-4">
-                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-slate-800 text-gray-400' : 'bg-gray-100 text-gray-500'}`}>
+                <div className="flex items-center justify-center my-6">
+                  <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                    isDarkMode ? 'bg-[#0a0a0b] border-white/10 text-gray-500' : 'bg-gray-50 border-gray-200 text-gray-500'
+                  }`}>
                     {formatDateSeparator(message.createdAt)}
                   </div>
                 </div>
@@ -238,7 +244,7 @@ export function MessageThread({
 
               {/* Message Bubble */}
               <div
-                className={`flex items-end gap-3 mb-0.5 group ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+                className={`flex items-end gap-3 mb-1 group ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
                 onMouseEnter={() => setHoveredMessageId(message.messageId)}
                 onMouseLeave={() => setHoveredMessageId(null)}
               >
@@ -246,11 +252,13 @@ export function MessageThread({
                 {!isCurrentUser && !nextFromSameSender && (
                   <div className="flex-shrink-0 w-8 h-8">
                     {message.senderUserId === 'system_revere' ? (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-blue-500 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-blue-600 flex items-center justify-center shadow-lg shadow-red-500/20">
                         <img src={pythiaLogo} alt="Revere" className="w-5 h-5 object-contain brightness-0 invert" />
                       </div>
                     ) : (
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${isDarkMode ? 'bg-slate-700 text-white' : 'bg-gray-300 text-gray-700'}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border ${
+                        isDarkMode ? 'bg-[#1e1e20] text-gray-300 border-white/10' : 'bg-white text-gray-700 border-gray-200'
+                      }`}>
                         {message.senderName.charAt(0)}
                       </div>
                     )}
@@ -261,7 +269,7 @@ export function MessageThread({
                 <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'} max-w-[70%]`}>
                   {/* Sender name for group chats (received messages only) */}
                   {!isCurrentUser && conversation.type !== 'dm' && (!previousMessage || previousMessage.senderUserId !== message.senderUserId) && (
-                    <span className={`text-xs ${textMuted} ml-3 mb-0.5`}>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${textMuted} ml-1 mb-1`}>
                       {message.senderName}
                     </span>
                   )}
@@ -271,20 +279,20 @@ export function MessageThread({
                     {message.kind === 'pythia_insight' || message.kind === 'action_card' ? (
                       // Special card style for insights and actions
                       <div className={`
-                        px-4 py-3 rounded-2xl max-w-md
+                        px-4 py-3 rounded-xl border max-w-md shadow-lg
                         ${message.kind === 'pythia_insight'
                           ? isDarkMode
-                            ? 'bg-gradient-to-br from-red-900/30 to-blue-900/30 border border-red-500/20'
-                            : 'bg-gradient-to-br from-red-50 to-blue-50 border border-red-200'
+                            ? 'bg-gradient-to-br from-red-900/10 to-blue-900/10 border-red-500/20 backdrop-blur-md'
+                            : 'bg-gradient-to-br from-red-50 to-blue-50 border-red-200'
                           : isDarkMode
-                            ? 'bg-slate-800 border border-white/10'
-                            : 'bg-gray-100 border border-gray-200'
+                            ? 'bg-[#121214] border-white/10'
+                            : 'bg-white border-gray-200'
                         }
                       `}>
                         {message.kind === 'pythia_insight' && (
                           <div className="flex items-center gap-2 mb-2">
-                            <Sparkles size={14} className={isDarkMode ? 'text-red-400' : 'text-red-600'} />
-                            <span className={`text-xs font-bold uppercase tracking-wide ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
+                            <Sparkles size={12} className={isDarkMode ? 'text-red-400' : 'text-red-600'} />
+                            <span className={`text-[10px] font-bold uppercase tracking-wider ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
                               Revere Insight
                             </span>
                           </div>
@@ -295,21 +303,20 @@ export function MessageThread({
                         />
                       </div>
                     ) : message.text ? (
-                      // Standard message bubble - iMessage style
-                      <FormattedMessage 
-                        text={message.text}
-                        className={`
-                          px-4 py-2.5 rounded-3xl text-sm leading-relaxed break-words
-                          ${isCurrentUser
-                            ? isDarkMode
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-blue-500 text-white'
-                            : isDarkMode
-                              ? 'bg-slate-800 text-white'
-                              : 'bg-gray-200 text-gray-900'
-                          }
-                        `}
-                      />
+                      // Standard message bubble
+                      <div className={`
+                        px-4 py-2 rounded-2xl text-sm leading-relaxed break-words shadow-sm
+                        ${isCurrentUser
+                          ? isDarkMode
+                            ? 'bg-blue-600 text-white rounded-tr-sm'
+                            : 'bg-blue-600 text-white rounded-tr-sm'
+                          : isDarkMode
+                            ? 'bg-[#1e1e20] text-gray-200 border border-white/5 rounded-tl-sm'
+                            : 'bg-white text-gray-900 border border-gray-200 rounded-tl-sm'
+                        }
+                      `}>
+                        <FormattedMessage text={message.text} />
+                      </div>
                     ) : null}
 
                     {/* Hover Actions */}
@@ -323,20 +330,20 @@ export function MessageThread({
                         <button
                           onClick={() => setActionMenuOpen(isMenuOpen ? null : message.messageId)}
                           className={`
-                            p-1.5 rounded-full transition-all opacity-0 group-hover/bubble:opacity-100
-                            ${isDarkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-200 hover:bg-gray-300'}
+                            p-1.5 rounded-lg transition-all opacity-0 group-hover/bubble:opacity-100 border
+                            ${isDarkMode ? 'bg-[#0a0a0b] border-white/10 hover:bg-white/10' : 'bg-white border-gray-200 hover:bg-gray-50'}
                           `}
                           title="More"
                         >
-                          <MoreVertical size={14} className={textMuted} />
+                          <MoreVertical size={12} className={textMuted} />
                         </button>
 
                         {/* Actions Menu */}
                         {isMenuOpen && (
                           <div
                             className={`
-                              absolute ${isCurrentUser ? 'right-0' : 'left-0'} top-8 z-50 w-48 py-1 rounded-xl shadow-xl
-                              ${isDarkMode ? 'bg-slate-800 border border-white/10' : 'bg-white border border-gray-200'}
+                              absolute ${isCurrentUser ? 'right-0' : 'left-0'} top-8 z-50 w-48 py-1 rounded-xl shadow-xl border
+                              ${isDarkMode ? 'bg-[#0a0a0b] border-white/10' : 'bg-white border-gray-200'}
                             `}
                           >
                             <button
@@ -344,9 +351,9 @@ export function MessageThread({
                                 onPinMessage(message.messageId);
                                 setActionMenuOpen(null);
                               }}
-                              className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 ${isDarkMode ? 'hover:bg-slate-700 text-white' : 'hover:bg-gray-100 text-gray-900'}`}
+                              className={`w-full text-left px-4 py-2 text-xs font-medium flex items-center gap-2 ${isDarkMode ? 'hover:bg-white/5 text-white' : 'hover:bg-gray-50 text-gray-900'}`}
                             >
-                              <Pin size={14} />
+                              <Pin size={12} />
                               {message.pinned ? 'Unpin' : 'Pin'}
                             </button>
                             <button
@@ -354,9 +361,9 @@ export function MessageThread({
                                 onCreateTaskFromMessage(message);
                                 setActionMenuOpen(null);
                               }}
-                              className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 ${isDarkMode ? 'hover:bg-slate-700 text-white' : 'hover:bg-gray-100 text-gray-900'}`}
+                              className={`w-full text-left px-4 py-2 text-xs font-medium flex items-center gap-2 ${isDarkMode ? 'hover:bg-white/5 text-white' : 'hover:bg-gray-50 text-gray-900'}`}
                             >
-                              <CheckSquare size={14} />
+                              <CheckSquare size={12} />
                               Create task
                             </button>
                             <button
@@ -364,9 +371,9 @@ export function MessageThread({
                                 onSaveToRecord(message.messageId);
                                 setActionMenuOpen(null);
                               }}
-                              className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 ${isDarkMode ? 'hover:bg-slate-700 text-white' : 'hover:bg-gray-100 text-gray-900'}`}
+                              className={`w-full text-left px-4 py-2 text-xs font-medium flex items-center gap-2 ${isDarkMode ? 'hover:bg-white/5 text-white' : 'hover:bg-gray-50 text-gray-900'}`}
                             >
-                              <Save size={14} />
+                              <Save size={12} />
                               Save to records
                             </button>
                           </div>
@@ -378,9 +385,9 @@ export function MessageThread({
                   {/* Attachment Cards */}
                   {message.attachments && message.attachments.length > 0 && (
                     <div className={`flex flex-col gap-2 mt-2 ${isCurrentUser ? 'items-end' : 'items-start'}`}>
-                      {message.attachments.map(attachment => (
+                      {message.attachments.map((attachment, attIdx) => (
                         <AttachmentCard
-                          key={attachment.id}
+                          key={attachment.id || `att-${message.messageId}-${attIdx}`}
                           attachment={attachment}
                           isCurrentUser={isCurrentUser}
                         />
@@ -390,25 +397,25 @@ export function MessageThread({
 
                   {/* Reactions */}
                   {Object.keys(message.reactions).length > 0 && (
-                    <div className={`flex items-center gap-1 mt-1 ${isCurrentUser ? 'mr-2' : 'ml-2'}`}>
+                    <div className={`flex items-center gap-1 mt-1 ${isCurrentUser ? 'mr-1' : 'ml-1'}`}>
                       {Object.entries(message.reactions).map(([emoji, users]) => (
                         <button
                           key={emoji}
                           onClick={() => onReactToMessage(message.messageId, emoji)}
                           className={`
-                            flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border
+                            flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold border
                             ${users.includes(currentUser.userId)
                               ? isDarkMode
-                                ? 'bg-blue-900/30 border-blue-500/50'
-                                : 'bg-blue-50 border-blue-300'
+                                ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                                : 'bg-blue-50 border-blue-300 text-blue-600'
                               : isDarkMode
-                                ? 'bg-slate-800 border-white/10 hover:bg-slate-700'
-                                : 'bg-white border-gray-200 hover:bg-gray-50'
+                                ? 'bg-[#1e1e20] border-white/10 hover:bg-white/5 text-gray-400'
+                                : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-500'
                             }
                           `}
                         >
                           <span>{emoji}</span>
-                          <span className={textMuted}>{users.length}</span>
+                          <span className={isDarkMode ? 'text-gray-500' : 'text-gray-400'}>{users.length}</span>
                         </button>
                       ))}
                     </div>
@@ -416,7 +423,7 @@ export function MessageThread({
 
                   {/* Timestamp (only show for last message in group) */}
                   {showTimestamp && (
-                    <span className={`text-xs ${textMuted} mt-0.5 ${isCurrentUser ? 'mr-3' : 'ml-3'}`}>
+                    <span className={`text-[10px] ${textMuted} mt-1 ${isCurrentUser ? 'mr-1' : 'ml-1'}`}>
                       {new Date(message.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                     </span>
                   )}
@@ -428,14 +435,14 @@ export function MessageThread({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area - iMessage style */}
-      <div className={`px-4 py-3 ${isDarkMode ? 'border-t border-white/5' : 'border-t border-gray-100'}`}>
+      {/* Input Area */}
+      <div className={`px-4 py-4 border-t ${isDarkMode ? 'border-white/10 bg-[#0a0a0b]/50' : 'border-gray-200 bg-gray-50/50'}`}>
         {/* Attachment Chips */}
         {composerAttachments.length > 0 && (
           <div className="mb-2 flex flex-wrap gap-2">
-            {composerAttachments.map(attachment => (
+            {composerAttachments.map((attachment, idx) => (
               <AttachmentChip
-                key={attachment.id}
+                key={attachment.id || `draft-att-${idx}`}
                 attachment={attachment}
                 onRemove={handleRemoveAttachment}
               />
@@ -445,25 +452,25 @@ export function MessageThread({
 
         <div className="relative">
           <div className={`
-            flex items-end gap-2 px-4 py-2 rounded-3xl transition-all
-            ${isDarkMode ? 'bg-slate-800' : 'bg-gray-100'}
+            flex items-end gap-2 px-3 py-2 rounded-xl transition-all border
+            ${isDarkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-gray-200'}
           `}>
             <button
               className={`
-                p-2 rounded-full transition-all duration-300
+                p-2 rounded-lg transition-all duration-300
                 ${showAttachmentMenu 
                   ? isDarkMode 
                     ? 'bg-blue-600 text-white rotate-45' 
-                    : 'bg-blue-500 text-white rotate-45'
+                    : 'bg-blue-600 text-white rotate-45'
                   : isDarkMode 
-                    ? 'hover:bg-slate-700 hover:rotate-90 text-gray-400 hover:text-blue-400' 
-                    : 'hover:bg-gray-200 hover:rotate-90 text-gray-500 hover:text-blue-500'
+                    ? 'hover:bg-white/10 hover:rotate-90 text-gray-400 hover:text-blue-400' 
+                    : 'hover:bg-gray-100 hover:rotate-90 text-gray-500 hover:text-blue-600'
                 }
               `}
               title="Attach"
               onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
             >
-              <Plus size={18} className="transition-all duration-300" />
+              <Plus size={16} className="transition-all duration-300" />
             </button>
             
             <textarea
@@ -471,11 +478,11 @@ export function MessageThread({
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Message"
+              placeholder="Type a message..."
               rows={1}
               className={`
-                flex-1 bg-transparent text-sm resize-none outline-none py-1.5
-                ${isDarkMode ? 'text-white placeholder-gray-500' : 'text-gray-900 placeholder-gray-400'}
+                flex-1 bg-transparent text-sm resize-none outline-none py-2 font-medium
+                ${isDarkMode ? 'text-white placeholder-gray-600' : 'text-gray-900 placeholder-gray-400'}
               `}
               style={{ maxHeight: '120px' }}
             />
@@ -484,16 +491,16 @@ export function MessageThread({
               onClick={handleSend}
               disabled={!messageText.trim() && composerAttachments.length === 0}
               className={`
-                p-2 rounded-full transition-all duration-300
+                p-2 rounded-lg transition-all duration-300
                 ${messageText.trim() || composerAttachments.length > 0
-                  ? 'bg-blue-500 hover:bg-blue-600 text-white hover:scale-110 active:scale-95'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20 hover:scale-105 active:scale-95'
                   : isDarkMode
-                    ? 'bg-slate-700 text-gray-500'
-                    : 'bg-gray-300 text-gray-400'
+                    ? 'bg-white/5 text-gray-600 cursor-not-allowed'
+                    : 'bg-gray-100 text-gray-300 cursor-not-allowed'
                 }
               `}
             >
-              <Send size={18} className={`transition-transform ${messageText.trim() || composerAttachments.length > 0 ? 'hover:translate-x-0.5 hover:-translate-y-0.5' : ''}`} />
+              <Send size={16} className={`transition-transform ${messageText.trim() || composerAttachments.length > 0 ? 'translate-x-0.5 -translate-y-0.5' : ''}`} />
             </button>
           </div>
 

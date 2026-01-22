@@ -5,9 +5,10 @@ import { useTheme } from '../../../contexts/ThemeContext';
 
 interface ElectionDistrictTabProps {
   legislator: Legislator;
+  onNavigateToElections?: (legislatorId: string) => void;
 }
 
-export function ElectionDistrictTab({ legislator }: ElectionDistrictTabProps) {
+export function ElectionDistrictTab({ legislator, onNavigateToElections }: ElectionDistrictTabProps) {
   const { isDarkMode } = useTheme();
   const { electionIntel, servicesOpportunity } = legislator;
 
@@ -400,6 +401,32 @@ export function ElectionDistrictTab({ legislator }: ElectionDistrictTabProps) {
 
   return (
     <div className="space-y-6 animate-fadeIn">
+      {/* FULL INTELLIGENCE CTA */}
+      <div className={`rounded-lg border-2 border-indigo-500/30 p-1 ${isDarkMode ? 'bg-indigo-900/10' : 'bg-indigo-50'}`}>
+        <div className={`p-4 rounded flex items-center justify-between ${isDarkMode ? 'bg-slate-900/80' : 'bg-white'}`}>
+          <div className="flex items-center gap-4">
+            <div className={`p-3 rounded-full ${isDarkMode ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-100 text-indigo-600'}`}>
+              <Sparkles size={24} />
+            </div>
+            <div>
+              <h3 className={`font-bold text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                Election Intelligence Dossier
+              </h3>
+              <p className={`text-sm ${isDarkMode ? 'text-indigo-300' : 'text-indigo-600'}`}>
+                View full race analysis, opponent research, and vulnerability scoring.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => onNavigateToElections?.(legislator.id)}
+            className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2"
+          >
+            Open Full Dossier
+            <ExternalLink size={16} />
+          </button>
+        </div>
+      </div>
+
       {/* Election Status Card */}
       <div className={`rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden ${
         isDarkMode ? 'bg-slate-800/40' : 'bg-white'

@@ -40,14 +40,12 @@ function TableView({ members, onSelectEmployee }: { members: TeamMember[]; onSel
   };
 
   return (
-    <div className={`rounded-lg border overflow-hidden flex flex-col h-full ${
-      isDarkMode ? 'bg-slate-800/50 border-white/10' : 'bg-white border-gray-200'
-    }`}>
+    <div className="flex flex-col h-full bg-transparent">
       {/* Header */}
-      <div className={`border-b px-4 py-3 ${
-        isDarkMode ? 'border-white/10 bg-slate-700/50' : 'border-gray-200 bg-gray-50'
+      <div className={`flex-shrink-0 px-4 py-3 border-b ${
+        isDarkMode ? 'bg-[#0a0a0b] border-white/10' : 'bg-gray-50 border-gray-200'
       }`}>
-        <h2 className={`text-sm font-semibold uppercase tracking-wider ${
+        <h2 className={`text-xs font-bold uppercase tracking-wider ${
           isDarkMode ? 'text-white' : 'text-gray-900'
         }`}>
           Team Workload ({members.length})
@@ -58,7 +56,7 @@ function TableView({ members, onSelectEmployee }: { members: TeamMember[]; onSel
       <div className="flex-1 overflow-auto">
         <table className="w-full">
           <thead className={`border-b sticky top-0 ${
-            isDarkMode ? 'bg-slate-700/50 border-white/10' : 'bg-gray-50 border-gray-200'
+            isDarkMode ? 'bg-[#0a0a0b] border-white/10' : 'bg-gray-50 border-gray-200'
           }`}>
             <tr>
               <th className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider ${
@@ -347,14 +345,12 @@ function KanbanView({ members, onSelectEmployee }: { members: TeamMember[]; onSe
   );
 
   return (
-    <div className={`rounded-lg border overflow-hidden h-full flex flex-col ${
-      isDarkMode ? 'bg-slate-800/50 border-white/10' : 'bg-white border-gray-200'
-    }`}>
+    <div className="h-full flex flex-col bg-transparent">
       {/* Header */}
-      <div className={`border-b px-4 py-3 ${
-        isDarkMode ? 'border-white/10 bg-slate-700/50' : 'border-gray-200 bg-gray-50'
+      <div className={`flex-shrink-0 px-4 py-3 border-b ${
+        isDarkMode ? 'bg-[#0a0a0b] border-white/10' : 'bg-gray-50 border-gray-200'
       }`}>
-        <h2 className={`text-sm font-semibold uppercase tracking-wider ${
+        <h2 className={`text-xs font-bold uppercase tracking-wider ${
           isDarkMode ? 'text-white' : 'text-gray-900'
         }`}>
           Team Workload - Kanban View

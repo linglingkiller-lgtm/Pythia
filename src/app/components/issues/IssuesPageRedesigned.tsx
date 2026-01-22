@@ -50,6 +50,8 @@ import {
   MediaMention,
   Representative,
 } from '../../data/issuesData';
+import { PageLayout } from '../ui/PageLayout';
+import { getPageTheme, hexToRgba } from '../../config/pageThemes';
 
 // US Atlas CDN URLs
 const geoUrl = 'https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json';
@@ -172,37 +174,6 @@ export function IssuesPageRedesigned() {
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [mapCenter, setMapCenter] = useState<[number, number]>([-96, 38]);
   const [mapZoom, setMapZoom] = useState<number>(1);
-  const [showHeader, setShowHeader] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
-  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
-
-  // Handle scroll to hide/show header
-  React.useEffect(() => {
-    const handleScroll = () => {
-      if (!scrollContainerRef.current) return;
-      
-      const currentScrollY = scrollContainerRef.current.scrollTop;
-      
-      if (currentScrollY < 10) {
-        // Always show header at the top
-        setShowHeader(true);
-      } else if (currentScrollY > lastScrollY) {
-        // Scrolling down - hide header
-        setShowHeader(false);
-      } else {
-        // Scrolling up - show header
-        setShowHeader(true);
-      }
-      
-      setLastScrollY(currentScrollY);
-    };
-
-    const container = scrollContainerRef.current;
-    if (container) {
-      container.addEventListener('scroll', handleScroll, { passive: true });
-      return () => container.removeEventListener('scroll', handleScroll);
-    }
-  }, [lastScrollY]);
 
   const handleClearSelection = () => {
     setSelectedState(null);
@@ -251,168 +222,102 @@ export function IssuesPageRedesigned() {
   };
 
   const data = getIntelligenceData();
+  
+  // Theme Config
+  const issuesTheme = getPageTheme('Issues');
 
-  return (
-    <div
-      className={`
-        h-full flex flex-col relative overflow-hidden transition-colors duration-500
-        ${isDarkMode 
-          ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950' 
-          : 'bg-gradient-to-b from-white to-gray-50'
-        }
-      `}
-    >
-      {/* Background Orbs - Only in dark mode */}
-      {isDarkMode && (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-orange-500/10 rounded-full blur-[120px] animate-slow-pulse" />
-          <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-red-500/10 rounded-full blur-[130px] animate-slow-pulse" />
-        </div>
-      )}
+  // Tabs Configuration
+  const tabs = [
+    { id: 'dashboard' as const, label: 'Dashboard', icon: Activity },
+    { id: 'media' as const, label: 'Media Intel', icon: Radio },
+    { id: 'heatmap' as const, label: 'Heat Map', icon: MapPin },
+    { id: 'sentiment' as const, label: 'Sentiment', icon: MessageSquare },
+  ];
 
-      {/* Light mode gradient overlays */}
-      {!isDarkMode && (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-0 right-0 w-full h-1/2 bg-gradient-to-bl from-orange-100/70 via-orange-50/50 to-transparent" />
-          <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-tr from-red-100/60 via-red-50/40 to-transparent" />
-        </div>
-      )}
-
-      {/* Main Content - Scrollable Container */}
-      <div className="flex-1 overflow-auto relative z-10" ref={scrollContainerRef}>
-        {/* Header - Sticky Position */}
-        <motion.div
-          animate={{
-            y: showHeader ? 0 : -100,
-            opacity: showHeader ? 1 : 0,
-          }}
-          transition={{
-            duration: 0.3,
-            ease: [0.4, 0, 0.2, 1],
-          }}
-          className={`
-            sticky top-0 z-50 border-b px-8 py-6 transition-all duration-500
-            ${isDarkMode 
-              ? 'bg-slate-900/60 backdrop-blur-xl border-white/10' 
-              : 'bg-white/80 backdrop-blur-xl border-gray-200'
-            }
-          `}
-        >
-          <div className="container mx-auto max-w-7xl">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-100 to-red-100 rounded-full mb-3">
-                  <Hash className="w-4 h-4 text-orange-600" />
-                  <span className="text-sm font-medium text-orange-900">Issues Intelligence</span>
-                </div>
-                <h1 className={`text-4xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Know When Your Issues Are Moving.
-                </h1>
-                <p className={`text-lg ${isDarkMode ? 'text-slate-400' : 'text-gray-600'}`}>
-                  Real-time media monitoring, geographic heat mapping, sentiment analysis, and stakeholder tracking—all powered by Revere.
-                </p>
-              </div>
-            </div>
-
-            {/* Filters */}
-            <div className="flex items-center gap-3 flex-wrap mb-6">
-              <select
+  const headerContent = (
+    <div className="flex items-center gap-3">
+        {/* Issue Selector */}
+        <div className={`relative ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            <select
                 value={selectedIssue}
                 onChange={(e) => setSelectedIssue(e.target.value as Issue)}
                 className={`
-                  px-4 py-2 rounded-xl border font-medium text-sm transition-all duration-500
+                  appearance-none pl-3 pr-8 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border cursor-pointer outline-none transition-all
                   ${isDarkMode 
-                    ? 'bg-slate-800/50 border-white/10 text-white' 
-                    : 'bg-white border-gray-300 text-gray-900'
+                    ? 'bg-orange-500/10 border-orange-500/20 text-orange-400 hover:bg-orange-500/20' 
+                    : 'bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100'
                   }
                 `}
-              >
+            >
                 <option value="clean-energy">Clean Energy</option>
                 <option value="education">Education</option>
                 <option value="healthcare">Healthcare</option>
                 <option value="tech">Tech Policy</option>
-              </select>
+            </select>
+            <ChevronDown className={`absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none ${isDarkMode ? 'text-orange-400' : 'text-orange-700'}`} />
+        </div>
 
-              <div className="flex items-center gap-1">
-                {(['7d', '30d', 'session'] as TimeWindow[]).map((window) => (
-                  <button
+        {/* Time Window */}
+        <div className={`flex p-0.5 rounded-full ${isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-gray-100 border border-gray-200'}`}>
+            {(['7d', '30d', 'session'] as TimeWindow[]).map((window) => (
+                <button
                     key={window}
                     onClick={() => setTimeWindow(window)}
                     className={`
-                      px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300
+                      px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all
                       ${timeWindow === window
-                        ? 'bg-orange-600 text-white shadow-lg'
-                        : isDarkMode
-                          ? 'bg-white/5 hover:bg-white/10 text-slate-300'
-                          : 'bg-white hover:bg-orange-50 text-gray-700 border border-gray-200'
+                        ? (isDarkMode ? 'bg-orange-600 text-white shadow-lg' : 'bg-white text-orange-600 shadow-sm')
+                        : (isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900')
                       }
                     `}
-                  >
+                >
                     {window === '7d' ? '7 Days' : window === '30d' ? '30 Days' : 'Session'}
-                  </button>
-                ))}
-              </div>
-            </div>
+                </button>
+            ))}
+        </div>
+    </div>
+  );
 
-            {/* Tab Navigation */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setActiveView('dashboard')}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
-                  activeView === 'dashboard'
-                    ? 'bg-orange-600 text-white shadow-lg'
-                    : isDarkMode
-                      ? 'bg-white/5 hover:bg-white/10 text-slate-300'
-                      : 'bg-white text-gray-600 hover:border-orange-300 hover:bg-orange-50 border border-gray-200'
-                }`}
-              >
-                <Activity className="w-4 h-4" />
-                Issue Dashboard
-              </button>
-              <button
-                onClick={() => setActiveView('media')}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
-                  activeView === 'media'
-                    ? 'bg-orange-600 text-white shadow-lg'
-                    : isDarkMode
-                      ? 'bg-white/5 hover:bg-white/10 text-slate-300'
-                      : 'bg-white text-gray-600 hover:border-orange-300 hover:bg-orange-50 border border-gray-200'
-                }`}
-              >
-                <Radio className="w-4 h-4" />
-                Media Tracking
-              </button>
-              <button
-                onClick={() => setActiveView('heatmap')}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
-                  activeView === 'heatmap'
-                    ? 'bg-orange-600 text-white shadow-lg'
-                    : isDarkMode
-                      ? 'bg-white/5 hover:bg-white/10 text-slate-300'
-                      : 'bg-white text-gray-600 hover:border-orange-300 hover:bg-orange-50 border border-gray-200'
-                }`}
-              >
-                <MapPin className="w-4 h-4" />
-                Heat Map
-              </button>
-              <button
-                onClick={() => setActiveView('sentiment')}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
-                  activeView === 'sentiment'
-                    ? 'bg-orange-600 text-white shadow-lg'
-                    : isDarkMode
-                      ? 'bg-white/5 hover:bg-white/10 text-slate-300'
-                      : 'bg-white text-gray-600 hover:border-orange-300 hover:bg-orange-50 border border-gray-200'
-                }`}
-              >
-                <MessageSquare className="w-4 h-4" />
-                Sentiment Analysis
-              </button>
-            </div>
-          </div>
-        </motion.div>
+  const pageActions = (
+    <div className="flex items-center gap-2">
+      {tabs.map(tab => {
+        const isActive = activeView === tab.id;
+        const Icon = tab.icon;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => setActiveView(tab.id)}
+            className={`
+              flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300
+              ${isActive 
+                ? (isDarkMode 
+                    ? 'bg-white text-black font-semibold shadow-[0_0_15px_rgba(255,255,255,0.3)]' 
+                    : `bg-[${issuesTheme.accent}] text-white font-semibold shadow-lg`)
+                : (isDarkMode 
+                    ? 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900')
+              }
+            `}
+            style={isActive && !isDarkMode ? { backgroundColor: issuesTheme.accent } : {}}
+          >
+            <Icon size={16} />
+            <span className="text-sm">{tab.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
 
-        {/* Content Area */}
+  return (
+    <PageLayout
+        title="Issue Intelligence"
+        subtitle="Real-time media & sentiment tracking"
+        headerIcon={<Hash size={28} className={isDarkMode ? 'text-orange-400' : 'text-orange-600'} />}
+        backgroundImage={<Hash size={450} color={isDarkMode ? 'white' : issuesTheme.accent} strokeWidth={0.5} />}
+        accentColor={issuesTheme.accent}
+        headerContent={headerContent}
+        pageActions={pageActions}
+    >
         <div className="container mx-auto max-w-7xl p-8">
           <AnimatePresence mode="wait">
             {activeView === 'dashboard' && (
@@ -461,8 +366,7 @@ export function IssuesPageRedesigned() {
             )}
           </AnimatePresence>
         </div>
-      </div>
-    </div>
+    </PageLayout>
   );
 }
 

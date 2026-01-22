@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { User, Mail, Phone, Calendar, CheckCircle, AlertCircle, Clock, Shield, GraduationCap } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 import { applicants } from '../../data/campaignData';
 import type { Applicant } from '../../data/campaignData';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -266,7 +267,7 @@ export const ApplicantsTab: React.FC<ApplicantsTabProps> = ({ searchQuery, filte
       </div>
 
       {/* Applicant Detail Drawer */}
-      {selectedApplicant && (
+      {selectedApplicant && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-end">
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setSelectedApplicant(null)} />
           
@@ -398,7 +399,8 @@ export const ApplicantsTab: React.FC<ApplicantsTabProps> = ({ searchQuery, filte
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

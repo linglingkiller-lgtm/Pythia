@@ -24,26 +24,20 @@ export function ModuleCard({ module, children }: ModuleCardProps) {
 
   return (
     <div className={`
-      rounded-lg shadow-sm h-full flex flex-col overflow-hidden hover:shadow-md transition-all duration-500
+      rounded-xl shadow-sm h-full flex flex-col overflow-hidden backdrop-blur-md transition-all duration-300
       ${isDarkMode 
-        ? 'bg-slate-800/50 border border-white/10 hover:border-white/20' 
-        : 'bg-white border border-gray-200'
+        ? 'bg-slate-900/80 border border-slate-700/50 hover:border-slate-600/50' 
+        : 'bg-white/80 border border-slate-200 hover:border-slate-300'
       }
+      ${isEditMode ? 'cursor-move' : ''}
     `}>
       {/* Header */}
       <div className={`
         flex items-center justify-between px-4 py-3 border-b transition-colors duration-500
         ${isDarkMode ? 'border-white/10' : 'border-gray-100'}
+        ${isEditMode ? 'cursor-move' : ''}
       `}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          {isEditMode && (
-            <div className={`
-              cursor-move flex-shrink-0 drag-handle transition-colors duration-500
-              ${isDarkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}
-            `}>
-              <GripVertical className="w-4 h-4" />
-            </div>
-          )}
           <div className="flex-1 min-w-0">
             <h3 className={`
               font-semibold truncate transition-colors duration-500

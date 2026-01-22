@@ -133,11 +133,7 @@ export function TeamKpiStrip({ kpis }: TeamKpiStripProps) {
   };
 
   return (
-    <div className={`border-b px-6 py-4 flex-shrink-0 ${
-      isDarkMode 
-        ? 'bg-slate-800/50 border-white/10' 
-        : 'bg-white border-gray-200'
-    }`}>
+    <div className={`px-6 py-4 flex-shrink-0 bg-transparent`}>
       <div className="grid grid-cols-8 gap-4">
         {kpiTiles.map((tile, index) => {
           const Icon = tile.icon;

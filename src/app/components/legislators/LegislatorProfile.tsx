@@ -14,13 +14,14 @@ interface LegislatorProfileProps {
   legislator: Legislator;
   onLogInteraction: () => void;
   onNavigateToBill?: (billId: string) => void;
+  onNavigateToElections?: (legislatorId: string) => void;
   watchedLegislatorIds?: Set<string>;
   onToggleWatch?: (legislatorId: string) => void;
 }
 
 type TabType = 'overview' | 'staff' | 'bills' | 'records' | 'media' | 'election' | 'predictive';
 
-export function LegislatorProfile({ legislator, onLogInteraction, onNavigateToBill, watchedLegislatorIds, onToggleWatch }: LegislatorProfileProps) {
+export function LegislatorProfile({ legislator, onLogInteraction, onNavigateToBill, onNavigateToElections, watchedLegislatorIds, onToggleWatch }: LegislatorProfileProps) {
   const { isDarkMode } = useTheme();
   const [activeTab, setActiveTab] = React.useState<TabType>('overview');
 
@@ -76,11 +77,11 @@ export function LegislatorProfile({ legislator, onLogInteraction, onNavigateToBi
 
       {/* Tab Content */}
       <div className="p-6">
-        {activeTab === 'overview' && <OverviewTab legislator={legislator} />}
+        {activeTab === 'overview' && <OverviewTab legislator={legislator} onNavigateToPredictive={() => setActiveTab('predictive')} />}
         {activeTab === 'staff' && <StaffContactsTab legislator={legislator} onLogInteraction={onLogInteraction} />}
         {activeTab === 'bills' && <BillsActivityTab legislator={legislator} onNavigateToBill={onNavigateToBill} />}
         {activeTab === 'records' && <RecordsInteractionsTab legislator={legislator} onLogInteraction={onLogInteraction} />}
-        {activeTab === 'election' && <ElectionDistrictTab legislator={legislator} />}
+        {activeTab === 'election' && <ElectionDistrictTab legislator={legislator} onNavigateToElections={onNavigateToElections} />}
         {activeTab === 'media' && <MediaIntelTab legislator={legislator} />}
         {activeTab === 'predictive' && <PredictiveInsightsTab legislator={legislator} />}
       </div>

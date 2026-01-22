@@ -4,7 +4,7 @@ import { Button } from '../ui/Button';
 import { ScrollArea } from '../ui/scroll-area';
 import { 
   Loader2, Check, Copy, Download, FileText, ChevronRight, ChevronLeft, 
-  Wand2, Save, Plus, Trash2
+  Wand2, Save, Plus, Trash2, Settings, Zap, DollarSign
 } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { type Client } from '../../data/clientsData';
@@ -239,14 +239,16 @@ export function ClientUpdateGenerator({ isOpen, onClose, client }: ClientUpdateG
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className={`sm:max-w-4xl max-h-[85vh] h-full flex flex-col p-0 gap-0 overflow-hidden border transition-colors duration-300 ${
+      <DialogContent className={`sm:max-w-4xl max-h-[85vh] h-full flex flex-col p-0 gap-0 overflow-hidden border transition-colors duration-300 backdrop-blur-xl ${
         isDarkMode 
-          ? 'bg-slate-900 border-slate-700 text-slate-100' 
-          : 'bg-white border-gray-200 text-gray-900'
+          ? 'bg-slate-900/80 border-white/10 text-slate-100 shadow-2xl' 
+          : 'bg-white/80 border-gray-200 text-gray-900 shadow-xl'
       }`}>
-        <div className={`p-6 border-b ${isDarkMode ? 'border-slate-800' : 'border-gray-100'}`}>
+        <div className={`p-6 border-b ${isDarkMode ? 'border-white/10' : 'border-gray-100'}`}>
           <DialogTitle className="flex items-center gap-2 text-xl">
-            <Wand2 className="w-5 h-5 text-emerald-500" />
+            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-emerald-500/20' : 'bg-emerald-100'}`}>
+              <Wand2 className="w-5 h-5 text-emerald-500" />
+            </div>
             Generate Client Update
           </DialogTitle>
           <DialogDescription className="mt-1">
@@ -255,23 +257,23 @@ export function ClientUpdateGenerator({ isOpen, onClose, client }: ClientUpdateG
             {step === 3 && "Configure export options"}
           </DialogDescription>
           
-          <div className="flex items-center gap-2 mt-4 text-sm">
+          <div className="flex items-center gap-2 mt-6 text-sm">
             <div className={`flex items-center gap-2 ${step >= 1 ? 'text-emerald-500 font-medium' : 'text-gray-400'}`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center border ${
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center border text-xs ${
                 step >= 1 ? 'border-emerald-500 bg-emerald-500/10' : 'border-gray-300'
               }`}>1</div>
               Period
             </div>
-            <div className={`w-8 h-px ${step >= 2 ? 'bg-emerald-500' : 'bg-gray-200'}`} />
+            <div className={`w-12 h-px ${step >= 2 ? 'bg-emerald-500' : 'bg-gray-200'}`} />
             <div className={`flex items-center gap-2 ${step >= 2 ? 'text-emerald-500 font-medium' : 'text-gray-400'}`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center border ${
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center border text-xs ${
                 step >= 2 ? 'border-emerald-500 bg-emerald-500/10' : 'border-gray-300'
               }`}>2</div>
               Draft
             </div>
-            <div className={`w-8 h-px ${step >= 3 ? 'bg-emerald-500' : 'bg-gray-200'}`} />
+            <div className={`w-12 h-px ${step >= 3 ? 'bg-emerald-500' : 'bg-gray-200'}`} />
             <div className={`flex items-center gap-2 ${step >= 3 ? 'text-emerald-500 font-medium' : 'text-gray-400'}`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center border ${
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center border text-xs ${
                 step >= 3 ? 'border-emerald-500 bg-emerald-500/10' : 'border-gray-300'
               }`}>3</div>
               Export
@@ -279,10 +281,10 @@ export function ClientUpdateGenerator({ isOpen, onClose, client }: ClientUpdateG
           </div>
         </div>
 
-        <ScrollArea className="flex-1 min-h-0">
-          <div className="p-6">
+        <ScrollArea className="flex-1 min-h-0 bg-transparent">
+          <div className="p-8">
             {step === 1 && (
-              <div className="space-y-6 max-w-2xl mx-auto py-8">
+              <div className="space-y-8 max-w-3xl mx-auto">
               <div className="grid grid-cols-2 gap-4">
                 {[
                   { id: 'this-week', label: 'This Week', desc: 'Current week activity' },
@@ -293,47 +295,53 @@ export function ClientUpdateGenerator({ isOpen, onClose, client }: ClientUpdateG
                   <button
                     key={opt.id}
                     onClick={() => setPeriod(opt.id as Period)}
-                    className={`p-4 rounded-xl border text-left transition-all ${
+                    className={`p-5 rounded-xl border text-left transition-all relative overflow-hidden group ${
                       period === opt.id
                         ? isDarkMode 
-                          ? 'border-emerald-500 bg-emerald-500/20 ring-1 ring-emerald-500' 
+                          ? 'border-emerald-500/50 bg-emerald-500/10 ring-1 ring-emerald-500/50' 
                           : 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500'
                         : isDarkMode
-                          ? 'border-slate-700 bg-slate-800 hover:border-slate-600'
-                          : 'border-gray-200 bg-white hover:border-gray-300'
+                          ? 'border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/10'
+                          : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
                     }`}
                   >
-                    <div className={`font-semibold mb-1 ${
+                    <div className={`font-semibold mb-1 text-lg ${
                       isDarkMode ? 'text-white' : 'text-gray-900'
                     }`}>{opt.label}</div>
                     <div className={`text-sm ${
                       isDarkMode ? 'text-gray-400' : 'text-gray-500'
                     }`}>{opt.desc}</div>
+                    
+                    {period === opt.id && (
+                      <div className="absolute top-3 right-3 text-emerald-500">
+                        <Check size={18} />
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>
 
               {period === 'custom' && (
-                <div className={`p-4 rounded-lg border flex gap-4 ${
-                  isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-gray-50 border-gray-200'
+                <div className={`p-6 rounded-xl border flex gap-6 ${
+                  isDarkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'
                 }`}>
                   <div className="flex-1">
-                    <label className="text-xs font-medium mb-1 block">Start Date</label>
+                    <label className="text-xs font-bold uppercase tracking-wider mb-2 block opacity-70">Start Date</label>
                     <input 
                       type="date" 
-                      className={`w-full p-2 rounded border ${
-                        isDarkMode ? 'bg-slate-900 border-slate-600' : 'bg-white border-gray-300'
+                      className={`w-full p-3 rounded-lg border outline-none focus:ring-2 focus:ring-emerald-500/50 ${
+                        isDarkMode ? 'bg-slate-900 border-white/10 text-white' : 'bg-white border-gray-300'
                       }`}
                       value={customStartDate}
                       onChange={e => setCustomStartDate(e.target.value)}
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="text-xs font-medium mb-1 block">End Date</label>
+                    <label className="text-xs font-bold uppercase tracking-wider mb-2 block opacity-70">End Date</label>
                     <input 
                       type="date" 
-                      className={`w-full p-2 rounded border ${
-                        isDarkMode ? 'bg-slate-900 border-slate-600' : 'bg-white border-gray-300'
+                      className={`w-full p-3 rounded-lg border outline-none focus:ring-2 focus:ring-emerald-500/50 ${
+                        isDarkMode ? 'bg-slate-900 border-white/10 text-white' : 'bg-white border-gray-300'
                       }`}
                       value={customEndDate}
                       onChange={e => setCustomEndDate(e.target.value)}
@@ -342,23 +350,23 @@ export function ClientUpdateGenerator({ isOpen, onClose, client }: ClientUpdateG
                 </div>
               )}
 
-              <div className="mt-8">
-                <label className={`block text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+              <div className="mt-10">
+                <label className={`block text-sm font-bold uppercase tracking-wider mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   Tone Preference
                 </label>
-                <div className={`inline-flex rounded-lg border p-1 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-gray-100 border-gray-200'}`}>
+                <div className={`inline-flex rounded-xl border p-1.5 w-full ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-gray-100 border-gray-200'}`}>
                   {(['neutral', 'client-friendly', 'detailed'] as const).map((t) => (
                     <button
                       key={t}
                       onClick={() => setTone(t)}
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all capitalize ${
+                      className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all capitalize ${
                         tone === t
                           ? isDarkMode
-                            ? 'bg-slate-700 text-white shadow-sm'
+                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20'
                             : 'bg-white text-gray-900 shadow-sm'
                           : isDarkMode
-                            ? 'text-gray-400 hover:text-gray-200'
-                            : 'text-gray-500 hover:text-gray-700'
+                            ? 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
                       }`}
                     >
                       {t.replace('-', ' ')}
@@ -370,13 +378,13 @@ export function ClientUpdateGenerator({ isOpen, onClose, client }: ClientUpdateG
             )}
 
             {step === 2 && (
-              <div className="space-y-6 max-w-3xl mx-auto">
+              <div className="space-y-6 max-w-4xl mx-auto">
               {draft.map((section, sectionIndex) => (
-                <div key={section.id} className={`p-5 rounded-lg border group ${
-                  isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-gray-200'
+                <div key={section.id} className={`p-6 rounded-xl border group transition-all duration-300 hover:shadow-lg ${
+                  isDarkMode ? 'bg-white/5 border-white/10 hover:bg-white/[0.07]' : 'bg-white border-gray-200 hover:border-gray-300'
                 }`}>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className={`font-semibold ${isDarkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                    <h3 className={`font-bold text-lg ${isDarkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>
                       {section.title}
                     </h3>
                     <Button 
@@ -390,33 +398,34 @@ export function ClientUpdateGenerator({ isOpen, onClose, client }: ClientUpdateG
                   </div>
                   <div className="space-y-3">
                     {section.items.map((item, itemIndex) => (
-                      <div key={itemIndex} className="flex gap-3 group/item">
-                        <div className={`mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                      <div key={itemIndex} className="flex gap-4 group/item">
+                        <div className={`mt-2.5 w-1.5 h-1.5 rounded-full flex-shrink-0 ${
                           isDarkMode ? 'bg-emerald-500' : 'bg-emerald-600'
                         }`} />
                         <div className="flex-1 relative">
                           <textarea
                             value={item}
                             onChange={(e) => handleUpdateItem(section.id, itemIndex, e.target.value)}
-                            className={`w-full bg-transparent border-none resize-none focus:ring-0 p-0 text-sm leading-relaxed ${
-                              isDarkMode ? 'text-gray-200' : 'text-gray-700'
+                            className={`w-full bg-transparent border-none resize-none focus:ring-0 p-0 text-base leading-relaxed font-light ${
+                              isDarkMode ? 'text-gray-200 placeholder-gray-600' : 'text-gray-700 placeholder-gray-400'
                             }`}
                             rows={Math.max(2, Math.ceil(item.length / 80))}
+                            placeholder="Type update here..."
                           />
                         </div>
                         <button 
                           onClick={() => handleRemoveItem(section.id, itemIndex)}
-                          className={`opacity-0 group-hover/item:opacity-100 p-1 hover:text-red-500 transition-all ${
+                          className={`opacity-0 group-hover/item:opacity-100 p-2 rounded-lg hover:bg-red-500/10 hover:text-red-500 transition-all ${
                             isDarkMode ? 'text-slate-600' : 'text-gray-400'
                           }`}
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     ))}
                     {section.items.length === 0 && (
-                      <div className={`text-sm italic ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                        No items generated. Add one manually.
+                      <div className={`text-sm italic p-4 rounded-lg border border-dashed text-center ${isDarkMode ? 'text-gray-500 border-white/10' : 'text-gray-400 border-gray-200'}`}>
+                        No items generated. Click "Add Item" to start writing.
                       </div>
                     )}
                   </div>
@@ -427,50 +436,53 @@ export function ClientUpdateGenerator({ isOpen, onClose, client }: ClientUpdateG
 
             {step === 3 && (
               <div className="flex flex-col items-center justify-center py-8 text-center max-w-lg mx-auto">
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 ${
-                  isDarkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-600'
+                <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-8 relative ${
+                  isDarkMode ? 'bg-emerald-500/10' : 'bg-emerald-50'
                 }`}>
-                  <Check size={32} />
+                  <div className={`absolute inset-0 rounded-full animate-ping opacity-20 ${isDarkMode ? 'bg-emerald-500' : 'bg-emerald-400'}`}></div>
+                  <Check size={40} className={isDarkMode ? 'text-emerald-400' : 'text-emerald-600'} />
                 </div>
-                <h3 className={`text-2xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                <h3 className={`text-3xl font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                   Update Finalized!
                 </h3>
-                <p className={`mb-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                <p className={`mb-10 text-lg ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   The client update has been saved to your deliverables history. 
-                  You can now share it with {client.name}.
+                  You can now share it with <span className="font-semibold text-emerald-500">{client.name}</span>.
                 </p>
                 
                 {/* PDF Configuration */}
-                <div className={`w-full p-4 mb-6 rounded-lg border text-left ${
-                  isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-gray-50 border-gray-200'
+                <div className={`w-full p-6 mb-8 rounded-xl border text-left shadow-lg ${
+                  isDarkMode ? 'bg-slate-900/50 border-white/10' : 'bg-white border-gray-200'
                 }`}>
-                  <h4 className="font-medium mb-4 text-sm uppercase text-gray-500">PDF Report Settings</h4>
+                  <h4 className="font-bold mb-6 text-xs uppercase tracking-wider text-gray-500 flex items-center gap-2">
+                    <Settings size={14} /> PDF Report Settings
+                  </h4>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label>Report Mode</Label>
-                        <div className="text-xs text-gray-500">
+                      <div className="space-y-1">
+                        <Label className="text-base">Report Mode</Label>
+                        <div className="text-sm text-gray-500">
                           {exportMode === 'compact' ? 'Condensed 2-page summary' : 'Full multi-page report'}
                         </div>
                       </div>
-                      <div className={`flex items-center rounded-lg border p-1 ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'}`}>
+                      <div className={`flex items-center rounded-lg border p-1 ${isDarkMode ? 'bg-slate-900 border-white/10' : 'bg-gray-100 border-gray-200'}`}>
                         <button
                           onClick={() => setExportMode('compact')}
-                          className={`px-3 py-1 text-xs rounded-md transition-all ${
+                          className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
                             exportMode === 'compact' 
-                              ? isDarkMode ? 'bg-slate-700 text-white' : 'bg-gray-100 text-gray-900'
-                              : 'text-gray-500'
+                              ? isDarkMode ? 'bg-slate-700 text-white shadow-sm' : 'bg-white text-gray-900 shadow-sm'
+                              : 'text-gray-500 hover:text-gray-400'
                           }`}
                         >
                           Compact
                         </button>
                         <button
                           onClick={() => setExportMode('expanded')}
-                          className={`px-3 py-1 text-xs rounded-md transition-all ${
+                          className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
                             exportMode === 'expanded'
-                              ? isDarkMode ? 'bg-slate-700 text-white' : 'bg-gray-100 text-gray-900'
-                              : 'text-gray-500'
+                              ? isDarkMode ? 'bg-slate-700 text-white shadow-sm' : 'bg-white text-gray-900 shadow-sm'
+                              : 'text-gray-500 hover:text-gray-400'
                           }`}
                         >
                           Expanded
@@ -478,49 +490,66 @@ export function ClientUpdateGenerator({ isOpen, onClose, client }: ClientUpdateG
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <Label>Include Bills</Label>
-                      <Switch checked={includeBills} onCheckedChange={setIncludeBills} />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Label>Include Issues</Label>
-                      <Switch checked={includeIssues} onCheckedChange={setIncludeIssues} />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Label>Include Engagement Ledger</Label>
-                      <Switch checked={includeLedger} onCheckedChange={setIncludeLedger} />
+                    <div className="space-y-4 pt-2">
+                      <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-500/5 transition-colors">
+                        <div className="flex items-center gap-3">
+                           <div className={`p-2 rounded ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
+                             <FileText size={16} />
+                           </div>
+                           <Label className="cursor-pointer">Include Bills</Label>
+                        </div>
+                        <Switch checked={includeBills} onCheckedChange={setIncludeBills} />
+                      </div>
+                      <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-500/5 transition-colors">
+                        <div className="flex items-center gap-3">
+                           <div className={`p-2 rounded ${isDarkMode ? 'bg-orange-500/20 text-orange-400' : 'bg-orange-100 text-orange-600'}`}>
+                             <Zap size={16} />
+                           </div>
+                           <Label className="cursor-pointer">Include Issues</Label>
+                        </div>
+                        <Switch checked={includeIssues} onCheckedChange={setIncludeIssues} />
+                      </div>
+                      <div className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-500/5 transition-colors">
+                        <div className="flex items-center gap-3">
+                           <div className={`p-2 rounded ${isDarkMode ? 'bg-purple-500/20 text-purple-400' : 'bg-purple-100 text-purple-600'}`}>
+                             <DollarSign size={16} />
+                           </div>
+                           <Label className="cursor-pointer">Include Engagement Ledger</Label>
+                        </div>
+                        <Switch checked={includeLedger} onCheckedChange={setIncludeLedger} />
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 w-full gap-3">
+                <div className="grid grid-cols-1 w-full gap-4">
                   <Button 
                     variant="primary" 
                     size="lg" 
-                    className="w-full justify-between"
+                    className="w-full justify-between h-14 text-lg shadow-xl shadow-emerald-500/20"
                     onClick={() => handleExport('email')}
                   >
-                    <span className="flex items-center gap-2">
-                      <Copy size={18} /> Copy to Email
+                    <span className="flex items-center gap-3">
+                      <Copy size={20} /> Copy to Email
                     </span>
-                    <span className="text-xs opacity-70">Plain text</span>
+                    <span className="text-sm opacity-70 font-normal bg-white/20 px-2 py-0.5 rounded">Plain text</span>
                   </Button>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-4">
                     <Button 
                       variant="secondary" 
-                      className="justify-center"
+                      className="justify-center h-12 border-2"
                       onClick={() => handleExport('pdf')}
                       disabled={loading}
                     >
-                      {loading ? <Loader2 className="animate-spin" /> : <Download size={18} />} PDF Report
+                      {loading ? <Loader2 className="animate-spin mr-2" /> : <Download size={18} className="mr-2" />} PDF Report
                     </Button>
                     <Button 
                       variant="secondary" 
-                      className="justify-center"
+                      className="justify-center h-12 border-2"
                       onClick={() => handleExport('docx')}
                       disabled={loading}
                     >
-                      {loading ? <Loader2 className="animate-spin" /> : <FileText size={18} />} DOCX
+                      {loading ? <Loader2 className="animate-spin mr-2" /> : <FileText size={18} className="mr-2" />} DOCX
                     </Button>
                   </div>
                 </div>
@@ -529,14 +558,14 @@ export function ClientUpdateGenerator({ isOpen, onClose, client }: ClientUpdateG
           </div>
         </ScrollArea>
 
-        <div className={`p-4 border-t flex justify-between items-center ${
-          isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-gray-50 border-gray-100'
+        <div className={`p-6 border-t flex justify-between items-center backdrop-blur-md ${
+          isDarkMode ? 'bg-slate-900/80 border-white/10' : 'bg-white/90 border-gray-100'
         }`}>
           {step === 1 && (
             <>
-              <Button variant="ghost" onClick={onClose}>Cancel</Button>
-              <Button onClick={generatePreview} disabled={loading}>
-                {loading ? <Loader2 className="animate-spin" /> : <Wand2 size={16} />}
+              <Button variant="ghost" onClick={onClose} className="hover:bg-red-500/10 hover:text-red-500">Cancel</Button>
+              <Button onClick={generatePreview} disabled={loading} className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20">
+                {loading ? <Loader2 className="animate-spin mr-2" /> : <Wand2 size={18} className="mr-2" />}
                 Generate Draft
               </Button>
             </>
@@ -545,14 +574,14 @@ export function ClientUpdateGenerator({ isOpen, onClose, client }: ClientUpdateG
           {step === 2 && (
             <>
               <Button variant="ghost" onClick={() => setStep(1)}>
-                <ChevronLeft size={16} /> Back
+                <ChevronLeft size={16} className="mr-2" /> Back
               </Button>
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <Button variant="secondary" onClick={() => toast.success('Draft saved')}>
-                  <Save size={16} /> Save Draft
+                  <Save size={16} className="mr-2" /> Save Draft
                 </Button>
-                <Button onClick={handleFinalize} disabled={loading}>
-                  {loading ? <Loader2 className="animate-spin" /> : <Check size={16} />}
+                <Button onClick={handleFinalize} disabled={loading} className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20">
+                  {loading ? <Loader2 className="animate-spin mr-2" /> : <Check size={18} className="mr-2" />}
                   Finalize
                 </Button>
               </div>
@@ -560,7 +589,7 @@ export function ClientUpdateGenerator({ isOpen, onClose, client }: ClientUpdateG
           )}
 
           {step === 3 && (
-            <Button className="w-full" onClick={onClose}>
+            <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-12 text-lg shadow-lg shadow-emerald-500/20" onClick={onClose}>
               Done
             </Button>
           )}

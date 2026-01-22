@@ -3,8 +3,11 @@ import { Calendar, AlertCircle, ChevronRight } from 'lucide-react';
 import { DashboardModule } from '../../contexts/DashboardContext';
 import { useTheme } from '../../contexts/ThemeContext';
 
+import { TaskItem } from '../../services/AiBriefingService';
+
 interface TasksModuleProps {
   module: DashboardModule;
+  tasks?: TaskItem[];
 }
 
 const DEMO_TASKS = [
@@ -15,13 +18,16 @@ const DEMO_TASKS = [
   { id: '5', title: 'Draft Desert Solar client brief', due: '2025-12-27', priority: 'medium', owner: 'You' },
 ];
 
-export function TasksModule({ module }: TasksModuleProps) {
+export function TasksModule({ module, tasks: overrideTasks }: TasksModuleProps) {
   const { isDarkMode } = useTheme();
-  const tasks = module.filters.showOnlyMine 
+  
+  // Use override tasks if provided (for AI Briefing), otherwise use demo tasks filtered by module settings
+  const displayTasks = overrideTasks || (module.filters.showOnlyMine 
     ? DEMO_TASKS.filter(t => t.owner === 'You')
-    : DEMO_TASKS;
-
-  const overdue = 1;
+    : DEMO_TASKS);
+    
+  // Simple overdue check (just for demo purposes)
+  const overdue = overrideTasks ? 0 : 1;
 
   return (
     <div className="space-y-4">
@@ -49,7 +55,7 @@ export function TasksModule({ module }: TasksModuleProps) {
           }
         `}>
           <div className={`text-2xl font-bold ${isDarkMode ? 'text-blue-400' : 'text-blue-700'}`}>
-            {tasks.length}
+            {displayTasks.length}
           </div>
           <div className={`text-xs ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
             Next 7 Days
@@ -66,7 +72,7 @@ export function TasksModule({ module }: TasksModuleProps) {
           {module.filters.showOnlyMine ? 'My Focus Today' : 'Team Tasks'}
         </h4>
         <div className="space-y-2">
-          {tasks.slice(0, 5).map(task => (
+          {displayTasks.slice(0, 5).map(task => (
             <div 
               key={task.id} 
               className={`

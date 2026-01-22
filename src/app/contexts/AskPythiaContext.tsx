@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { useNavigation } from './NavigationContext';
+import { mockLegislators } from '../components/legislators/legislatorData';
 
 export interface PythiaContext {
   type: 'global' | 'bill' | 'client' | 'warroom' | 'records' | 'tasks' | 'legislator' | 'issue';
@@ -39,11 +41,13 @@ interface AskPythiaContextType {
   context: PythiaContext;
   conversation: PythiaConversationTurn[];
   isLoading: boolean;
+  isListening: boolean; // Keeping interface but will always be false
   openPythia: (ctx?: PythiaContext) => void;
   closePythia: () => void;
   askQuestion: (question: string) => Promise<void>;
   clearConversation: () => void;
   setContext: (ctx: PythiaContext) => void;
+  toggleVoice: () => void; // Deprecated but kept for interface compatibility
 }
 
 const defaultContext: PythiaContext = {
@@ -55,11 +59,13 @@ const AskPythiaContext = createContext<AskPythiaContextType>({
   context: defaultContext,
   conversation: [],
   isLoading: false,
+  isListening: false,
   openPythia: () => {},
   closePythia: () => {},
   askQuestion: async () => {},
   clearConversation: () => {},
   setContext: () => {},
+  toggleVoice: () => {},
 });
 
 export const AskPythiaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -67,6 +73,16 @@ export const AskPythiaProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [context, setContext] = useState<PythiaContext>(defaultContext);
   const [conversation, setConversation] = useState<PythiaConversationTurn[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Cleaned up conflicting speech recognition - VoiceContext now handles all voice input
+  const isListening = false;
+
+  const { navigateToPage, navigateToLegislator } = useNavigation();
+
+  // Deprecated: Voice logic moved to VoiceContext
+  const toggleVoice = () => {
+    console.warn("AskPythiaContext: toggleVoice is deprecated. Use VoiceContext instead.");
+  };
 
   // Keyboard shortcut: Ctrl/Cmd + K
   useEffect(() => {
@@ -122,11 +138,13 @@ export const AskPythiaProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         context,
         conversation,
         isLoading,
+        isListening,
         openPythia,
         closePythia,
         askQuestion,
         clearConversation,
         setContext,
+        toggleVoice,
       }}
     >
       {children}

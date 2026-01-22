@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Sparkles, FileText, Building2, Clock, AlertCircle, CheckCircle, ArrowRight, ExternalLink } from 'lucide-react';
+import { X, Sparkles, FileText, Building2, Clock, AlertCircle, CheckCircle, ArrowRight, ExternalLink, Mic, MicOff } from 'lucide-react';
 import { useAskPythia, PythiaSource, PythiaAction } from '../../contexts/AskPythiaContext';
 import { useToast } from '../../contexts/ToastContext';
 
 export function AskPythiaModal() {
-  const { isOpen, closePythia, context, conversation, isLoading, askQuestion, clearConversation, setContext } = useAskPythia();
+  const { isOpen, closePythia, context, conversation, isLoading, askQuestion, clearConversation, setContext, isListening, toggleVoice } = useAskPythia();
   const { showToast } = useToast();
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -148,7 +148,7 @@ export function AskPythiaModal() {
 
         {/* Input */}
         <div className="px-6 py-4 border-b border-gray-200">
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="relative">
             <input
               ref={inputRef}
               type="text"
@@ -156,8 +156,20 @@ export function AskPythiaModal() {
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Ask about bills, clients, tasks, records…"
               disabled={isLoading}
-              className="w-full px-4 py-3 text-base border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 transition-colors disabled:opacity-50"
+              className="w-full px-4 py-3 text-base border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 transition-colors disabled:opacity-50 pr-12"
             />
+            <button
+              type="button"
+              onClick={toggleVoice}
+              className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all ${
+                isListening 
+                  ? 'bg-red-100 text-red-600 animate-pulse' 
+                  : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+              }`}
+              title={isListening ? "Stop listening" : "Start voice command"}
+            >
+              {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+            </button>
           </form>
 
           {/* Suggested prompts */}

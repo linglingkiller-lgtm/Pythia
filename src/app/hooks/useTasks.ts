@@ -38,6 +38,18 @@ export function useTasks(options: UseTasksOptions = {}) {
 
         let filtered = [...mockTasks];
         
+        // Merge with localStorage tasks (Demo Hack)
+        try {
+            const localTasks = JSON.parse(localStorage.getItem('demo_new_tasks') || '[]');
+            if (localTasks.length > 0) {
+                const existingIds = new Set(filtered.map(t => t.id));
+                const newTasks = localTasks.filter((t: any) => !existingIds.has(t.id));
+                filtered = [...filtered, ...newTasks];
+            }
+        } catch (e) {
+            console.error('Failed to load demo tasks', e);
+        }
+        
         // Apply scope filter
         if (options.scope === 'my') {
           // In demo, current user is 'user-001'

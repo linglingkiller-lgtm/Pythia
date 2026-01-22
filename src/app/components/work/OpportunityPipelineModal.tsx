@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Card } from '../ui/Card';
 import { Chip } from '../ui/Chip';
 import { Button } from '../ui/Button';
@@ -57,16 +58,17 @@ export function OpportunityPipelineModal({ clientId, clientName, onClose }: Oppo
   };
 
   if (selectedOpportunity) {
-    return (
+    return createPortal(
       <OpportunityDetailView
         opportunity={selectedOpportunity}
         onClose={() => setSelectedOpportunity(null)}
-      />
+      />,
+      document.body
     );
   }
 
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/50 z-[150] flex items-center justify-center p-6">
       <div className="bg-white rounded-lg shadow-2xl max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white p-6 flex items-start justify-between">
@@ -184,7 +186,8 @@ export function OpportunityPipelineModal({ clientId, clientName, onClose }: Oppo
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -291,8 +294,8 @@ function OpportunityDetailView({ opportunity, onClose }: OpportunityDetailViewPr
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/50 z-[150] flex items-center justify-center p-6">
       <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className={`bg-gradient-to-r ${getTypeColor(opportunity.type)} text-white p-6`}>
@@ -463,6 +466,7 @@ function OpportunityDetailView({ opportunity, onClose }: OpportunityDetailViewPr
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

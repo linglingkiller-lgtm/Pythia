@@ -54,25 +54,25 @@ function FileCard({ attachment, isCurrentUser }: AttachmentCardProps) {
 
   return (
     <div className={`
-      max-w-sm rounded-2xl border overflow-hidden
-      ${isDarkMode ? 'bg-slate-800 border-white/10' : 'bg-white border-gray-200'}
+      max-w-sm rounded-xl border overflow-hidden
+      ${isDarkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-gray-200'}
     `}>
       <div className="p-4">
         <div className="flex items-start gap-3">
           <div className={`
-            w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
-            ${isDarkMode ? 'bg-slate-700' : 'bg-gray-100'}
+            w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0
+            ${isDarkMode ? 'bg-[#1e1e20]' : 'bg-gray-100'}
           `}>
             <Paperclip size={20} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className={`font-semibold text-sm mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            <h4 className={`font-bold text-sm mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               {attachment.title}
             </h4>
             <div className="flex items-center gap-2">
               <span className={`
-                px-2 py-0.5 rounded text-xs font-medium
-                ${isDarkMode ? 'bg-slate-700 text-gray-300' : 'bg-gray-100 text-gray-700'}
+                px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider
+                ${isDarkMode ? 'bg-[#1e1e20] text-gray-400' : 'bg-gray-100 text-gray-700'}
               `}>
                 {fileType}
               </span>
@@ -87,7 +87,7 @@ function FileCard({ attachment, isCurrentUser }: AttachmentCardProps) {
       </div>
       <div className={`px-4 py-3 border-t ${isDarkMode ? 'border-white/10' : 'border-gray-100'} flex gap-2`}>
         <button className={`
-          flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg
+          flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-lg
           ${isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-blue-500 text-white hover:bg-blue-600'}
           transition-all duration-200 hover:scale-105 hover:shadow-lg
         `}>
@@ -96,7 +96,7 @@ function FileCard({ attachment, isCurrentUser }: AttachmentCardProps) {
         </button>
         <button className={`
           flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg
-          ${isDarkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}
+          ${isDarkMode ? 'bg-[#1e1e20] text-white hover:bg-[#2a2a2c]' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}
           transition-all duration-200 hover:scale-105
         `}>
           <Download size={12} />
@@ -112,10 +112,10 @@ function TaskCard({ attachment, isCurrentUser }: AttachmentCardProps) {
   const [taskStatus, setTaskStatus] = useState(status);
 
   const statusColors: Record<string, string> = {
-    todo: isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700',
-    in_progress: isDarkMode ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-700',
-    blocked: isDarkMode ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-700',
-    done: isDarkMode ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-700',
+    todo: isDarkMode ? 'bg-[#1e1e20] text-gray-400' : 'bg-gray-100 text-gray-700',
+    in_progress: isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-100 text-blue-700',
+    blocked: isDarkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-700',
+    done: isDarkMode ? 'bg-green-500/10 text-green-400' : 'bg-green-100 text-green-700',
   };
 
   const priorityColors: Record<string, string> = {
@@ -126,26 +126,26 @@ function TaskCard({ attachment, isCurrentUser }: AttachmentCardProps) {
 
   return (
     <div className={`
-      max-w-sm rounded-2xl border overflow-hidden
-      ${isDarkMode ? 'bg-slate-800 border-white/10' : 'bg-white border-gray-200'}
+      max-w-sm rounded-xl border overflow-hidden
+      ${isDarkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-gray-200'}
     `}>
       <div className="p-4">
         <div className="flex items-start gap-3">
           <div className={`
-            w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
-            ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}
+            w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0
+            ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-100'}
           `}>
             <CheckSquare size={20} className={isDarkMode ? 'text-blue-400' : 'text-blue-600'} />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className={`font-semibold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            <h4 className={`font-bold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               {attachment.title}
             </h4>
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusColors[taskStatus]}`}>
+              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${statusColors[taskStatus]}`}>
                 {taskStatus.replace('_', ' ')}
               </span>
-              <span className={`text-xs font-medium ${priorityColors[priority]}`}>
+              <span className={`text-[10px] font-bold uppercase tracking-wider ${priorityColors[priority]}`}>
                 {priority} priority
               </span>
             </div>
@@ -166,9 +166,9 @@ function TaskCard({ attachment, isCurrentUser }: AttachmentCardProps) {
         <button
           onClick={() => setTaskStatus(taskStatus === 'done' ? 'todo' : 'done')}
           className={`
-            flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg
+            flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-lg
             ${taskStatus === 'done'
-              ? isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+              ? isDarkMode ? 'bg-[#1e1e20] text-white hover:bg-[#2a2a2c]' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
               : isDarkMode ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'
             }
             transition-colors
@@ -178,8 +178,8 @@ function TaskCard({ attachment, isCurrentUser }: AttachmentCardProps) {
           {taskStatus === 'done' ? 'Reopen' : 'Mark Done'}
         </button>
         <button className={`
-          flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg
-          ${isDarkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}
+          flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-lg
+          ${isDarkMode ? 'bg-[#1e1e20] text-white hover:bg-[#2a2a2c]' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}
           transition-colors
         `}>
           <ExternalLink size={12} />
@@ -196,19 +196,19 @@ function CalendarCard({ attachment, isCurrentUser }: AttachmentCardProps) {
 
   return (
     <div className={`
-      max-w-sm rounded-2xl border overflow-hidden
-      ${isDarkMode ? 'bg-slate-800 border-white/10' : 'bg-white border-gray-200'}
+      max-w-sm rounded-xl border overflow-hidden
+      ${isDarkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-gray-200'}
     `}>
       <div className="p-4">
         <div className="flex items-start gap-3">
           <div className={`
-            w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
-            ${isDarkMode ? 'bg-purple-900/30' : 'bg-purple-100'}
+            w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0
+            ${isDarkMode ? 'bg-purple-900/20' : 'bg-purple-100'}
           `}>
             <Calendar size={20} className={isDarkMode ? 'text-purple-400' : 'text-purple-600'} />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className={`font-semibold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            <h4 className={`font-bold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               {attachment.title}
             </h4>
             <div className="space-y-1">
@@ -232,7 +232,7 @@ function CalendarCard({ attachment, isCurrentUser }: AttachmentCardProps) {
       </div>
       <div className={`px-4 py-3 border-t ${isDarkMode ? 'border-white/10' : 'border-gray-100'} flex gap-2`}>
         <button className={`
-          flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg
+          flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-lg
           ${isDarkMode ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-purple-500 text-white hover:bg-purple-600'}
           transition-colors
         `}>
@@ -241,7 +241,7 @@ function CalendarCard({ attachment, isCurrentUser }: AttachmentCardProps) {
         </button>
         <button className={`
           flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg
-          ${isDarkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}
+          ${isDarkMode ? 'bg-[#1e1e20] text-white hover:bg-[#2a2a2c]' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}
           transition-colors
         `}>
           <ExternalLink size={12} />
@@ -257,25 +257,25 @@ function RecordCard({ attachment, isCurrentUser }: AttachmentCardProps) {
 
   return (
     <div className={`
-      max-w-sm rounded-2xl border overflow-hidden
-      ${isDarkMode ? 'bg-slate-800 border-white/10' : 'bg-white border-gray-200'}
+      max-w-sm rounded-xl border overflow-hidden
+      ${isDarkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-gray-200'}
     `}>
       <div className="p-4">
         <div className="flex items-start gap-3">
           <div className={`
-            w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
-            ${isDarkMode ? 'bg-green-900/30' : 'bg-green-100'}
+            w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0
+            ${isDarkMode ? 'bg-green-900/20' : 'bg-green-100'}
           `}>
             <FileText size={20} className={isDarkMode ? 'text-green-400' : 'text-green-600'} />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className={`font-semibold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            <h4 className={`font-bold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               {attachment.title}
             </h4>
             <div className="flex items-center gap-2 mb-2">
               <span className={`
-                px-2 py-0.5 rounded text-xs font-medium
-                ${isDarkMode ? 'bg-slate-700 text-gray-300' : 'bg-gray-100 text-gray-700'}
+                px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider
+                ${isDarkMode ? 'bg-[#1e1e20] text-gray-300' : 'bg-gray-100 text-gray-700'}
               `}>
                 {recordType?.replace('_', ' ')}
               </span>
@@ -287,7 +287,7 @@ function RecordCard({ attachment, isCurrentUser }: AttachmentCardProps) {
                     key={i}
                     className={`
                       px-1.5 py-0.5 rounded text-[10px] font-medium
-                      ${isDarkMode ? 'bg-slate-700 text-gray-400' : 'bg-gray-100 text-gray-600'}
+                      ${isDarkMode ? 'bg-[#1e1e20] text-gray-400' : 'bg-gray-100 text-gray-600'}
                     `}
                   >
                     #{tag}
@@ -300,7 +300,7 @@ function RecordCard({ attachment, isCurrentUser }: AttachmentCardProps) {
       </div>
       <div className={`px-4 py-3 border-t ${isDarkMode ? 'border-white/10' : 'border-gray-100'}`}>
         <button className={`
-          w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg
+          w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-lg
           ${isDarkMode ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}
           transition-colors
         `}>
@@ -318,19 +318,19 @@ function LinkCard({ attachment, isCurrentUser }: AttachmentCardProps) {
 
   return (
     <div className={`
-      max-w-sm rounded-2xl border overflow-hidden
-      ${isDarkMode ? 'bg-slate-800 border-white/10' : 'bg-white border-gray-200'}
+      max-w-sm rounded-xl border overflow-hidden
+      ${isDarkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-gray-200'}
     `}>
       <div className="p-4">
         <div className="flex items-start gap-3">
           <div className={`
-            w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
-            ${isDarkMode ? 'bg-cyan-900/30' : 'bg-cyan-100'}
+            w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0
+            ${isDarkMode ? 'bg-cyan-900/20' : 'bg-cyan-100'}
           `}>
             <LinkIcon size={20} className={isDarkMode ? 'text-cyan-400' : 'text-cyan-600'} />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className={`font-semibold text-sm mb-1 truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            <h4 className={`font-bold text-sm mb-1 truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               {attachment.title}
             </h4>
             <p className={`text-xs truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -343,7 +343,7 @@ function LinkCard({ attachment, isCurrentUser }: AttachmentCardProps) {
         <button
           onClick={() => url && window.open(url, '_blank')}
           className={`
-            w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg
+            w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-lg
             ${isDarkMode ? 'bg-cyan-600 text-white hover:bg-cyan-700' : 'bg-cyan-500 text-white hover:bg-cyan-600'}
             transition-colors
           `}
@@ -387,19 +387,19 @@ function PollCard({ attachment, isCurrentUser }: AttachmentCardProps) {
 
   return (
     <div className={`
-      max-w-sm rounded-2xl border overflow-hidden
-      ${isDarkMode ? 'bg-slate-800 border-white/10' : 'bg-white border-gray-200'}
+      max-w-sm rounded-xl border overflow-hidden
+      ${isDarkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-gray-200'}
     `}>
       <div className="p-4">
         <div className="flex items-start gap-3 mb-4">
           <div className={`
-            w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
-            ${isDarkMode ? 'bg-orange-900/30' : 'bg-orange-100'}
+            w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0
+            ${isDarkMode ? 'bg-orange-900/20' : 'bg-orange-100'}
           `}>
             <BarChart3 size={20} className={isDarkMode ? 'text-orange-400' : 'text-orange-600'} />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className={`font-semibold text-sm mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            <h4 className={`font-bold text-sm mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               {attachment.title}
             </h4>
             <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -421,7 +421,7 @@ function PollCard({ attachment, isCurrentUser }: AttachmentCardProps) {
                   w-full text-left p-3 rounded-lg border transition-all relative overflow-hidden
                   ${hasVoted
                     ? isDarkMode ? 'border-orange-500/50 bg-orange-900/20' : 'border-orange-300 bg-orange-50'
-                    : isDarkMode ? 'border-white/10 hover:bg-slate-700' : 'border-gray-200 hover:bg-gray-50'
+                    : isDarkMode ? 'border-white/10 hover:bg-[#1e1e20]' : 'border-gray-200 hover:bg-gray-50'
                   }
                 `}
               >
@@ -453,17 +453,17 @@ function ApprovalCard({ attachment, isCurrentUser }: AttachmentCardProps) {
 
   const statusConfig: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
     pending: {
-      bg: isDarkMode ? 'bg-yellow-900/30' : 'bg-yellow-100',
+      bg: isDarkMode ? 'bg-yellow-900/20' : 'bg-yellow-100',
       text: isDarkMode ? 'text-yellow-400' : 'text-yellow-700',
       icon: <Clock size={14} />,
     },
     approved: {
-      bg: isDarkMode ? 'bg-green-900/30' : 'bg-green-100',
+      bg: isDarkMode ? 'bg-green-900/20' : 'bg-green-100',
       text: isDarkMode ? 'text-green-400' : 'text-green-700',
       icon: <Check size={14} />,
     },
     rejected: {
-      bg: isDarkMode ? 'bg-red-900/30' : 'bg-red-100',
+      bg: isDarkMode ? 'bg-red-900/20' : 'bg-red-100',
       text: isDarkMode ? 'text-red-400' : 'text-red-700',
       icon: <XIcon size={14} />,
     },
@@ -473,23 +473,23 @@ function ApprovalCard({ attachment, isCurrentUser }: AttachmentCardProps) {
 
   return (
     <div className={`
-      max-w-sm rounded-2xl border overflow-hidden
-      ${isDarkMode ? 'bg-slate-800 border-white/10' : 'bg-white border-gray-200'}
+      max-w-sm rounded-xl border overflow-hidden
+      ${isDarkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-gray-200'}
     `}>
       <div className="p-4">
         <div className="flex items-start gap-3 mb-3">
           <div className={`
-            w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
-            ${isDarkMode ? 'bg-emerald-900/30' : 'bg-emerald-100'}
+            w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0
+            ${isDarkMode ? 'bg-emerald-900/20' : 'bg-emerald-100'}
           `}>
             <CheckCircle2 size={20} className={isDarkMode ? 'text-emerald-400' : 'text-emerald-600'} />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className={`font-semibold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            <h4 className={`font-bold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               {attachment.title}
             </h4>
             <div className="flex items-center gap-2 mb-2">
-              <span className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 ${config.bg} ${config.text}`}>
+              <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 ${config.bg} ${config.text}`}>
                 {config.icon}
                 {status}
               </span>
@@ -510,7 +510,7 @@ function ApprovalCard({ attachment, isCurrentUser }: AttachmentCardProps) {
           <button
             onClick={() => setStatus('approved')}
             className={`
-              flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg
+              flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-lg
               ${isDarkMode ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-500 text-white hover:bg-green-600'}
               transition-colors
             `}
@@ -521,7 +521,7 @@ function ApprovalCard({ attachment, isCurrentUser }: AttachmentCardProps) {
           <button
             onClick={() => setStatus('rejected')}
             className={`
-              flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg
+              flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-lg
               ${isDarkMode ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}
               transition-colors
             `}
@@ -541,7 +541,7 @@ function PythiaBriefCard({ attachment, isCurrentUser }: AttachmentCardProps) {
 
   return (
     <div className={`
-      max-w-md rounded-2xl border overflow-hidden
+      max-w-md rounded-xl border overflow-hidden
       ${isDarkMode
         ? 'bg-gradient-to-br from-red-900/30 to-blue-900/30 border-red-500/20'
         : 'bg-gradient-to-br from-red-50 to-blue-50 border-red-200'
@@ -549,24 +549,24 @@ function PythiaBriefCard({ attachment, isCurrentUser }: AttachmentCardProps) {
     `}>
       <div className="p-4">
         <div className="flex items-start gap-3 mb-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-blue-500 flex items-center justify-center flex-shrink-0">
+          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-red-500 to-blue-500 flex items-center justify-center flex-shrink-0">
             <Sparkles size={20} className="text-white" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles size={12} className={isDarkMode ? 'text-red-400' : 'text-red-600'} />
-              <span className={`text-xs font-bold uppercase tracking-wide ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
+              <span className={`text-[10px] font-bold uppercase tracking-wider ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
                 Revere Brief
               </span>
             </div>
-            <h4 className={`font-semibold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            <h4 className={`font-bold text-sm mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               {attachment.title}
             </h4>
           </div>
         </div>
         <div className={`
           p-3 rounded-xl mb-3
-          ${isDarkMode ? 'bg-slate-800/50' : 'bg-white/50'}
+          ${isDarkMode ? 'bg-[#121214]/50' : 'bg-white/50'}
         `}>
           <FormattedMessage
             text={content}
@@ -576,7 +576,7 @@ function PythiaBriefCard({ attachment, isCurrentUser }: AttachmentCardProps) {
       </div>
       <div className={`px-4 py-3 border-t ${isDarkMode ? 'border-white/10' : 'border-gray-100'}`}>
         <button className={`
-          w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg
+          w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-lg
           ${isDarkMode ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-red-500 text-white hover:bg-red-600'}
           transition-colors
         `}>

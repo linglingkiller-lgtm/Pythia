@@ -1,5 +1,5 @@
-import React from 'react';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import React, { Suspense } from 'react';
+import { AuthProvider, useAuth } from '@/app/contexts/AuthContext';
 import { SupabaseAuthProvider, useSupabaseAuth } from './contexts/SupabaseAuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { AskPythiaProvider } from './contexts/AskPythiaContext';
@@ -16,8 +16,6 @@ import { SignInPage } from './components/auth/SignInPage';
 import { InviteAcceptPage } from './components/auth/InviteAcceptPage';
 import { OnboardingPage } from './components/auth/OnboardingPage';
 import { Sidebar } from './components/Sidebar';
-import { TopHeader } from './components/TopHeader';
-import { Footer } from './components/Footer';
 import { WatchlistSnapshot } from './components/dashboard/WatchlistSnapshot';
 import { IssueHeatTiles } from './components/dashboard/IssueHeatTiles';
 import { LiveLegislativeFeed } from './components/dashboard/LiveLegislativeFeed';
@@ -30,29 +28,139 @@ import { RecordsLedger } from './components/dashboard/RecordsLedger';
 import { LegislatorDatabase } from './components/legislator/LegislatorDatabase';
 import { SmartStructuringDemo } from './components/smart-structuring/SmartStructuringDemo';
 import { ModularDashboard } from './components/dashboard-modules/ModularDashboard';
-import { CalendarPage } from './components/calendar/CalendarPage';
-import { IssuesHub } from './components/issues/IssuesHub';
-import { IssueIntelligencePage } from './components/issues/IssueIntelligencePage';
-import { LegislatorsPage } from './components/legislators/LegislatorsPage';
-import { BillsPage } from './components/bills/BillsPage';
-import { BillDetailPage } from './components/bills/BillDetailPage';
-import { ClientsIndexPage } from './components/clients/ClientsIndexPage';
-import { ClientDetailPage } from './components/clients/ClientDetailPage';
-import { CommitteesIndexPage } from './components/committees/CommitteesIndexPage';
-import { WorkHubPage } from './components/work/WorkHubPage';
-import { WarRoom } from './components/WarRoom';
-import { UsersManagementPage } from './components/admin/UsersManagementPage';
-import { RecordsPage } from './pages/RecordsPage';
-import { ManagerConsolePage } from './pages/ManagerConsolePage';
-import { AnalyticsPage } from './pages/AnalyticsPage';
-import SuitePage from './pages/SuitePage';
-import { ChatPage } from './components/chat/ChatPage';
-import { SettingsPage } from './components/settings/SettingsPage';
+
+// Lazy Loaded Components for Performance
+const CalendarPage = React.lazy(() => import('./components/calendar/CalendarPage').then(module => ({ default: module.CalendarPage })));
+const IssuesHub = React.lazy(() => import('./components/issues/IssuesHub').then(module => ({ default: module.IssuesHub })));
+const IssueIntelligencePage = React.lazy(() => import('./components/issues/IssueIntelligencePage').then(module => ({ default: module.IssueIntelligencePage })));
+const LegislatorsPage = React.lazy(() => import('./components/legislators/LegislatorsPage').then(module => ({ default: module.LegislatorsPage })));
+const BillsPage = React.lazy(() => import('./components/bills/BillsPage').then(module => ({ default: module.BillsPage })));
+const BillDetailPage = React.lazy(() => import('./components/bills/BillDetailPage').then(module => ({ default: module.BillDetailPage })));
+const ClientsIndexPage = React.lazy(() => import('./components/clients/ClientsIndexPage').then(module => ({ default: module.ClientsIndexPage })));
+const ClientDetailPage = React.lazy(() => import('./components/clients/ClientDetailPage').then(module => ({ default: module.ClientDetailPage })));
+const CommitteesIndexPage = React.lazy(() => import('./components/committees/CommitteesIndexPage').then(module => ({ default: module.CommitteesIndexPage })));
+const WorkHubPage = React.lazy(() => import('./components/work/WorkHubPage').then(module => ({ default: module.WorkHubPage })));
+const WarRoom = React.lazy(() => import('./components/WarRoom').then(module => ({ default: module.WarRoom })));
+const UsersManagementPage = React.lazy(() => import('./components/admin/UsersManagementPage').then(module => ({ default: module.UsersManagementPage })));
+const RecordsPage = React.lazy(() => import('./pages/RecordsPage').then(module => ({ default: module.RecordsPage })));
+const ManagerConsolePage = React.lazy(() => import('./pages/ManagerConsolePage').then(module => ({ default: module.ManagerConsolePage })));
+const ElectionsHubPage = React.lazy(() => import('./pages/ElectionsHubPage'));
+const AnalyticsPage = React.lazy(() => import('./pages/AnalyticsPage').then(module => ({ default: module.AnalyticsPage })));
+const LegislatorElectionsPage = React.lazy(() => import('./pages/LegislatorElectionsPage').then(module => ({ default: module.LegislatorElectionsPage })));
+const SuitePage = React.lazy(() => import('./pages/SuitePage'));
+const ChatPage = React.lazy(() => import('./components/chat/ChatPage').then(module => ({ default: module.ChatPage })));
+const SettingsPage = React.lazy(() => import('./components/settings/SettingsPage').then(module => ({ default: module.SettingsPage })));
+const ConstellationPage = React.lazy(() => import('./pages/ConstellationPage').then(module => ({ default: module.default })));
+
 import { mockLegislators } from './components/legislators/legislatorData';
 import { AlertCircle, RefreshCw, LogOut } from 'lucide-react';
 import pythiaLogoWatermark from 'figma:asset/58e907a41a4f196b9f20552a2d411f1e34960e14.png';
-import { AuthBridge } from './components/AuthBridge';
 import { DbSmokeTest } from './components/debug/DbSmokeTest';
+import { CelestialCompassBackground } from './components/ui/CelestialCompassBackground';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { NavigationProvider, useNavigation } from './contexts/NavigationContext';
+import { VoiceProvider } from './contexts/VoiceContext';
+import { Toaster } from 'sonner';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+import { PublicClientApplication } from "@azure/msal-browser";
+import { MsalProvider } from "@azure/msal-react";
+import { msalConfig } from './config/msalConfig';
+
+const pca = new PublicClientApplication(msalConfig);
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 30, // 30 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+// Demo Loading Wrapper - Shows loading screens after demo sign-in
+function DemoLoadingWrapper({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, currentUser } = useAuth();
+  const { isDarkMode } = useTheme();
+  const { appMode } = useAppMode();
+  const [loadingStep, setLoadingStep] = React.useState<1 | 2 | 3 | null>(null);
+  const [showContent, setShowContent] = React.useState(false);
+
+  // Track previous auth state to detect when user just logged in
+  const prevAuthRef = React.useRef(isAuthenticated);
+
+  React.useEffect(() => {
+    // Only run loading sequence in demo mode
+    if (appMode !== 'demo') {
+      setShowContent(true);
+      return;
+    }
+
+    // Detect when user just authenticated
+    if (!prevAuthRef.current && isAuthenticated) {
+      console.log('🎬 [DemoLoading] Starting demo loading sequence');
+      setLoadingStep(1);
+      setShowContent(false);
+
+      // Step 1: Establishing workspace
+      setTimeout(() => {
+        setLoadingStep(2);
+      }, 1500);
+
+      // Step 2: Synchronizing intel
+      setTimeout(() => {
+        setLoadingStep(3);
+      }, 3000);
+
+      // Step 3: Ready - then show content
+      setTimeout(() => {
+        setLoadingStep(null);
+        setShowContent(true);
+        console.log('✅ [DemoLoading] Loading sequence complete');
+      }, 4500);
+    } else if (isAuthenticated) {
+      // Already authenticated (e.g., from localStorage), skip loading
+      setShowContent(true);
+    } else {
+      // Not authenticated
+      setShowContent(true);
+    }
+
+    prevAuthRef.current = isAuthenticated;
+  }, [isAuthenticated, appMode]);
+
+  // Show loading screen if we're in a loading step
+  if (loadingStep) {
+    const titles = {
+      1: 'Establishing your workspace…',
+      2: 'Synchronizing your intel…',
+      3: 'Finalizing access…',
+    };
+    const subtexts = {
+      1: 'Confirming identity and permissions.',
+      2: 'Loading tasks, records, and dashboards.',
+      3: 'Preparing your command center.',
+    };
+
+    return (
+      <LoadingScreen
+        step={loadingStep}
+        title={titles[loadingStep]}
+        subtext={subtexts[loadingStep]}
+        orgName={currentUser ? 'Echo Canyon Consulting (Demo)' : undefined}
+        userRole={currentUser ? 'Admin' : undefined}
+        isDarkMode={isDarkMode}
+      />
+    );
+  }
+
+  // Show content once loading is complete
+  return showContent ? <>{children}</> : null;
+}
 
 // Main App with Auth and Org
 function AppWithOrg() {
@@ -67,62 +175,46 @@ function AppWithOrg() {
   const { isDarkMode } = useTheme();
   const { appMode } = useAppMode();
   
-  // PROD MODE: Use Supabase session as source of truth
-  const isAuthed = appMode === 'prod' 
-    ? !!supabaseSession 
-    : legacyIsAuthenticated; // Demo mode uses legacy auth
+  // Demo Mode: Use legacy auth (requires sign-in)
+  // Prod Mode: Use MSAL (AuthContext)
+  const isAuthed = legacyIsAuthenticated;
 
   console.log('🚪 [AppWithOrg] Auth Gate Check:', {
     appMode,
     isAuthed,
+    legacyIsAuthenticated,
     membershipsLoading,
     membershipsLoaded,
     membershipsCount: orgMemberships.length,
     sessionUser: supabaseUser?.email
   });
 
-  // If not authed (should be handled by MainApp but safety check)
+  // If not authed, let MainApp handle showing SignInPage
   if (!isAuthed) {
     return <MainApp />;
   }
 
-  // LOADING ORGANIZATIONS
-  if (membershipsLoading) {
-     return (
-      <LoadingScreen
-        step={1}
-        title="Establishing your workspace…"
-        subtext="Confirming membership and org permissions."
-        isDarkMode={isDarkMode}
-      />
+  // DEMO MODE: Show loading screens, then go to MainApp
+  if (appMode === 'demo') {
+    return (
+      <DemoLoadingWrapper>
+        <MainApp />
+      </DemoLoadingWrapper>
     );
   }
 
-  // NO ORGANIZATIONS -> CREATE ORG (Onboarding)
-  // Only show this if strictly loaded AND empty
-  if (membershipsLoaded && orgMemberships.length === 0) {
-    console.log('⚠️ [AppWithOrg] No memberships found - routing to Onboarding');
-    const userId = appMode === 'prod' ? supabaseUser?.id : currentUser?.id;
-    const userEmail = appMode === 'prod' ? supabaseUser?.email : currentUser?.email;
-    
-    if (userId && userEmail) {
-      return (
-        <OnboardingPage
-          userId={userId}
-          userEmail={userEmail}
-          isDarkMode={isDarkMode}
-          onComplete={() => window.location.reload()} // Simple reload to re-check auth/memberships
-        />
-      );
-    }
-  }
+  // PROD MODE: Continue with org membership checks
+  // LOADING ORGANIZATIONS
+  // Skip org check for now as we transition to MSAL
+  // if (membershipsLoading) { ... }
 
-  // AUTHENTICATED & HAS ORGS -> Proceed to App
-  const userId = appMode === 'prod' ? supabaseUser?.id : currentUser?.id;
-  const userEmail = appMode === 'prod' ? supabaseUser?.email : currentUser?.email;
+  // AUTHENTICATED -> Proceed to App
+  // Use currentUser from AuthContext (MSAL)
+  const userId = currentUser?.id;
+  const userEmail = currentUser?.email;
 
   if (userId && userEmail) {
-    console.log('✅ [AppWithOrg] Authenticated & Has Orgs - wrapping in OrgProvider');
+    console.log('✅ [AppWithOrg] Authenticated & Has User Data - wrapping in OrgProvider');
     return (
       <OrgProvider userId={userId} userEmail={userEmail}>
         <OrgBootstrapWrapper />
@@ -185,7 +277,7 @@ function OrgBootstrapWrapper() {
 // Main App with Auth
 function MainApp() {
   const authContext = useAuth();
-  const { isAuthenticated, currentUser, getUserRole } = authContext;
+  const { isAuthenticated, currentUser, getUserRole, isAuthInProgress } = authContext;
   const { isDarkMode } = useTheme();
   const { 
     membershipError, 
@@ -195,18 +287,31 @@ function MainApp() {
     authReady // Use new authReady flag
   } = useSupabaseAuth();
   const { appMode } = useAppMode();
+  
+  // Navigation Context
+  const {
+    currentPage,
+    currentIssueSlug,
+    currentBillId,
+    currentLegislatorId,
+    currentClientId,
+    currentChatMessageId,
+    pageParams,
+    navigateToPage: setCurrentPage,
+    navigateToIssue,
+    navigateToBill,
+    navigateToLegislator,
+    navigateToLegislatorElections,
+    navigateToClient,
+    navigateToChat,
+  } = useNavigation();
+
   const [authView, setAuthView] = React.useState<'signin' | 'invite' | 'app'>('signin');
-  const [dataInitialized, setDataInitialized] = React.useState(false);
+  // DEMO MODE: Skip data initialization check
+  const [dataInitialized, setDataInitialized] = React.useState(true);
   const [inviteToken, setInviteToken] = React.useState('');
   const [showMembershipError, setShowMembershipError] = React.useState(true);
   
-  const [currentPage, setCurrentPage] = React.useState<string>('War Room');
-  const [currentIssueSlug, setCurrentIssueSlug] = React.useState<string | null>(null);
-  const [currentBillId, setCurrentBillId] = React.useState<string | null>(null);
-  const [currentLegislatorId, setCurrentLegislatorId] = React.useState<string | null>(null);
-  const [currentClientId, setCurrentClientId] = React.useState<string | null>(null);
-  const [currentCommitteeId, setCurrentCommitteeId] = React.useState<string | null>(null);
-
   // Track watched legislators - initialize from legislator data
   const [watchedLegislatorIds, setWatchedLegislatorIds] = React.useState<Set<string>>(() => {
     const initialWatched = new Set<string>();
@@ -245,19 +350,46 @@ function MainApp() {
     }
   }, []);
 
-  // Determine initial page based on user role
+  // Track if we've already redirected on this session
+  const hasRedirectedRef = React.useRef(false);
+
+  // Determine initial page based on user role - ONLY RUN ONCE when auth is ready
   React.useEffect(() => {
-    if (isAuthenticated && currentUser) {
-      const role = getUserRole();
-      if (role?.name.toLowerCase().includes('canvassing') && !role.name.toLowerCase().includes('lead')) {
-        // Canvassing-only users go to War Room (canvassing planner)
-        setCurrentPage('War Room');
-      } else {
-        // Everyone else goes to Dashboard by default
+    if (isAuthenticated && currentUser && !hasRedirectedRef.current) {
+      // Always set to Dashboard on successful auth in Live mode
+      if (appMode === 'prod' || !currentPage) {
         setCurrentPage('Dashboard');
       }
+      hasRedirectedRef.current = true;
     }
-  }, [isAuthenticated, currentUser, getUserRole]);
+  }, [isAuthenticated, currentUser, currentPage, appMode, setCurrentPage]);
+
+  // Sidebar Collapse State
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(() => {
+    const saved = localStorage.getItem('sidebarCollapsed');
+    return saved === 'true';
+  });
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed(prev => {
+      const newState = !prev;
+      localStorage.setItem('sidebarCollapsed', String(newState));
+      return newState;
+    });
+  };
+
+  // Keyboard shortcut for sidebar toggle
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+        e.preventDefault();
+        toggleSidebar();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Reset auth view when user logs out
   React.useEffect(() => {
@@ -265,45 +397,6 @@ function MainApp() {
       setAuthView('signin');
     }
   }, [isAuthenticated]);
-
-  const handleNavigateToIssue = (slug: string) => {
-    setCurrentPage('Issues');
-    setCurrentIssueSlug(slug);
-  };
-
-  const handleNavigateToBill = (billId: string) => {
-    setCurrentBillId(billId);
-    setCurrentPage('Bills');
-  };
-
-  const handleNavigateToLegislator = (legislatorId: string) => {
-    setCurrentPage('Legislators');
-    setCurrentLegislatorId(legislatorId);
-  };
-
-  const handleNavigateToClient = (clientId: string) => {
-    setCurrentPage('Clients');
-    setCurrentClientId(clientId);
-  };
-
-  const handlePageChange = (page: string) => {
-    setCurrentPage(page);
-    if (page === 'Issues') {
-      setCurrentIssueSlug(null);
-    }
-    if (page === 'Bills') {
-      setCurrentBillId(null);
-    }
-    if (page === 'Legislators') {
-      setCurrentLegislatorId(null);
-    }
-    if (page === 'Clients') {
-      setCurrentClientId(null);
-    }
-    if (page === 'Committees') {
-      setCurrentCommitteeId(null);
-    }
-  };
 
   // Handle sign in success
   const handleSignInSuccess = () => {
@@ -316,9 +409,8 @@ function MainApp() {
     setInviteToken('');
   };
 
-  // ROUTE GUARD: Use Supabase session as source of truth in prod mode
-  // PROD MODE: Use Supabase session; DEMO MODE: Use legacy auth
-  const isAuthedForRouting = appMode === 'prod' ? !!supabaseSession : isAuthenticated;
+  // ROUTE GUARD: Use MSAL (AuthContext)
+  const isAuthedForRouting = isAuthenticated;
 
   // GATE LOGGING
   console.log('🚪 [MainApp] Route Guard Check:', {
@@ -329,11 +421,20 @@ function MainApp() {
     isAuthedForRouting,
     renderingComponent: isAuthedForRouting ? 'Authenticated App' : 'SignInPage',
   });
-
-  // CHECKING AUTHENTICATION LOOP FIX
-  // Only show "Checking authentication..." if auth is NOT ready
-  if (appMode === 'prod' && !authReady) {
-    console.log('⏳ [MainApp] Auth not ready (initializing session), showing checking screen');
+  
+  // CHECKING AUTHENTICATION
+  // Only show "Checking authentication..." if MSAL is actively working (startup/handleRedirect) AND we don't have a user yet.
+  // We no longer wait for Supabase authReady as Supabase auth is deprecated.
+  
+  const isMsalInteraction = isAuthInProgress && !isAuthenticated;
+  
+  if (isMsalInteraction) {
+    console.log('⏳ [MainApp] Auth check in progress...', { 
+      isAuthInProgress, 
+      isAuthenticated,
+      msalStatus: 'Blocking'
+    });
+    
     // Using Step 1 for auth check as well
     return (
       <LoadingScreen
@@ -367,7 +468,7 @@ function MainApp() {
   console.log('✅ [MainApp] Authenticated, rendering app shell');
 
   // Show data initializer if data hasn't been initialized yet
-  if (!dataInitialized) {
+  if (!dataInitialized && appMode !== 'demo') {
     return <DataInitializer isDarkMode={isDarkMode} onComplete={() => setDataInitialized(true)} />;
   }
 
@@ -381,7 +482,7 @@ function MainApp() {
         return (
           <IssueIntelligencePage
             issueSlug={currentIssueSlug}
-            onBack={() => setCurrentIssueSlug(null)}
+            onBack={() => navigateToPage('Issues')}
           />
         );
       }
@@ -391,9 +492,11 @@ function MainApp() {
     if (currentPage === 'Legislators') {
       return <LegislatorsPage 
         initialLegislatorId={currentLegislatorId} 
-        onNavigateToBill={handleNavigateToBill}
+        onNavigateToBill={navigateToBill}
+        onNavigateToElections={navigateToLegislatorElections}
         watchedLegislatorIds={watchedLegislatorIds}
         onToggleWatch={toggleWatchLegislator}
+        initialFilters={pageParams?.filters}
       />;
     }
 
@@ -402,12 +505,12 @@ function MainApp() {
         return (
           <BillDetailPage
             billId={currentBillId}
-            onBack={() => setCurrentBillId(null)}
-            onNavigateToLegislator={handleNavigateToLegislator}
+            onBack={() => navigateToPage('Bills')} 
+            onNavigateToLegislator={navigateToLegislator}
           />
         );
       }
-      return <BillsPage onNavigateToBill={handleNavigateToBill} />;
+      return <BillsPage onNavigateToBill={navigateToBill} />;
     }
 
     if (currentPage === 'Clients') {
@@ -415,19 +518,20 @@ function MainApp() {
         return (
           <ClientDetailPage
             clientId={currentClientId}
-            onNavigateBack={() => setCurrentClientId(null)}
-            onNavigateToBill={handleNavigateToBill}
+            onNavigateBack={() => navigateToPage('Clients')}
+            onNavigateToBill={navigateToBill}
           />
         );
       }
-      return <ClientsIndexPage onNavigateToClient={handleNavigateToClient} />
+      return <ClientsIndexPage onNavigateToClient={navigateToClient} />
     }
 
     if (currentPage === 'Projects') {
       return (
         <WorkHubPage
-          onNavigateToClient={handleNavigateToClient}
-          onNavigateToBill={handleNavigateToBill}
+          onNavigateToClient={navigateToClient}
+          onNavigateToBill={navigateToBill}
+          onNavigateToChat={navigateToChat}
         />
       );
     }
@@ -437,7 +541,10 @@ function MainApp() {
     }
 
     if (currentPage === 'Chat') {
-      return <ChatPage />;
+      return <ChatPage 
+        initialMessageId={currentChatMessageId} 
+        draftRecipient={pageParams?.draftRecipient}
+      />;
     }
 
     if (currentPage === 'Settings') {
@@ -460,120 +567,45 @@ function MainApp() {
       return <ManagerConsolePage />;
     }
 
+    if (currentPage === 'Elections') {
+      return <ElectionsHubPage />;
+    }
+
     if (currentPage === 'Analytics') {
       return <AnalyticsPage />;
+    }
+
+    if (currentPage === 'LegislatorElections') {
+      return <LegislatorElectionsPage onNavigateToProfile={() => setCurrentPage('Legislators')} />;
+    }
+
+    if (currentPage === 'Constellation') {
+      return <ConstellationPage />;
     }
 
     // Default Dashboard view
     return <ModularDashboard 
       watchedLegislatorIds={watchedLegislatorIds}
-      onNavigateToLegislator={handleNavigateToLegislator}
+      onNavigateToLegislator={navigateToLegislator}
+      createAlertTopic={pageParams?.createAlert}
     />;
   };
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Main Background with Dark Mode Support */}
-      <div 
-        className={`
-          fixed inset-0 transition-colors duration-500
-          ${isDarkMode 
-            ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950' 
-            : 'bg-gradient-to-br from-red-50/20 via-white to-blue-50/20'
-          }
-        `}
-      />
+      {/* Background - Celestial Compass (Constellations + Rings) */}
+      <CelestialCompassBackground />
       
-      {/* Falling Snowflakes - Subtle Winter Theme */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-[1]">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className={`absolute rounded-full ${isDarkMode ? 'bg-white/30' : 'bg-white/60'}`}
-            style={{
-              width: `${Math.random() * 4 + 2}px`,
-              height: `${Math.random() * 4 + 2}px`,
-              left: `${Math.random() * 100}%`,
-              top: `-${Math.random() * 20}px`,
-              animation: `snowfall ${Math.random() * 10 + 15}s linear infinite`,
-              animationDelay: `${Math.random() * 10}s`,
-              opacity: Math.random() * 0.6 + 0.2,
-              boxShadow: isDarkMode 
-                ? '0 0 8px rgba(255, 255, 255, 0.5)' 
-                : '0 0 6px rgba(255, 255, 255, 0.8)',
-            }}
-          />
-        ))}
-      </div>
-      
-      {/* Snowfall animation */}
-      <style>{`
-        @keyframes snowfall {
-          0% {
-            transform: translateY(0) translateX(0) rotate(0deg);
-          }
-          50% {
-            transform: translateY(50vh) translateX(${Math.random() * 100 - 50}px) rotate(180deg);
-          }
-          100% {
-            transform: translateY(100vh) translateX(${Math.random() * 100 - 50}px) rotate(360deg);
-          }
-        }
-      `}</style>
-      
-      {/* Grid Pattern */}
-      <div 
-        className={`fixed inset-0 transition-opacity duration-500 ${isDarkMode ? 'opacity-[0.15]' : 'opacity-[0.02]'}`}
-        style={{
-          backgroundImage: `
-            linear-gradient(${isDarkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)'} 1px, transparent 1px),
-            linear-gradient(90deg, ${isDarkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)'} 1px, transparent 1px)
-          `,
-          backgroundSize: '60px 60px'
-        }}
-      />
-      
-      {/* Gradient Orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {isDarkMode ? (
-          <>
-            <div 
-              className="absolute top-0 right-1/4 w-[600px] h-[600px] rounded-full opacity-[0.08] blur-[120px] transition-all duration-1000"
-              style={{ background: 'radial-gradient(circle, rgba(220, 38, 38, 0.4) 0%, transparent 70%)' }}
-            />
-            <div 
-              className="absolute bottom-0 left-1/4 w-[600px] h-[600px] rounded-full opacity-[0.06] blur-[120px] transition-all duration-1000"
-              style={{ background: 'radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%)' }}
-            />
-          </>
-        ) : (
-          <>
-            <div className="absolute top-0 left-1/4 w-[800px] h-[800px] bg-red-500/8 rounded-full blur-[120px] transition-opacity duration-500" />
-            <div className="absolute top-1/3 right-1/4 w-[600px] h-[600px] bg-blue-500/8 rounded-full blur-[100px] transition-opacity duration-500" />
-            <div className="absolute bottom-1/4 left-1/3 w-[700px] h-[700px] bg-red-500/6 rounded-full blur-[130px] transition-opacity duration-500" />
-          </>
-        )}
-      </div>
-      
-      {/* Noise Overlay */}
-      <div className={`fixed inset-0 pointer-events-none mix-blend-overlay transition-opacity duration-500 ${isDarkMode ? 'opacity-[0.02]' : 'opacity-[0.015]'}`}>
-        <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E")`,
-        }} />
-      </div>
-      
-      {/* Vignette */}
-      <div className={`fixed inset-0 pointer-events-none transition-opacity duration-500 ${isDarkMode ? 'opacity-30' : 'opacity-100'}`}>
-        <div className={`absolute inset-0 ${isDarkMode ? 'bg-gradient-to-b from-transparent via-transparent to-black/30' : 'bg-radial-gradient from-transparent via-transparent to-gray-900/[0.03]'}`} />
-      </div>
-
       {/* Sidebar */}
-      <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
+      <Sidebar 
+        currentPage={currentPage} 
+        onPageChange={setCurrentPage} 
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={toggleSidebar}
+      />
       
       {/* Main Content */}
-      <div className="flex-1 flex flex-col ml-72 relative z-10">
-        <TopHeader />
-        
+      <div className={`flex-1 flex flex-col transition-all duration-500 ease-in-out ${sidebarCollapsed ? 'ml-20' : 'ml-72'} relative z-10 min-w-0`}>
         {/* Membership Error Banner */}
         {membershipError && showMembershipError && isAuthenticated && (
           <div className={`${isDarkMode ? 'bg-red-900/30 border-b border-red-500/30' : 'bg-red-50 border-b border-red-200'} px-6 py-4`}>
@@ -641,9 +673,10 @@ function MainApp() {
           </div>
         )}
         
-        <main className="flex-1 overflow-y-auto">
-          {renderPage()}
-          <Footer />
+        <main className="flex-1 overflow-hidden">
+          <Suspense fallback={<LoadingScreen step={null} title="Loading..." subtext="Fetching resources" isDarkMode={isDarkMode} />}>
+            {renderPage()}
+          </Suspense>
         </main>
       </div>
       
@@ -658,25 +691,36 @@ function MainApp() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <AskPythiaProvider>
-          <SmartStructuringProvider>
-            <DashboardProvider>
-              <ThemeProvider>
-                <AppModeProvider>
-                  <SupabaseAuthProvider>
-                    <AuthBridge />
-                    <AppWithOrg />
-                    <AskPythiaModal />
-                    <StructuringDrawer />
-                  </SupabaseAuthProvider>
-                </AppModeProvider>
-              </ThemeProvider>
-            </DashboardProvider>
-          </SmartStructuringProvider>
-        </AskPythiaProvider>
-      </ToastProvider>
-    </AuthProvider>
+    <DndProvider backend={HTML5Backend}>
+      <Toaster position="top-center" richColors />
+      <QueryClientProvider client={queryClient}>
+        <MsalProvider instance={pca}>
+          <AuthProvider>
+            <ToastProvider>
+            <NavigationProvider>
+              <VoiceProvider>
+                <AskPythiaProvider>
+                  <SmartStructuringProvider>
+                    <DashboardProvider>
+                      <ThemeProvider>
+                        <AppModeProvider>
+                          <SupabaseAuthProvider>
+                            {/* AuthBridge removed */}
+                            <AppWithOrg />
+                            <AskPythiaModal />
+                            <StructuringDrawer />
+                          </SupabaseAuthProvider>
+                        </AppModeProvider>
+                      </ThemeProvider>
+                    </DashboardProvider>
+                  </SmartStructuringProvider>
+                </AskPythiaProvider>
+              </VoiceProvider>
+            </NavigationProvider>
+          </ToastProvider>
+        </AuthProvider>
+        </MsalProvider>
+      </QueryClientProvider>
+    </DndProvider>
   );
 }

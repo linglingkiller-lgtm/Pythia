@@ -36,6 +36,22 @@ export interface Project {
   createdAt: string;
   updatedAt: string;
   workstreamId?: string;
+  
+  // Revere V2 Features
+  confidenceScore?: number; // 0-100 Pythia Risk Score
+  budgetUsed?: number;
+  budgetTotal?: number;
+  tags?: string[];
+  description?: string;
+}
+
+export interface ActivityItem {
+    id: string;
+    type: 'bill' | 'task' | 'file' | 'comment';
+    text: string;
+    timestamp: string;
+    user?: string;
+    meta?: string; 
 }
 
 export interface Deliverable {
@@ -75,6 +91,8 @@ export interface Task {
   status: TaskStatus;
   assigneeId: string;
   assigneeName: string;
+  assigneeAvatar?: string;
+  progress: number; // 0-100
   
   // Linked to work structure
   clientId?: string;
@@ -84,6 +102,12 @@ export interface Task {
   deliverableId?: string;
   deliverableTitle?: string;
   
+  // Dependencies & Blocking
+  dependencies?: string[]; // IDs of tasks that must be completed first
+  blockingTaskIds?: string[]; // IDs of tasks blocked by this one
+  isBlocking?: boolean; // Revere AI flag
+  blockingAlert?: string; // AI message
+
   // Linked to content
   linkedBillIds: string[];
   linkedBillNumbers: string[];
@@ -105,6 +129,52 @@ export interface Task {
   // Blocking
   blockedReason?: string;
   blockedBy?: string;
+
+  // Expanded fields for Task Details
+  subtasks?: Subtask[];
+  comments?: TaskComment[];
+  attachments?: TaskAttachment[];
+  tags?: string[];
+  
+  // Energy Level
+  energyLevel?: 'high' | 'low';
+  
+  // Ordering
+  order?: number; // Relative order within a day
+  
+  // Execution Status
+  executionStatus?: 'working' | 'paused' | 'break';
+
+  // Context
+  sourceMessageId?: string;
+  sourceConversationId?: string;
+  sourceMessagePreview?: string;
+  sourceMessageSender?: string;
+}
+
+export interface Subtask {
+  id: string;
+  title: string;
+  assigneeName?: string;
+  dueDate?: string;
+  isCompleted: boolean;
+}
+
+export interface TaskComment {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  text: string;
+  timestamp: string;
+}
+
+export interface TaskAttachment {
+  id: string;
+  name: string;
+  type: 'image' | 'document' | 'other';
+  url: string;
+  size?: string;
 }
 
 export interface TaskBundle {
@@ -177,7 +247,7 @@ export const mockProjects: Project[] = [
     id: 'proj-001',
     clientId: 'client-001',
     clientName: 'SolarTech Alliance',
-    title: 'HB 2847 Legislative Strategy & Passage',
+    title: 'HB 2847 Legislative Strategy',
     stage: 'execution',
     ownerId: 'user-001',
     ownerName: 'Jordan Davis',
@@ -197,15 +267,21 @@ export const mockProjects: Project[] = [
     completedDeliverables: 2,
     createdAt: '2025-11-01',
     updatedAt: '2025-12-17',
+    // New Fields
+    confidenceScore: 88,
+    budgetUsed: 12500,
+    budgetTotal: 15000,
+    description: 'Passing HB 2847 through Senate committee before EOY.',
+    tags: ['Legislative', 'High Priority']
   },
   {
     id: 'proj-002',
     clientId: 'client-001',
     clientName: 'SolarTech Alliance',
-    title: 'Q4 Coalition Building - Clean Energy Alliance',
+    title: 'Q4 Coalition Building',
     stage: 'strategy',
     ownerId: 'user-002',
-    ownerName: 'Matt Kenny',
+    ownerName: 'Matt Kenney',
     dueDate: '2025-12-31',
     status: 'on-track',
     progress: 45,
@@ -222,12 +298,18 @@ export const mockProjects: Project[] = [
     completedDeliverables: 0,
     createdAt: '2025-11-15',
     updatedAt: '2025-12-16',
+    // New Fields
+    confidenceScore: 92,
+    budgetUsed: 4200,
+    budgetTotal: 10000,
+    description: 'Aligning 12 partner orgs for 2026 session push.',
+    tags: ['Coalition', 'Outreach']
   },
   {
     id: 'proj-003',
     clientId: 'client-002',
-    clientName: 'Arizona Manufacturing Coalition',
-    title: 'Workforce Development Bill Monitoring',
+    clientName: 'Arizona Mfg Coalition',
+    title: 'Workforce Development Monitoring',
     stage: 'execution',
     ownerId: 'user-003',
     ownerName: 'Sarah Kim',
@@ -237,7 +319,7 @@ export const mockProjects: Project[] = [
     linkedBillIds: ['bill-4'],
     linkedBillNumbers: ['HB 567'],
     linkedIssueIds: ['issue-004'],
-    linkedIssueNames: ['Workforce Development'],
+    linkedIssueNames: ['Workforce'],
     linkedPersonIds: [],
     linkedPersonNames: [],
     linkedEventIds: [],
@@ -247,12 +329,18 @@ export const mockProjects: Project[] = [
     completedDeliverables: 0,
     createdAt: '2025-12-01',
     updatedAt: '2025-12-17',
+    // New Fields
+    confidenceScore: 45,
+    budgetUsed: 8000,
+    budgetTotal: 8500,
+    description: 'Monitoring key workforce bills for potential amendments.',
+    tags: ['Monitoring', 'Risk']
   },
   {
     id: 'proj-004',
     clientId: 'client-003',
     clientName: 'WaterFirst Coalition',
-    title: 'Water Rights Legislative Package',
+    title: 'Water Rights Package',
     stage: 'discovery',
     ownerId: 'user-001',
     ownerName: 'Jordan Davis',
@@ -272,6 +360,12 @@ export const mockProjects: Project[] = [
     completedDeliverables: 0,
     createdAt: '2025-12-10',
     updatedAt: '2025-12-15',
+    // New Fields
+    confidenceScore: 78,
+    budgetUsed: 1500,
+    budgetTotal: 25000,
+    description: 'Drafting initial language for water conservation bill.',
+    tags: ['Policy', 'Drafting']
   },
 ];
 
@@ -326,7 +420,7 @@ export const mockDeliverables: Deliverable[] = [
     dueDate: '2025-12-22',
     status: 'draft',
     approverId: 'user-002',
-    approverName: 'Matt Kenny',
+    approverName: 'Matt Kenney',
     linkedBillIds: ['bill-1', 'bill-2'],
     linkedEngagementIds: [],
     linkedEventIds: [],
@@ -355,7 +449,204 @@ export const mockDeliverables: Deliverable[] = [
 ];
 
 export const mockTasks: Task[] = [
-  // HB 2847 Hearing Prep Bundle
+  // Project 1: Marketing Campaign Launch
+  {
+    id: 't1',
+    title: 'Create marketing plan',
+    description: 'Develop comprehensive strategy including channels and budget',
+    dueDate: '2025-12-15',
+    priority: 'high',
+    status: 'in-progress',
+    progress: 60,
+    assigneeId: 'user-001',
+    assigneeName: 'Jordan',
+    projectId: 'proj-001',
+    projectTitle: 'Marketing Campaign Launch',
+    linkedBillIds: ['bill-1'],
+    linkedBillNumbers: ['HB 2847'],
+    linkedPersonIds: ['leg-001'],
+    linkedPersonNames: ['Sen. Smith'],
+    linkedIssueIds: [],
+    linkedIssueNames: [],
+    dependencies: [],
+    blockingTaskIds: ['t3'],
+    isBlocking: true,
+    blockingAlert: 'Blocking "Write campaign copy" - Delaying project by 2 days',
+    createdAt: '2025-12-01',
+    updatedAt: '2025-12-08',
+    tags: ['Urgent', 'Strategy'],
+    order: 0,
+    subtasks: [
+      { id: 'st1', title: 'Research competitor pricing', isCompleted: true, assigneeName: 'Jordan' },
+      { id: 'st2', title: 'Define target audience personas', isCompleted: false, assigneeName: 'Jordan', dueDate: '2025-12-14' }
+    ],
+    comments: [
+      { id: 'c1', userId: 'user-002', userName: 'Matt', text: 'Draft looks good, but needs more budget detail.', timestamp: '2025-12-05T10:30:00Z' }
+    ],
+    attachments: [
+      { id: 'a1', name: 'Competitor_Analysis_2025.pdf', type: 'document', url: '#', size: '2.4 MB' }
+    ]
+  },
+  {
+    id: 't2',
+    title: 'Design campaign assets',
+    description: 'Create social media graphics and email banners',
+    dueDate: '2025-12-10',
+    priority: 'medium',
+    status: 'todo',
+    progress: 0,
+    assigneeId: 'user-002',
+    assigneeName: 'Matt',
+    projectId: 'proj-001',
+    projectTitle: 'Marketing Campaign Launch',
+    linkedBillIds: [],
+    linkedBillNumbers: [],
+    linkedPersonIds: [],
+    linkedPersonNames: [],
+    linkedIssueIds: [],
+    linkedIssueNames: [],
+    createdAt: '2025-12-02',
+    updatedAt: '2025-12-02',
+    order: 1,
+  },
+  {
+    id: 't3',
+    title: 'Write campaign copy',
+    description: 'Draft copy for emails, social posts, and landing page',
+    dueDate: '2025-12-12',
+    priority: 'high',
+    status: 'done',
+    progress: 100,
+    assigneeId: 'user-003',
+    assigneeName: 'Sarah',
+    projectId: 'proj-001',
+    projectTitle: 'Marketing Campaign Launch',
+    linkedBillIds: [],
+    linkedBillNumbers: [],
+    linkedPersonIds: [],
+    linkedPersonNames: [],
+    linkedIssueIds: [],
+    linkedIssueNames: [],
+    dependencies: ['t1'],
+    createdAt: '2025-12-03',
+    updatedAt: '2025-12-11',
+    completedAt: '2025-12-11',
+    order: 2,
+  },
+  {
+    id: 't4',
+    title: 'Coordinate with influencers',
+    description: 'Outreach to top 10 influencers for launch promotion',
+    dueDate: '2025-12-17',
+    priority: 'high',
+    status: 'blocked',
+    progress: 20,
+    assigneeId: 'user-004',
+    assigneeName: 'Kelly',
+    projectId: 'proj-001',
+    projectTitle: 'Marketing Campaign Launch',
+    linkedBillIds: [],
+    linkedBillNumbers: [],
+    linkedPersonIds: [],
+    linkedPersonNames: [],
+    linkedIssueIds: [],
+    linkedIssueNames: [],
+    blockedReason: 'Waiting for budget approval',
+    blockedBy: 'Finance Dept',
+    createdAt: '2025-12-05',
+    updatedAt: '2025-12-08',
+    order: 3,
+  },
+  
+  // Project 2: Website Redesign
+  {
+    id: 'p2-t1',
+    title: 'Finalize wireframes',
+    description: 'Complete high-fidelity wireframes for homepage and pricing',
+    dueDate: '2025-12-14',
+    priority: 'medium',
+    status: 'in-progress',
+    progress: 45,
+    assigneeId: 'user-005',
+    assigneeName: 'Rachel',
+    projectId: 'proj-002',
+    projectTitle: 'Website Redesign',
+    linkedBillIds: [],
+    linkedBillNumbers: [],
+    linkedPersonIds: [],
+    linkedPersonNames: [],
+    linkedIssueIds: [],
+    linkedIssueNames: [],
+    createdAt: '2025-12-06',
+    updatedAt: '2025-12-09',
+  },
+  {
+    id: 'p2-t2',
+    title: 'Design website homepage',
+    description: 'Visual design phase based on approved wireframes',
+    dueDate: '2025-12-16',
+    priority: 'high',
+    status: 'todo',
+    progress: 0,
+    assigneeId: 'user-006',
+    assigneeName: 'Olivia',
+    projectId: 'proj-002',
+    projectTitle: 'Website Redesign',
+    dependencies: ['p2-t1'],
+    linkedBillIds: [],
+    linkedBillNumbers: [],
+    linkedPersonIds: [],
+    linkedPersonNames: [],
+    linkedIssueIds: [],
+    linkedIssueNames: [],
+    createdAt: '2025-12-07',
+    updatedAt: '2025-12-07',
+  },
+  {
+    id: 'p2-t3',
+    title: 'Implement CMS',
+    description: 'Setup and configure headless CMS',
+    dueDate: '2025-12-20',
+    priority: 'low',
+    status: 'todo',
+    progress: 0,
+    assigneeId: 'user-007',
+    assigneeName: 'Leo',
+    projectId: 'proj-002',
+    projectTitle: 'Website Redesign',
+    linkedBillIds: [],
+    linkedBillNumbers: [],
+    linkedPersonIds: [],
+    linkedPersonNames: [],
+    linkedIssueIds: [],
+    linkedIssueNames: [],
+    createdAt: '2025-12-08',
+    updatedAt: '2025-12-08',
+  },
+  {
+    id: 'p2-t4',
+    title: 'Test website for bugs',
+    description: 'QA testing across browsers and devices',
+    dueDate: '2025-12-22',
+    priority: 'medium',
+    status: 'todo',
+    progress: 0,
+    assigneeId: 'user-008',
+    assigneeName: 'Tom',
+    projectId: 'proj-002',
+    projectTitle: 'Website Redesign',
+    dependencies: ['p2-t3'],
+    linkedBillIds: [],
+    linkedBillNumbers: [],
+    linkedPersonIds: [],
+    linkedPersonNames: [],
+    linkedIssueIds: [],
+    linkedIssueNames: [],
+    createdAt: '2025-12-09',
+    updatedAt: '2025-12-09',
+  },
+
+  // HB 2847 Hearing Prep Bundle (Legacy Mock Data Preserved)
   {
     id: 'task-001',
     title: 'Draft testimony for HB 2847 committee hearing',
@@ -363,8 +654,9 @@ export const mockTasks: Task[] = [
     dueDate: '2025-12-19',
     priority: 'urgent',
     status: 'in-progress',
+    progress: 75,
     assigneeId: 'user-002',
-    assigneeName: 'Matt Kenny',
+    assigneeName: 'Matt Kenney',
     clientId: 'client-001',
     clientName: 'SolarTech Alliance',
     projectId: 'proj-001',
@@ -389,6 +681,7 @@ export const mockTasks: Task[] = [
     dueDate: '2025-12-19',
     priority: 'high',
     status: 'todo',
+    progress: 0,
     assigneeId: 'user-001',
     assigneeName: 'Jordan Davis',
     clientId: 'client-001',
@@ -413,6 +706,7 @@ export const mockTasks: Task[] = [
     dueDate: '2025-12-19',
     priority: 'high',
     status: 'todo',
+    progress: 0,
     assigneeId: 'user-001',
     assigneeName: 'Jordan Davis',
     clientId: 'client-001',
@@ -430,123 +724,6 @@ export const mockTasks: Task[] = [
     bundleId: 'bundle-001',
     bundleName: 'HB 2847 Hearing Prep',
     createdAt: '2025-12-11',
-    updatedAt: '2025-12-16',
-  },
-  // Client weekly update bundle
-  {
-    id: 'task-004',
-    title: 'Compile bill status updates for weekly report',
-    dueDate: '2025-12-20',
-    priority: 'medium',
-    status: 'in-progress',
-    assigneeId: 'user-001',
-    assigneeName: 'Jordan Davis',
-    clientId: 'client-001',
-    clientName: 'SolarTech Alliance',
-    projectId: 'proj-001',
-    deliverableId: 'deliv-002',
-    deliverableTitle: 'Weekly Legislative Update - Dec 20',
-    linkedBillIds: ['bill-1', 'bill-2'],
-    linkedBillNumbers: ['HB 2847', 'SB 456'],
-    linkedPersonIds: [],
-    linkedPersonNames: [],
-    linkedIssueIds: [],
-    linkedIssueNames: [],
-    bundleId: 'bundle-002',
-    bundleName: 'Client Weekly Update',
-    createdAt: '2025-12-16',
-    updatedAt: '2025-12-17',
-  },
-  {
-    id: 'task-005',
-    title: 'Review engagement ledger for weekly report',
-    dueDate: '2025-12-20',
-    priority: 'medium',
-    status: 'todo',
-    assigneeId: 'user-001',
-    assigneeName: 'Jordan Davis',
-    clientId: 'client-001',
-    clientName: 'SolarTech Alliance',
-    deliverableId: 'deliv-002',
-    deliverableTitle: 'Weekly Legislative Update - Dec 20',
-    linkedBillIds: [],
-    linkedBillNumbers: [],
-    linkedPersonIds: [],
-    linkedPersonNames: [],
-    linkedIssueIds: [],
-    linkedIssueNames: [],
-    bundleId: 'bundle-002',
-    bundleName: 'Client Weekly Update',
-    createdAt: '2025-12-16',
-    updatedAt: '2025-12-17',
-  },
-  // Blocked task
-  {
-    id: 'task-006',
-    title: 'Draft opposition messaging framework',
-    description: 'Awaiting client decision on messaging tone',
-    dueDate: '2025-12-21',
-    priority: 'high',
-    status: 'blocked',
-    assigneeId: 'user-002',
-    assigneeName: 'Matt Kenny',
-    clientId: 'client-001',
-    clientName: 'SolarTech Alliance',
-    projectId: 'proj-001',
-    linkedBillIds: ['bill-3'],
-    linkedBillNumbers: ['HB 789'],
-    linkedPersonIds: [],
-    linkedPersonNames: [],
-    linkedIssueIds: ['issue-001'],
-    linkedIssueNames: ['Clean Energy'],
-    blockedReason: 'Awaiting client stance approval',
-    blockedBy: 'Client decision needed',
-    createdAt: '2025-12-12',
-    updatedAt: '2025-12-16',
-  },
-  // Coalition tasks
-  {
-    id: 'task-007',
-    title: 'Reach out to environmental coalition partners',
-    dueDate: '2025-12-22',
-    priority: 'medium',
-    status: 'todo',
-    assigneeId: 'user-002',
-    assigneeName: 'Matt Kenny',
-    clientId: 'client-001',
-    clientName: 'SolarTech Alliance',
-    projectId: 'proj-002',
-    projectTitle: 'Q4 Coalition Building - Clean Energy Alliance',
-    linkedBillIds: [],
-    linkedBillNumbers: [],
-    linkedPersonIds: [],
-    linkedPersonNames: [],
-    linkedIssueIds: ['issue-001'],
-    linkedIssueNames: ['Clean Energy'],
-    createdAt: '2025-12-15',
-    updatedAt: '2025-12-15',
-  },
-  {
-    id: 'task-008',
-    title: 'Schedule coalition strategy session',
-    dueDate: '2025-12-23',
-    priority: 'medium',
-    status: 'todo',
-    assigneeId: 'user-002',
-    assigneeName: 'Matt Kenny',
-    clientId: 'client-001',
-    clientName: 'SolarTech Alliance',
-    projectId: 'proj-002',
-    projectTitle: 'Q4 Coalition Building - Clean Energy Alliance',
-    deliverableId: 'deliv-003',
-    deliverableTitle: 'Coalition Strategy Session Brief',
-    linkedBillIds: [],
-    linkedBillNumbers: [],
-    linkedPersonIds: [],
-    linkedPersonNames: [],
-    linkedIssueIds: [],
-    linkedIssueNames: [],
-    createdAt: '2025-12-15',
     updatedAt: '2025-12-16',
   },
 ];
@@ -703,7 +880,7 @@ export const mockOpportunities: Opportunity[] = [
     linkedBillIds: ['bill-1', 'bill-2'],
     linkedIssueIds: ['issue-001'],
     ownerId: 'user-002',
-    ownerName: 'Matt Kenny',
+    ownerName: 'Matt Kenney',
     expectedCloseDate: '2026-01-15',
     lastContact: '2025-12-15',
     nextAction: 'Send coalition management proposal with scope and pricing',
@@ -825,7 +1002,7 @@ export const mockOpportunities: Opportunity[] = [
     linkedBillIds: [],
     linkedIssueIds: ['issue-001'],
     ownerId: 'user-002',
-    ownerName: 'Matt Kenny',
+    ownerName: 'Matt Kenney',
     expectedCloseDate: '2026-02-15',
     lastContact: '2025-12-05',
     nextAction: 'Develop grassroots campaign proposal and pricing',

@@ -6,6 +6,7 @@
 
 @import './tailwind.css';
 @import './theme.css';
+@import './responsive.css';
 
 /* React Grid Layout Fixes */
 .react-grid-layout {
@@ -42,4 +43,40 @@
   user-select: none;
   border-radius: 8px;
   border: 2px dashed rgb(147 51 234);
+}
+
+/* Glassmorphism Standardization */
+.glass-panel {
+  @apply backdrop-blur-xl border transition-all duration-300;
+}
+
+/* Light Mode Glass */
+:root:not(.dark) .glass-panel {
+  @apply bg-white/80 border-gray-200;
+}
+
+/* Dark Mode Glass */
+:root.dark .glass-panel {
+  @apply bg-slate-900/80 border-white/10;
+}
+
+/* Interactive Glass (Hover effects) */
+.glass-panel-interactive {
+  @apply backdrop-blur-xl border transition-all duration-300 hover:shadow-xl;
+}
+
+/* Light Mode Interactive */
+:root:not(.dark) .glass-panel-interactive {
+  @apply bg-white/80 border-gray-200;
+}
+:root:not(.dark) .glass-panel-interactive:hover {
+  @apply bg-white/90 border-gray-300;
+}
+
+/* Dark Mode Interactive */
+:root.dark .glass-panel-interactive {
+  @apply bg-slate-900/80 border-white/10;
+}
+:root.dark .glass-panel-interactive:hover {
+  @apply bg-slate-900/90 border-white/20;
 }

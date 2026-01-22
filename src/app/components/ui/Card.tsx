@@ -22,12 +22,12 @@ export function Card({ children, className = '', glowColor = 'none', onClick }: 
     <div 
       className={`
         backdrop-blur-xl 
-        rounded 
+        rounded-xl
         shadow-lg ${glowStyles[glowColor]}
         transition-all duration-300
         ${isDarkMode 
-          ? 'bg-slate-800/50 border border-white/10 hover:border-white/20 hover:bg-slate-800/60 hover:shadow-2xl' 
-          : 'bg-white border border-gray-200 hover:border-gray-300 hover:shadow-xl'
+          ? 'bg-slate-900/60 border border-white/10 hover:border-white/20 hover:bg-slate-900/70 hover:shadow-2xl' 
+          : 'bg-white/70 border border-gray-200 hover:border-gray-300 hover:shadow-xl'
         }
         ${className}
       `}

@@ -1,25 +1,26 @@
-import React from 'react';
-import { Card } from '../ui/Card';
+import React, { useState } from 'react';
 import { Chip } from '../ui/Chip';
-import { FileText, Users, Layers, Calendar, AlertTriangle } from 'lucide-react';
+import { FileText, Users, Layers, AlertTriangle, MoreHorizontal, Calendar, Zap, CheckCircle2 } from 'lucide-react';
 import { type Project, type ProjectStage } from '../../data/workHubData';
 import { useTheme } from '../../contexts/ThemeContext';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface ProjectsBoardProps {
   projects: Project[];
   onNavigateToBill?: (billId: string) => void;
+  onProjectClick: (project: Project) => void;
 }
 
-export function ProjectsBoard({ projects, onNavigateToBill }: ProjectsBoardProps) {
+export function ProjectsBoard({ projects, onNavigateToBill, onProjectClick }: ProjectsBoardProps) {
   const { isDarkMode } = useTheme();
-  const stages: { id: ProjectStage; label: string }[] = [
-    { id: 'intake', label: 'Concept' },
-    { id: 'discovery', label: 'Draft' },
-    { id: 'strategy', label: 'Proposal' },
-    { id: 'execution', label: 'Execution' },
-    { id: 'review', label: 'Review' },
-    { id: 'delivered', label: 'Delivered' },
-    { id: 'on-hold', label: 'On Hold' },
+  
+  const stages: { id: ProjectStage; label: string; color: string }[] = [
+    { id: 'intake', label: 'Concept', color: 'bg-gray-500' },
+    { id: 'discovery', label: 'Drafting', color: 'bg-blue-500' },
+    { id: 'strategy', label: 'Proposal', color: 'bg-purple-500' },
+    { id: 'execution', label: 'Execution', color: 'bg-indigo-500' },
+    { id: 'review', label: 'Review', color: 'bg-orange-500' },
+    { id: 'delivered', label: 'Delivered', color: 'bg-emerald-500' },
   ];
 
   const getProjectsByStage = (stage: ProjectStage) => {
@@ -27,219 +28,202 @@ export function ProjectsBoard({ projects, onNavigateToBill }: ProjectsBoardProps
   };
 
   return (
-    <div className={`p-6 rounded-xl backdrop-blur-xl border transition-all ${
-      isDarkMode
-        ? 'bg-slate-800/40 border-white/10'
-        : 'bg-white/80 border-gray-200'
-    } shadow-lg`}>
-      <h3 className={`font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-        Projects Board
-      </h3>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7 gap-4">
-        {stages.map(stage => {
-          const stageProjects = getProjectsByStage(stage.id);
-          
-          return (
-            <div key={stage.id} className="flex flex-col">
-              <div className={`rounded-t px-3 py-2 border-b-2 ${
-                isDarkMode
-                  ? 'bg-slate-700/50 border-slate-600'
-                  : 'bg-gray-100 border-gray-300'
-              }`}>
-                <div className={`font-semibold text-sm ${
-                  isDarkMode ? 'text-white' : 'text-gray-900'
-                }`}>
-                  {stage.label}
-                </div>
-                <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {stageProjects.length} {stageProjects.length === 1 ? 'project' : 'projects'}
-                </div>
-              </div>
+    <>
+      <div className="flex gap-6 overflow-x-auto pb-6 min-h-[600px] w-full px-2">
+          {stages.map(stage => {
+              const stageProjects = getProjectsByStage(stage.id);
               
-              <div className={`rounded-b p-2 space-y-2 min-h-[300px] flex-1 ${
-                isDarkMode ? 'bg-slate-800/30' : 'bg-gray-50'
-              }`}>
-                {stageProjects.map(project => (
-                  <ProjectCard
-                    key={project.id}
-                    project={project}
-                    onNavigateToBill={onNavigateToBill}
-                    isDarkMode={isDarkMode}
-                  />
-                ))}
-              </div>
-            </div>
-          );
-        })}
+              return (
+                  <div key={stage.id} className="flex flex-col w-[320px] flex-shrink-0 group">
+                      {/* Column Header */}
+                      <div className="flex items-center justify-between mb-4 px-1">
+                          <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${stage.color}`} />
+                              <span className={`text-sm font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                  {stage.label}
+                              </span>
+                              <span className={`ml-1 text-xs px-2 py-0.5 rounded-full ${
+                                  isDarkMode ? 'bg-white/5 text-gray-500' : 'bg-gray-100 text-gray-500'
+                              }`}>
+                                  {stageProjects.length}
+                              </span>
+                          </div>
+                          <button className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-100 dark:hover:bg-white/10 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                              <MoreHorizontal size={14} />
+                          </button>
+                      </div>
+
+                      {/* Draggable Area (Visual only for now) */}
+                      <div className="flex flex-col gap-3 h-full">
+                          {stageProjects.map((project, index) => (
+                              <SmartProjectCard
+                                  key={project.id}
+                                  project={project}
+                                  onClick={() => onProjectClick(project)}
+                                  isDarkMode={isDarkMode}
+                                  index={index}
+                              />
+                          ))}
+                          
+                          {/* Empty State / Drop Zone */}
+                          <div className={`
+                              flex items-center justify-center h-24 rounded-lg border-2 border-dashed border-transparent transition-all
+                              ${stageProjects.length === 0 ? 'opacity-50' : 'opacity-0'}
+                              group-hover:border-gray-200 dark:group-hover:border-white/5
+                          `}>
+                              <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
+                                  Drop here
+                              </span>
+                          </div>
+                      </div>
+                  </div>
+              );
+          })}
       </div>
-    </div>
+    </>
   );
 }
 
-interface ProjectCardProps {
+// ----------------------------------------------------------------------
+// Smart Project Card (V2)
+// ----------------------------------------------------------------------
+
+interface SmartProjectCardProps {
   project: Project;
-  onNavigateToBill?: (billId: string) => void;
+  onClick: () => void;
   isDarkMode: boolean;
+  index: number;
 }
 
-function ProjectCard({ project, onNavigateToBill, isDarkMode }: ProjectCardProps) {
-  const getStatusColor = (status: string) => {
-    if (isDarkMode) {
-      switch (status) {
-        case 'on-track': return 'bg-green-500/20 text-green-300 border border-green-500/30';
-        case 'at-risk': return 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30';
-        case 'overdue': return 'bg-red-500/20 text-red-300 border border-red-500/30';
-        default: return 'bg-slate-700/50 text-gray-300 border border-slate-600';
-      }
-    } else {
-      switch (status) {
-        case 'on-track': return 'bg-green-100 text-green-800';
-        case 'at-risk': return 'bg-yellow-100 text-yellow-800';
-        case 'overdue': return 'bg-red-100 text-red-800';
-        default: return 'bg-gray-100 text-gray-800';
-      }
-    }
-  };
+function SmartProjectCard({ project, onClick, isDarkMode, index }: SmartProjectCardProps) {
+  
+  // Status Logic
+  const isAtRisk = project.status === 'at-risk' || project.status === 'overdue';
+  const progressColor = project.progress === 100 ? 'bg-emerald-500' : 'bg-blue-500';
+  const confidence = project.confidenceScore || 0;
 
   return (
-    <div className={`p-3 rounded border transition-all cursor-pointer ${
-      isDarkMode
-        ? 'bg-slate-900/50 border-white/10 hover:shadow-md hover:border-cyan-500/50'
-        : 'bg-white border-gray-200 hover:shadow-md hover:border-blue-500'
-    }`}>
-      {/* Header */}
-      <div className="mb-3">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h4 className={`font-semibold text-sm line-clamp-2 ${
-            isDarkMode ? 'text-white' : 'text-gray-900'
-          }`}>
-            {project.title}
-          </h4>
-          {project.status !== 'on-track' && (
-            <AlertTriangle
-              size={16}
-              className={project.status === 'overdue' 
-                ? (isDarkMode ? 'text-red-400' : 'text-red-600')
-                : (isDarkMode ? 'text-yellow-400' : 'text-yellow-600')
-              }
+    <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.05 }}
+        whileHover={{ scale: 1.02, y: -4 }}
+        onClick={onClick}
+        className={`
+            relative p-4 rounded-xl border transition-all duration-300 cursor-pointer group shadow-sm
+            ${isDarkMode 
+                ? 'bg-[#121214] border-white/5 hover:border-blue-500/30 hover:shadow-2xl hover:shadow-blue-900/10' 
+                : 'bg-white border-gray-100 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/5'
+            }
+        `}
+    >
+        {/* Top Label: Client & Pythia Score */}
+        <div className="flex items-start justify-between mb-3">
+             <div className={`text-[10px] font-bold uppercase tracking-wider mb-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                {project.clientName}
+             </div>
+             {confidence > 0 && (
+                 <div className="relative group/score">
+                    <svg width="24" height="24" viewBox="0 0 36 36" className="transform -rotate-90">
+                        <path
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none"
+                            stroke={isDarkMode ? '#333' : '#eee'}
+                            strokeWidth="4"
+                        />
+                        <path
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none"
+                            stroke={confidence > 80 ? '#10b981' : '#f59e0b'}
+                            strokeWidth="4"
+                            strokeDasharray={`${confidence}, 100`}
+                        />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <Zap size={10} className={confidence > 80 ? 'text-emerald-500' : 'text-amber-500'} fill="currentColor" />
+                    </div>
+                 </div>
+             )}
+        </div>
+
+        {/* Title & Alert */}
+        <div className="flex items-start justify-between gap-3 mb-4">
+            <h4 className={`font-bold text-sm leading-snug ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>
+                {project.title}
+            </h4>
+        </div>
+
+        {/* Micro-Metrics Row */}
+        <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-1.5">
+                <CheckCircle2 size={12} className={isDarkMode ? 'text-gray-500' : 'text-gray-400'} />
+                <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {project.completedTasks}/{project.totalTasks}
+                </span>
+            </div>
+            {project.budgetUsed && (
+                <div className="flex items-center gap-1.5">
+                    <span className={`text-[10px] font-bold ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>$</span>
+                    <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {Math.round((project.budgetUsed / (project.budgetTotal || 1)) * 100)}%
+                    </span>
+                </div>
+            )}
+             {project.dueDate && (
+                <div className={`flex items-center gap-1.5 ml-auto text-xs ${
+                    isAtRisk 
+                        ? (isDarkMode ? 'text-red-400' : 'text-red-600') 
+                        : (isDarkMode ? 'text-gray-500' : 'text-gray-500')
+                }`}>
+                    <Calendar size={12} />
+                    <span>{new Date(project.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                </div>
+            )}
+        </div>
+
+        {/* Progress Line */}
+        <div className="relative h-1 w-full rounded-full bg-gray-100 dark:bg-white/5 overflow-hidden mb-4">
+            <div 
+                className={`absolute left-0 top-0 bottom-0 rounded-full ${progressColor}`} 
+                style={{ width: `${project.progress}%` }}
             />
-          )}
-        </div>
-        
-        <div className={`text-xs mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          {project.clientName}
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Chip variant="neutral" size="sm" className={getStatusColor(project.status)}>
-            {project.status.replace('-', ' ')}
-          </Chip>
-        </div>
-      </div>
-
-      {/* Progress */}
-      <div className="mb-3">
-        <div className={`flex items-center justify-between text-xs mb-1 ${
-          isDarkMode ? 'text-gray-400' : 'text-gray-600'
-        }`}>
-          <span>Progress</span>
-          <span>{project.progress}%</span>
-        </div>
-        <div className={`w-full rounded-full h-1.5 ${
-          isDarkMode ? 'bg-slate-700' : 'bg-gray-200'
-        }`}>
-          <div
-            className={`h-1.5 rounded-full ${
-              project.progress === 100 ? 'bg-green-600' : 'bg-blue-600'
-            }`}
-            style={{ width: `${project.progress}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Metadata */}
-      <div className={`space-y-2 mb-3 pb-3 border-b ${
-        isDarkMode ? 'border-white/10' : 'border-gray-200'
-      }`}>
-        {project.dueDate && (
-          <div className={`flex items-center gap-1 text-xs ${
-            isDarkMode ? 'text-gray-400' : 'text-gray-600'
-          }`}>
-            <Calendar size={12} />
-            Due {new Date(project.dueDate).toLocaleDateString()}
-          </div>
-        )}
-        
-        <div className={`flex items-center gap-1 text-xs ${
-          isDarkMode ? 'text-gray-400' : 'text-gray-600'
-        }`}>
-          <Users size={12} />
-          {project.ownerName}
         </div>
 
-        <div className={`flex items-center gap-3 text-xs ${
-          isDarkMode ? 'text-gray-400' : 'text-gray-600'
-        }`}>
-          <span>{project.completedTasks}/{project.totalTasks} tasks</span>
-          <span>{project.completedDeliverables}/{project.totalDeliverables} deliverables</span>
-        </div>
-      </div>
-
-      {/* Linked Objects */}
-      {(project.linkedBillNumbers.length > 0 || project.linkedIssueNames.length > 0 || project.linkedPersonNames.length > 0) && (
-        <div className="flex flex-wrap gap-1">
-          {project.linkedBillNumbers.slice(0, 2).map(billNum => (
-            <button
-              key={billNum}
-              onClick={(e) => {
-                e.stopPropagation();
-                onNavigateToBill?.(billNum);
-              }}
-              className={`px-2 py-0.5 rounded text-xs transition-colors ${
-                isDarkMode
-                  ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
-                  : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
-              }`}
-            >
-              <FileText size={10} className="inline mr-1" />
-              {billNum}
-            </button>
-          ))}
-          
-          {project.linkedIssueNames.slice(0, 1).map(issue => (
-            <div key={issue} className={`px-2 py-0.5 rounded text-xs ${
-              isDarkMode
-                ? 'bg-purple-500/20 text-purple-300'
-                : 'bg-purple-50 text-purple-700'
-            }`}>
-              <Layers size={10} className="inline mr-1" />
-              {issue}
+        {/* Footer: Ecosystem Tags */}
+        <div className="flex flex-wrap gap-2 pt-3 border-t border-dashed border-gray-100 dark:border-white/5">
+            {/* Owner Avatar + Tag */}
+            <div className="flex items-center gap-1 pr-2 border-r border-gray-100 dark:border-white/5">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white bg-gradient-to-br from-blue-500 to-purple-500`}>
+                    {project.ownerName[0]}
+                </div>
             </div>
-          ))}
-          
-          {project.linkedPersonNames.slice(0, 1).map(person => (
-            <div key={person} className={`px-2 py-0.5 rounded text-xs ${
-              isDarkMode
-                ? 'bg-green-500/20 text-green-300'
-                : 'bg-green-50 text-green-700'
-            }`}>
-              <Users size={10} className="inline mr-1" />
-              {person}
-            </div>
-          ))}
-          
-          {(project.linkedBillNumbers.length + project.linkedIssueNames.length + project.linkedPersonNames.length > 4) && (
-            <div className={`px-2 py-0.5 rounded text-xs ${
-              isDarkMode
-                ? 'bg-slate-700/50 text-gray-400'
-                : 'bg-gray-100 text-gray-600'
-            }`}>
-              +{project.linkedBillNumbers.length + project.linkedIssueNames.length + project.linkedPersonNames.length - 4}
-            </div>
-          )}
+
+            {/* Bill Tags */}
+            {project.linkedBillNumbers.slice(0, 2).map(bill => (
+                <span key={bill} className={`
+                    text-[10px] font-semibold px-2 py-0.5 rounded-md border
+                    ${isDarkMode 
+                        ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' 
+                        : 'bg-blue-50 border-blue-100 text-blue-600'
+                    }
+                `}>
+                    {bill}
+                </span>
+            ))}
+            
+            {/* Custom Tags */}
+            {project.tags?.slice(0, 1).map(tag => (
+                <span key={tag} className={`
+                    text-[10px] font-medium px-2 py-0.5 rounded-md border
+                    ${isDarkMode 
+                        ? 'bg-white/5 border-white/10 text-gray-400' 
+                        : 'bg-gray-50 border-gray-200 text-gray-500'
+                    }
+                `}>
+                    {tag}
+                </span>
+            ))}
         </div>
-      )}
-    </div>
+    </motion.div>
   );
 }

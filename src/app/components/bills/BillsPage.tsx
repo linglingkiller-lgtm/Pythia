@@ -1,5 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { FileText, Filter, SortDesc, Plus, Download, Search, CheckCircle2, XCircle, Clock, AlertCircle, Eye, TrendingUp, Sparkles, ChevronRight, X, RefreshCw, Pin, CheckSquare } from 'lucide-react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { 
+  FileText, Filter, SortDesc, Plus, Download, Search, CheckCircle2, XCircle, 
+  Clock, AlertCircle, Eye, TrendingUp, Sparkles, ChevronRight, X, RefreshCw, 
+  Pin, CheckSquare, Menu, ChevronDown, Bell, Settings 
+} from 'lucide-react';
 import { mockBills, type Bill } from '../../data/billsData';
 import { Card } from '../ui/Card';
 import { Chip } from '../ui/Chip';
@@ -11,6 +15,8 @@ import { BillRow } from './BillRow';
 import { AddBillsModal } from './AddBillsModal';
 import type { BillImportItem } from './AddBillsModal';
 import { toast } from 'sonner';
+import { PageLayout } from '../ui/PageLayout';
+import { useAskPythia } from '../../contexts/AskPythiaContext';
 
 interface BillsPageProps {
   onNavigateToBill: (billId: string) => void;
@@ -20,11 +26,13 @@ type TabType = 'watchlist' | 'new-relevant' | 'at-risk' | 'moving-fast' | 'all';
 
 export function BillsPage({ onNavigateToBill }: BillsPageProps) {
   const { isDarkMode } = useTheme();
+  const { openPythia } = useAskPythia();
+  
+  // Page State
   const [activeTab, setActiveTab] = useState<TabType>('watchlist');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBills, setSelectedBills] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   
   // Add Bills Modal
   const [showAddBillsModal, setShowAddBillsModal] = useState(false);
@@ -37,63 +45,52 @@ export function BillsPage({ onNavigateToBill }: BillsPageProps) {
   const [issueTagFilter, setIssueTagFilter] = useState<string>('all');
   const [stanceFilter, setStanceFilter] = useState<string>('all');
   
-  // Scroll state for header compression
-  const [isScrolled, setIsScrolled] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  // Pagination & Performance
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 20;
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
+  // Debounce Search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchQuery, activeTab, jurisdictionFilter, statusFilter, issueTagFilter, stanceFilter]);
+  
   // Get Bills page theme
   const billsTheme = getPageTheme('Bills');
 
   // Dynamic title based on active tab
   const getPageTitle = () => {
     switch (activeTab) {
-      case 'watchlist':
-        return 'Watchlist';
-      case 'new-relevant':
-        return 'New & Relevant';
-      case 'at-risk':
-        return 'At Risk';
-      case 'moving-fast':
-        return 'Moving Fast';
-      case 'all':
-        return 'All Bills';
-      default:
-        return 'Bills';
+      case 'watchlist': return 'Watchlist';
+      case 'new-relevant': return 'New & Relevant';
+      case 'at-risk': return 'At Risk';
+      case 'moving-fast': return 'Moving Fast';
+      case 'all': return 'All Bills';
+      default: return 'Bills';
     }
   };
 
   // Dynamic subtitle based on active tab
   const getSubtitle = () => {
     switch (activeTab) {
-      case 'watchlist':
-        return 'Priority bills requiring active monitoring';
-      case 'new-relevant':
-        return 'Recently introduced bills matching your interests';
-      case 'at-risk':
-        return 'Bills with high-risk flags or opposition stance';
-      case 'moving-fast':
-        return 'Bills with high momentum scores & fast-track status';
-      case 'all':
-        return `${filteredBills.length} / ${mockBills.length} bills tracked`;
-      default:
-        return 'Legislative tracking & intelligence';
+      case 'watchlist': return 'Priority bills requiring active monitoring';
+      case 'new-relevant': return 'Recently introduced bills matching your interests';
+      case 'at-risk': return 'Bills with high-risk flags or opposition stance';
+      case 'moving-fast': return 'Bills with high momentum scores & fast-track status';
+      case 'all': return `${filteredBills.length} / ${mockBills.length} bills tracked`;
+      default: return 'Legislative tracking & intelligence';
     }
   };
 
-  useEffect(() => {
-    const handleScroll = (e: Event) => {
-      const target = e.target as HTMLDivElement;
-      setIsScrolled(target.scrollTop > 20);
-    };
-
-    const scrollContainer = scrollRef.current;
-    if (scrollContainer) {
-      scrollContainer.addEventListener('scroll', handleScroll);
-      return () => scrollContainer.removeEventListener('scroll', handleScroll);
-    }
-  }, []);
-
-  const getFilteredBills = (): Bill[] => {
+  const filteredBills = useMemo(() => {
     let filtered = mockBills;
 
     // Tab filtering
@@ -134,9 +131,9 @@ export function BillsPage({ onNavigateToBill }: BillsPageProps) {
       filtered = filtered.filter(b => b.stance === stanceFilter);
     }
 
-    // Search filtering
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    // Search filtering (Debounced)
+    if (debouncedSearchQuery) {
+      const query = debouncedSearchQuery.toLowerCase();
       filtered = filtered.filter(b =>
         b.billId.toLowerCase().includes(query) ||
         b.title.toLowerCase().includes(query) ||
@@ -146,9 +143,10 @@ export function BillsPage({ onNavigateToBill }: BillsPageProps) {
     }
 
     return filtered;
-  };
+  }, [activeTab, jurisdictionFilter, statusFilter, issueTagFilter, stanceFilter, debouncedSearchQuery]);
 
-  const filteredBills = getFilteredBills();
+  const displayedBills = filteredBills.slice(0, page * ITEMS_PER_PAGE);
+  const hasMore = displayedBills.length < filteredBills.length;
 
   const handleSelectBill = (billId: string) => {
     const newSelected = new Set(selectedBills);
@@ -209,535 +207,374 @@ export function BillsPage({ onNavigateToBill }: BillsPageProps) {
     }, 2000);
   };
 
+  // Header Props for PageLayout
+  const headerContent = (
+    <div className="flex items-center gap-3">
+        <button 
+            onClick={() => setActiveTab('watchlist')}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all hover:scale-105 active:scale-95 cursor-pointer ${isDarkMode ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400 hover:bg-yellow-500/20' : 'bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100'}`}
+        >
+            <Pin size={14} strokeWidth={2.5} />
+            <span className="text-xs font-bold">{mockBills.filter(b => b.isPinned).length} Watchlist</span>
+        </button>
+        <button 
+            onClick={() => setActiveTab('at-risk')}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all hover:scale-105 active:scale-95 cursor-pointer ${isDarkMode ? 'bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20' : 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'}`}
+        >
+            <AlertCircle size={14} strokeWidth={2.5} />
+            <span className="text-xs font-bold">{mockBills.filter(b => b.flags.some(f => f.type === 'high-risk') || b.stance === 'oppose').length} At Risk</span>
+        </button>
+        <button 
+            onClick={() => setActiveTab('moving-fast')}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all hover:scale-105 active:scale-95 cursor-pointer ${isDarkMode ? 'bg-orange-500/10 border-orange-500/20 text-orange-400 hover:bg-orange-500/20' : 'bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100'}`}
+        >
+            <TrendingUp size={14} strokeWidth={2.5} />
+            <span className="text-xs font-bold">{mockBills.filter(b => b.momentumScore > 70).length} Moving Fast</span>
+        </button>
+    </div>
+  );
+
+  const pageActions = (
+    <div className="flex items-center gap-8 pb-1.5 pr-12">
+      {tabs.map(tab => {
+        const isActive = activeTab === tab.key;
+        return (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className="relative py-2 outline-none group"
+          >
+            <span 
+              className="relative z-10 text-xs font-bold uppercase tracking-widest transition-colors duration-300"
+              style={{
+                  color: isActive 
+                    ? (isDarkMode ? 'white' : '#000000') 
+                    : (isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)')
+              }}
+            >
+              {tab.label}
+            </span>
+
+            {/* Active Indicator */}
+            {isActive && (
+              <motion.div 
+                layoutId="activeTabIndicator"
+                className="absolute -bottom-1.5 left-0 right-0 h-[2px]"
+                style={{
+                    backgroundColor: isDarkMode ? 'white' : billsTheme.accent,
+                    boxShadow: isDarkMode ? '0 0 15px rgba(255,255,255,0.8)' : `0 0 10px ${hexToRgba(billsTheme.accent, 0.4)}`
+                }}
+                initial={false}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+
   return (
-    <div className={`
-      h-full flex flex-col relative overflow-hidden transition-colors duration-500
-      ${isDarkMode 
-        ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950' 
-        : 'bg-gradient-to-br from-blue-50/30 via-white to-purple-50/30'
+    <PageLayout
+      title={getPageTitle()}
+      subtitle={getSubtitle()}
+      accentColor={billsTheme.accent}
+      headerIcon={
+        <FileText 
+          size={28} 
+          color={isDarkMode ? "white" : billsTheme.accent} 
+          strokeWidth={2.5}
+          className={isDarkMode ? "drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" : ""}
+        />
       }
-    `}>
-      {/* Background Orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {isDarkMode ? (
-          <>
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-red-500/10 rounded-full blur-[120px] animate-slow-pulse" />
-            <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-blue-500/10 rounded-full blur-[130px] animate-slow-pulse" />
-          </>
-        ) : (
-          <>
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-500/8 rounded-full blur-[120px]" />
-            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/8 rounded-full blur-[100px]" />
-          </>
-        )}
-      </div>
-
-      {/* Gradient overlay at top */}
-      <div className={`
-        absolute top-0 left-0 right-0 h-40 pointer-events-none transition-opacity duration-500
-        ${isDarkMode 
-          ? 'bg-gradient-to-b from-blue-900/20 to-transparent' 
-          : 'bg-gradient-to-b from-blue-50/40 to-transparent'
-        }
-      `} />
-
-      {/* Header - Sticky with Glassmorphism */}
-      <motion.div
-        className={`sticky top-0 z-50 transition-all duration-300 ${
-          isDarkMode
-            ? 'bg-slate-900/40 border-b border-white/[0.08]'
-            : 'bg-white/40 border-b border-gray-200/50'
-        }`}
-        style={{
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-        }}
-        animate={{
-          paddingTop: isScrolled ? '12px' : '24px',
-          paddingBottom: isScrolled ? '12px' : '16px',
-        }}
-      >
-        {/* Subtle gradient accent line */}
-        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
-
-        <div className="px-8">
-          {/* Top Header Row */}
-          <div className="flex items-center justify-between mb-4">
-            {/* Left: Section Label (Pill) + Divider + Title + Subtitle */}
-            <div className="flex items-center gap-3">
-              {/* Section Label Pill - "Bills" */}
-              <motion.div
-                className="group relative flex items-center gap-2.5 px-5 py-2.5 rounded-2xl transition-all duration-300"
-                style={{
-                  background: isDarkMode
-                    ? `linear-gradient(135deg, ${hexToRgba(billsTheme.gradientFrom, 0.12)}, ${hexToRgba(billsTheme.gradientTo, 0.08)})`
-                    : `linear-gradient(135deg, ${hexToRgba(billsTheme.gradientFrom, 0.08)}, ${hexToRgba(billsTheme.gradientTo, 0.06)})`,
-                  borderWidth: '1px',
-                  borderStyle: 'solid',
-                  borderColor: isDarkMode
-                    ? hexToRgba(billsTheme.accent, 0.25)
-                    : hexToRgba(billsTheme.accent, 0.2),
-                  boxShadow: isDarkMode
-                    ? `0 0 18px ${hexToRgba(billsTheme.glow, 0.15)}, inset 0 1px 0 rgba(255, 255, 255, 0.08)`
-                    : `0 0 12px ${hexToRgba(billsTheme.glow, 0.08)}, inset 0 1px 0 rgba(255, 255, 255, 0.4)`,
-                }}
-                whileHover={{
-                  boxShadow: isDarkMode
-                    ? `0 0 24px ${hexToRgba(billsTheme.glow, 0.22)}, inset 0 1px 0 rgba(255, 255, 255, 0.12)`
-                    : `0 0 18px ${hexToRgba(billsTheme.glow, 0.12)}, inset 0 1px 0 rgba(255, 255, 255, 0.6)`,
-                }}
-              >
-                {/* Icon with subtle pulse */}
-                <div className="relative">
-                  <FileText
-                    className="w-4 h-4"
-                    style={{
-                      color: isDarkMode ? billsTheme.glow : billsTheme.accent,
-                    }}
-                  />
-                  <div
-                    className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full animate-pulse"
-                    style={{
-                      backgroundColor: billsTheme.glow,
-                    }}
-                  />
-                </div>
-                <span
-                  className="text-sm font-bold tracking-wide"
-                  style={{
-                    color: isDarkMode ? billsTheme.glow : billsTheme.accent,
-                  }}
-                >
-                  Bills
+      backgroundImage={
+        <FileText 
+          size={450} 
+          color={isDarkMode ? "white" : billsTheme.accent} 
+          strokeWidth={0.5}
+        />
+      }
+      headerContent={headerContent}
+      pageActions={pageActions}
+    >
+      <div className="p-8 pb-32 max-w-[1920px] mx-auto space-y-8">
+        {/* Sync Status Bar */}
+        <div className={`sticky top-0 z-30 flex items-center justify-between -mx-8 -mt-8 px-8 py-4 border-b backdrop-blur-md transition-colors ${
+          isDarkMode ? 'bg-slate-900/80 border-white/10' : 'bg-white/80 border-gray-200'
+        }`}>
+          <div className="flex items-center gap-4">
+             <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-yellow-500 animate-pulse' : 'bg-emerald-500'}`} />
+                <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  {isSyncing ? 'Syncing with AZLeg.gov...' : 'Live Sync Active'}
                 </span>
-              </motion.div>
-
-              {/* Subtle breadcrumb-style divider */}
-              <span
-                className="text-sm font-medium"
-                style={{
-                  color: isDarkMode
-                    ? hexToRgba('#FFFFFF', 0.2)
-                    : hexToRgba('#000000', 0.15),
-                }}
-              >
-                /
-              </span>
-
-              {/* Title + Subtitle */}
-              <div>
-                <motion.h1
-                  className={`font-bold ${
-                    isDarkMode ? 'text-white' : 'text-gray-900'
-                  }`}
-                  animate={{
-                    fontSize: isScrolled ? '20px' : '28px',
-                    marginBottom: isScrolled ? '0px' : '4px',
-                  }}
-                  transition={{ duration: 0.25 }}
-                >
-                  {getPageTitle()}
-                </motion.h1>
-                <motion.div
-                  className="flex items-center gap-3"
-                  animate={{
-                    opacity: isScrolled ? 0 : 1,
-                    height: isScrolled ? 0 : 'auto',
-                  }}
-                  transition={{ duration: 0.25 }}
-                >
-                  <p className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-gray-600'}`}>
-                    {getSubtitle()}
-                  </p>
-                  <div className="flex items-center gap-1.5">
-                    <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${isDarkMode ? 'bg-green-400' : 'bg-green-500'}`} />
-                    <span className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-gray-600'}`}>
-                      Synced {lastSynced}
-                    </span>
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-
-            {/* Right: Action Buttons */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleSyncNow}
-                disabled={isSyncing}
-                className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
-                  isDarkMode
-                    ? 'border border-white/10 text-slate-300 hover:bg-white/5 hover:border-white/20 disabled:opacity-50'
-                    : 'border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50'
-                }`}
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                Sync
-              </button>
-              <button
-                onClick={() => setShowAddBillsModal(true)}
-                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                  isDarkMode
-                    ? 'bg-blue-600/90 text-white hover:bg-blue-600 border border-blue-500/30'
-                    : 'bg-blue-600 text-white hover:bg-blue-700 border border-blue-700/20'
-                }`}
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Add Bills
-              </button>
-            </div>
+             </div>
+             <div className={`h-4 w-[1px] ${isDarkMode ? 'bg-white/10' : 'bg-gray-200'}`} />
+             <span className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+               Last updated: {lastSynced}
+             </span>
           </div>
 
-          {/* Stats Row - Inline */}
-          <motion.div
-            className="flex items-center gap-2 pb-4"
-            animate={{
-              opacity: isScrolled ? 0.5 : 1,
-            }}
-            transition={{ duration: 0.25 }}
-          >
-            {/* Watchlist Stat */}
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${
-              isDarkMode
-                ? 'bg-yellow-900/10 border-yellow-500/20 hover:border-yellow-500/40'
-                : 'bg-yellow-50 border-yellow-200 hover:border-yellow-300'
-            }`}>
-              <Pin className={`w-3 h-3 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`} />
-              <span className={`text-xs font-semibold ${isDarkMode ? 'text-yellow-300' : 'text-yellow-900'}`}>
-                {mockBills.filter(b => b.isPinned).length}
-              </span>
-              <span className={`text-[10px] font-medium ${isDarkMode ? 'text-yellow-400/70' : 'text-yellow-700'}`}>
-                Watchlist
-              </span>
-            </div>
-
-            {/* At Risk Stat */}
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${
-              isDarkMode
-                ? 'bg-red-900/10 border-red-500/20 hover:border-red-500/40'
-                : 'bg-red-50 border-red-200 hover:border-red-300'
-            }`}>
-              <AlertCircle className={`w-3 h-3 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`} />
-              <span className={`text-xs font-semibold ${isDarkMode ? 'text-red-300' : 'text-red-900'}`}>
-                {mockBills.filter(b => b.flags.some(f => f.type === 'high-risk') || b.stance === 'oppose').length}
-              </span>
-              <span className={`text-[10px] font-medium ${isDarkMode ? 'text-red-400/70' : 'text-red-700'}`}>
-                At Risk
-              </span>
-            </div>
-
-            {/* Moving Fast Stat */}
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${
-              isDarkMode
-                ? 'bg-orange-900/10 border-orange-500/20 hover:border-orange-500/40'
-                : 'bg-orange-50 border-orange-200 hover:border-orange-300'
-            }`}>
-              <TrendingUp className={`w-3 h-3 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
-              <span className={`text-xs font-semibold ${isDarkMode ? 'text-orange-300' : 'text-orange-900'}`}>
-                {mockBills.filter(b => b.momentumScore > 70).length}
-              </span>
-              <span className={`text-[10px] font-medium ${isDarkMode ? 'text-orange-400/70' : 'text-orange-700'}`}>
-                Moving Fast
-              </span>
-            </div>
-
-            {/* New & Relevant Stat */}
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${
-              isDarkMode
-                ? 'bg-blue-900/10 border-blue-500/20 hover:border-blue-500/40'
-                : 'bg-blue-50 border-blue-200 hover:border-blue-300'
-            }`}>
-              <Sparkles className={`w-3 h-3 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-              <span className={`text-xs font-semibold ${isDarkMode ? 'text-blue-300' : 'text-blue-900'}`}>
-                2
-              </span>
-              <span className={`text-[10px] font-medium ${isDarkMode ? 'text-blue-400/70' : 'text-blue-700'}`}>
-                New & Relevant
-              </span>
-            </div>
-
-            {/* Divider */}
-            <div className={`h-6 w-px ${isDarkMode ? 'bg-white/10' : 'bg-gray-300'}`} />
-
-            {/* Search - Compact */}
-            <div className="flex-1 max-w-md">
-              <div className="relative">
-                <Search
-                  className={`absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${
-                    isDarkMode ? 'text-slate-500' : 'text-gray-400'
-                  }`}
-                />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Search bills..."
-                  className={`w-full pl-8 pr-3 py-2 rounded-lg border text-xs font-medium transition-all ${
-                    isDarkMode
-                      ? 'bg-slate-800/40 border-white/10 text-white placeholder-slate-500 focus:bg-slate-800 focus:border-blue-500/30'
-                      : 'bg-white/60 border-gray-200 text-gray-900 placeholder-gray-400 focus:bg-white focus:border-blue-300'
-                  }`}
-                />
-              </div>
-            </div>
-
-            {/* Filters Toggle */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                showFilters
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : isDarkMode
-                  ? 'border border-white/10 text-slate-300 hover:bg-white/5 hover:border-white/20'
-                  : 'border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
-              }`}
-            >
-              <Filter className="w-3.5 h-3.5" />
-              Filters
-            </button>
-          </motion.div>
-
-          {/* Tab Pills - Prominent Full-Width Row */}
-          <motion.div
-            className={`flex items-center justify-start gap-2 pb-4 border-t pt-4 ${
-              isDarkMode ? 'border-white/10' : 'border-gray-200'
-            }`}
-            animate={{
-              opacity: isScrolled ? 0.7 : 1,
-            }}
-            transition={{ duration: 0.25 }}
-          >
-            {tabs.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
-                  activeTab === tab.key
-                    ? isDarkMode
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30'
-                      : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/20'
-                    : isDarkMode
-                    ? 'bg-slate-800/40 text-slate-300 hover:bg-slate-700/50 border border-white/10 hover:border-white/20'
-                    : 'bg-white/60 text-gray-700 hover:bg-white border border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                {tab.label}
-                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                  activeTab === tab.key
-                    ? tab.key === 'at-risk'
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-white/30 text-white'
-                    : isDarkMode
-                    ? 'bg-slate-700/50 text-slate-400'
-                    : 'bg-gray-200 text-gray-600'
-                }`}>
-                  {tab.count}
-                </span>
-              </button>
-            ))}
-          </motion.div>
-
-          {/* Filters Panel */}
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.25 }}
-                className="overflow-hidden pb-4"
-              >
-                <div className={`pt-4 border-t grid grid-cols-4 gap-3 ${isDarkMode ? 'border-white/10' : 'border-gray-200'}`}>
-                  <div>
-                    <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1.5 ${isDarkMode ? 'text-slate-400' : 'text-gray-600'}`}>
-                      Jurisdiction
-                    </label>
-                    <select
-                      value={jurisdictionFilter}
-                      onChange={e => setJurisdictionFilter(e.target.value as any)}
-                      className={`w-full px-3 py-2 text-xs border rounded-lg font-medium transition-all ${
-                        isDarkMode
-                          ? 'bg-slate-800/50 border-white/10 text-white'
-                          : 'bg-white border-gray-200 text-gray-900'
-                      }`}
-                    >
-                      <option value="all">All</option>
-                      <option value="state">State</option>
-                      <option value="federal">Federal</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1.5 ${isDarkMode ? 'text-slate-400' : 'text-gray-600'}`}>
-                      Status
-                    </label>
-                    <select
-                      value={statusFilter}
-                      onChange={e => setStatusFilter(e.target.value)}
-                      className={`w-full px-3 py-2 text-xs border rounded-lg font-medium transition-all ${
-                        isDarkMode
-                          ? 'bg-slate-800/50 border-white/10 text-white'
-                          : 'bg-white border-gray-200 text-gray-900'
-                      }`}
-                    >
-                      <option value="all">All</option>
-                      <option value="introduced">Introduced</option>
-                      <option value="committee">Committee</option>
-                      <option value="floor">Floor</option>
-                      <option value="passed-chamber">Passed Chamber</option>
-                      <option value="governor">Governor</option>
-                      <option value="signed">Signed</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1.5 ${isDarkMode ? 'text-slate-400' : 'text-gray-600'}`}>
-                      Issue Tag
-                    </label>
-                    <select
-                      value={issueTagFilter}
-                      onChange={e => setIssueTagFilter(e.target.value)}
-                      className={`w-full px-3 py-2 text-xs border rounded-lg font-medium transition-all ${
-                        isDarkMode
-                          ? 'bg-slate-800/50 border-white/10 text-white'
-                          : 'bg-white border-gray-200 text-gray-900'
-                      }`}
-                    >
-                      <option value="all">All</option>
-                      {allIssueTags.map(tag => (
-                        <option key={tag} value={tag}>{tag}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1.5 ${isDarkMode ? 'text-slate-400' : 'text-gray-600'}`}>
-                      Stance
-                    </label>
-                    <select
-                      value={stanceFilter}
-                      onChange={e => setStanceFilter(e.target.value)}
-                      className={`w-full px-3 py-2 text-xs border rounded-lg font-medium transition-all ${
-                        isDarkMode
-                          ? 'bg-slate-800/50 border-white/10 text-white'
-                          : 'bg-white border-gray-200 text-gray-900'
-                      }`}
-                    >
-                      <option value="all">All</option>
-                      <option value="support">Support</option>
-                      <option value="oppose">Oppose</option>
-                      <option value="monitor">Monitor</option>
-                      <option value="neutral">Neutral</option>
-                    </select>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <div className="flex items-center gap-3">
+             <Button
+               variant="outline"
+               size="sm"
+               onClick={handleSyncNow}
+               disabled={isSyncing}
+               className={isDarkMode ? 'border-white/10 hover:bg-white/5' : ''}
+             >
+                <RefreshCw size={14} className={`mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+                Sync Now
+             </Button>
+             <Button
+               variant="primary"
+               size="sm"
+               onClick={() => setShowAddBillsModal(true)}
+               className="bg-indigo-600 hover:bg-indigo-700 text-white border-none"
+             >
+                <Plus size={16} className="mr-1" />
+                Add Bills
+             </Button>
+          </div>
         </div>
-      </motion.div>
 
-      <div className="flex-1 overflow-y-auto px-8 py-6 relative z-10" ref={scrollRef}>
+        {/* Filters Bar */}
+        <div className="flex flex-col gap-4">
+           <div className="flex items-center justify-between">
+              <div className={`relative flex-1 max-w-md ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50" size={16} />
+                 <input 
+                   type="text" 
+                   placeholder="Search bills by ID, title, or keywords..." 
+                   className={`w-full pl-10 pr-4 py-2.5 rounded-lg border outline-none transition-all ${
+                     isDarkMode 
+                       ? 'bg-[#0A0A0A] border-white/10 focus:border-white/20' 
+                       : 'bg-white border-gray-200 focus:border-indigo-500'
+                   }`}
+                   value={searchQuery}
+                   onChange={(e) => setSearchQuery(e.target.value)}
+                 />
+              </div>
+
+              <div className="flex items-center gap-3">
+                 <button 
+                   onClick={() => setShowFilters(!showFilters)}
+                   className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border transition-colors ${
+                     showFilters
+                       ? (isDarkMode ? 'bg-white/10 border-white/20 text-white' : 'bg-gray-100 border-gray-300 text-gray-900')
+                       : (isDarkMode ? 'bg-[#0A0A0A] border-white/10 text-gray-400 hover:text-white' : 'bg-white border-gray-200 text-gray-600 hover:text-gray-900')
+                   }`}
+                 >
+                    <Filter size={16} />
+                    <span className="text-sm font-medium">Filters</span>
+                    {(jurisdictionFilter !== 'all' || statusFilter !== 'all' || issueTagFilter !== 'all' || stanceFilter !== 'all') && (
+                      <span className="w-2 h-2 bg-indigo-500 rounded-full ml-1" />
+                    )}
+                 </button>
+
+                 <div className={`h-8 w-[1px] mx-2 ${isDarkMode ? 'bg-white/10' : 'bg-gray-200'}`} />
+
+                 <div className="flex bg-gray-100/5 p-1 rounded-lg border border-transparent">
+                    <button className={`p-2 rounded-md ${isDarkMode ? 'text-white bg-white/10 shadow-sm' : 'text-gray-900 bg-white shadow-sm'}`}>
+                       <SortDesc size={16} />
+                    </button>
+                 </div>
+              </div>
+           </div>
+
+           {/* Expanded Filters */}
+           <AnimatePresence>
+             {showFilters && (
+               <motion.div
+                 initial={{ height: 0, opacity: 0 }}
+                 animate={{ height: 'auto', opacity: 1 }}
+                 exit={{ height: 0, opacity: 0 }}
+                 className="overflow-hidden"
+               >
+                 <div className={`p-4 rounded-xl border grid grid-cols-4 gap-4 ${
+                   isDarkMode ? 'bg-[#0A0A0A] border-white/10' : 'bg-white border-gray-100'
+                 }`}>
+                    {/* Jurisdiction */}
+                    <div className="space-y-2">
+                       <label className={`text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>Jurisdiction</label>
+                       <select 
+                         value={jurisdictionFilter}
+                         onChange={(e) => setJurisdictionFilter(e.target.value as any)}
+                         className={`w-full p-2 rounded-lg text-sm outline-none border ${
+                           isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'
+                         }`}
+                       >
+                         <option value="all">All Jurisdictions</option>
+                         <option value="federal">Federal (US)</option>
+                         <option value="state">State (AZ)</option>
+                       </select>
+                    </div>
+
+                    {/* Status */}
+                    <div className="space-y-2">
+                       <label className={`text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>Status</label>
+                       <select 
+                         value={statusFilter}
+                         onChange={(e) => setStatusFilter(e.target.value)}
+                         className={`w-full p-2 rounded-lg text-sm outline-none border ${
+                           isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'
+                         }`}
+                       >
+                         <option value="all">All Statuses</option>
+                         <option value="introduced">Introduced</option>
+                         <option value="in_committee">In Committee</option>
+                         <option value="crossed_over">Crossed Over</option>
+                         <option value="passed">Passed</option>
+                       </select>
+                    </div>
+
+                    {/* Issue Area */}
+                    <div className="space-y-2">
+                       <label className={`text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>Issue Area</label>
+                       <select 
+                         value={issueTagFilter}
+                         onChange={(e) => setIssueTagFilter(e.target.value)}
+                         className={`w-full p-2 rounded-lg text-sm outline-none border ${
+                           isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'
+                         }`}
+                       >
+                         <option value="all">All Issues</option>
+                         {allIssueTags.map(tag => (
+                           <option key={tag} value={tag}>{tag}</option>
+                         ))}
+                       </select>
+                    </div>
+
+                    {/* Stance */}
+                    <div className="space-y-2">
+                       <label className={`text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>My Stance</label>
+                       <select 
+                         value={stanceFilter}
+                         onChange={(e) => setStanceFilter(e.target.value)}
+                         className={`w-full p-2 rounded-lg text-sm outline-none border ${
+                           isDarkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'
+                         }`}
+                       >
+                         <option value="all">Any Stance</option>
+                         <option value="support">Support</option>
+                         <option value="oppose">Oppose</option>
+                         <option value="monitor">Monitor</option>
+                       </select>
+                    </div>
+                 </div>
+               </motion.div>
+             )}
+           </AnimatePresence>
+        </div>
+
+        {/* Bulk Actions (if selection) */}
+        <AnimatePresence>
+          {selectedBills.size > 0 && (
+             <motion.div
+               initial={{ height: 0, opacity: 0 }}
+               animate={{ height: 'auto', opacity: 1 }}
+               exit={{ height: 0, opacity: 0 }}
+               className={`flex items-center justify-between p-4 rounded-xl border ${
+                 isDarkMode ? 'bg-indigo-900/20 border-indigo-500/30' : 'bg-indigo-50 border-indigo-200'
+               }`}
+             >
+                <div className="flex items-center gap-3">
+                   <div className="flex items-center justify-center w-6 h-6 rounded bg-indigo-500 text-white text-xs font-bold">
+                      {selectedBills.size}
+                   </div>
+                   <span className={`text-sm font-medium ${isDarkMode ? 'text-indigo-200' : 'text-indigo-900'}`}>
+                      bills selected
+                   </span>
+                </div>
+                <div className="flex items-center gap-2">
+                   <Button size="sm" variant="ghost" className="hover:bg-white/10">Export Summary</Button>
+                   <Button size="sm" variant="ghost" className="hover:bg-white/10">Add to Briefing</Button>
+                   <Button size="sm" className="bg-indigo-600 text-white border-none hover:bg-indigo-700">Batch Analysis</Button>
+                </div>
+             </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Bills List */}
         <div className="space-y-4">
-          {/* Select All Header */}
-          {filteredBills.length > 0 && (
-            <motion.div
-              initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className={`
-                flex items-center gap-3 px-5 py-3 rounded-xl border backdrop-blur-sm transition-all duration-500
-                ${isDarkMode 
-                  ? 'bg-slate-900/40 border-white/10' 
-                  : 'bg-white/60 border-gray-200'
-                }
-              `}
-            >
-              <input
-                type="checkbox"
-                checked={selectedBills.size === filteredBills.length && filteredBills.length > 0}
-                onChange={handleSelectAll}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className={`
-                text-sm font-medium transition-colors duration-500
-                ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}
-              `}>
-                {selectedBills.size > 0 
-                  ? `${selectedBills.size} of ${filteredBills.length} selected`
-                  : 'Select all'
-                }
-              </span>
-            </motion.div>
-          )}
+          <div className={`grid grid-cols-[auto_1fr_auto_auto_auto_auto_auto] gap-4 px-6 py-2 text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+             <div className="w-8">
+                <input 
+                  type="checkbox" 
+                  className="rounded border-gray-600 bg-transparent"
+                  checked={selectedBills.size === filteredBills.length && filteredBills.length > 0}
+                  onChange={handleSelectAll}
+                />
+             </div>
+             <div>Bill / Summary</div>
+             <div className="w-32">Status</div>
+             <div className="w-24">Momentum</div>
+             <div className="w-24">Stance</div>
+             <div className="w-32">Next Action</div>
+             <div className="w-8"></div>
+          </div>
 
-          {/* Bill Rows */}
           <AnimatePresence mode="popLayout">
-            {filteredBills.map((bill, index) => (
+            {displayedBills.map((bill, index) => (
               <motion.div
                 key={bill.id}
-                initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -20 }}
-                transition={{ duration: 0.5, delay: prefersReducedMotion ? 0 : 0.05 * index, ease: [0.22, 1, 0.36, 1] }}
-                layout
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ delay: index * 0.05 }}
               >
-                <BillRow
-                  bill={bill}
+                <BillRow 
+                  bill={bill} 
                   isSelected={selectedBills.has(bill.id)}
-                  onSelect={handleSelectBill}
-                  onNavigate={onNavigateToBill}
+                  onSelect={() => handleSelectBill(bill.id)}
+                  onNavigate={() => onNavigateToBill(bill.id)}
                 />
               </motion.div>
             ))}
           </AnimatePresence>
+          
+          {displayedBills.length === 0 && (
+             <div className={`flex flex-col items-center justify-center py-20 border-2 border-dashed rounded-xl ${
+                isDarkMode ? 'border-white/10' : 'border-gray-200'
+             }`}>
+                <FileText size={48} className={`mb-4 ${isDarkMode ? 'text-gray-700' : 'text-gray-300'}`} />
+                <h3 className={`text-lg font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>No bills found</h3>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>Try adjusting your search or filters</p>
+                <Button 
+                   variant="outline" 
+                   className="mt-6"
+                   onClick={() => {
+                      setSearchQuery('');
+                      setJurisdictionFilter('all');
+                      setStatusFilter('all');
+                      setIssueTagFilter('all');
+                      setStanceFilter('all');
+                   }}
+                >
+                   Clear Filters
+                </Button>
+             </div>
+          )}
 
-          {/* Empty State */}
-          {filteredBills.length === 0 && (
-            <motion.div
-              initial={prefersReducedMotion ? {} : { opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className={`
-                p-16 text-center rounded-2xl backdrop-blur-xl border transition-all duration-500
-                ${isDarkMode 
-                  ? 'bg-slate-900/40 border-white/10' 
-                  : 'bg-white/60 border-gray-200'
-                }
-              `}
-            >
-              <div className={`
-                mb-4 transition-colors duration-500
-                ${isDarkMode ? 'text-gray-600' : 'text-gray-300'}
-              `}>
-                <CheckSquare size={64} className="mx-auto" />
-              </div>
-              <h3 className={`
-                text-xl font-bold mb-2 transition-colors duration-500
-                ${isDarkMode ? 'text-white' : 'text-gray-900'}
-              `}>
-                No bills found
-              </h3>
-              <p className={`
-                text-sm transition-colors duration-500
-                ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}
-              `}>
-                {searchQuery || showFilters
-                  ? 'Try adjusting your search or filters'
-                  : 'No bills match the selected tab criteria'
-                }
-              </p>
-            </motion.div>
+          {hasMore && (
+             <div className="flex justify-center pt-8">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setPage(p => p + 1)}
+                  className="min-w-[200px]"
+                >
+                  Load More
+                </Button>
+             </div>
           )}
         </div>
       </div>
 
-      {/* Add Bills Modal */}
-      <AddBillsModal
+      <AddBillsModal 
         isOpen={showAddBillsModal}
         onClose={() => setShowAddBillsModal(false)}
         onAddBills={handleAddBills}
       />
-    </div>
+    </PageLayout>
   );
 }

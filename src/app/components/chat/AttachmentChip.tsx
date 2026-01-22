@@ -48,7 +48,7 @@ export function AttachmentChip({ attachment, onRemove }: AttachmentChipProps) {
     <div
       className={`
         group inline-flex items-center gap-2 px-3 py-1.5 rounded-full border
-        ${isDarkMode ? 'bg-slate-800 border-white/20 hover:border-white/40' : `${colors.bg} ${colors.border} hover:shadow-md`}
+        ${isDarkMode ? 'bg-[#121214] border-white/20 hover:border-white/40' : `${colors.bg} ${colors.border} hover:shadow-md`}
         transition-all duration-200 hover:scale-105
       `}
     >
@@ -59,7 +59,7 @@ export function AttachmentChip({ attachment, onRemove }: AttachmentChipProps) {
         {ATTACHMENT_ICONS[attachment.type]}
       </div>
       <div className="flex flex-col min-w-0">
-        <span className={`text-xs font-semibold truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+        <span className={`text-[10px] font-bold uppercase tracking-wider truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
           {attachment.title}
         </span>
         {attachment.subtitle && (

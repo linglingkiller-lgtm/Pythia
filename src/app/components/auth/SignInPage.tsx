@@ -149,19 +149,22 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignInSuccess, onInvit
     // Generate unique attempt ID for logging
     signInAttemptCounter.current += 1;
     const attemptId = `attempt-${signInAttemptCounter.current}`;
-    console.log(`🔐 [SignInPage] Starting sign-in ${attemptId} (caller: Submit button)`);
+    console.log(`🔐 [SignInPage] Starting sign-in ${attemptId} (caller: Submit button)`, { appMode });
     
     isSigningInRef.current = true;
     setError('');
     setLoading(true);
 
     try {
-      // Use Supabase auth in Live mode, legacy auth in Demo mode
       let result;
       if (appMode === 'prod') {
-        console.log(`🔐 [SignInPage] ${attemptId}: Calling Supabase signInWithPassword...`);
-        result = await supabaseSignIn(email, password);
+        // PROD MODE: Use MSAL redirect (no email/password needed)
+        console.log(`🔐 [SignInPage] ${attemptId}: Triggering MSAL redirect...`);
+        // Calling login without args triggers MSAL redirect flow
+        result = await legacyLogin();
+        // Note: loginRedirect will navigate away, so code after this may not execute
       } else {
+        // DEMO MODE: Use email/password with legacy auth
         console.log(`🔐 [SignInPage] ${attemptId}: Calling legacy login...`);
         result = await legacyLogin(email, password);
       }
@@ -562,9 +565,36 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignInSuccess, onInvit
             <h2 style={{ color: '#111827', marginBottom: '0.5rem', fontSize: '28px', fontWeight: 700, textAlign: 'center' }}>
               Sign in
             </h2>
-            <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2rem', textAlign: 'center' }}>
+            <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '1.5rem', textAlign: 'center' }}>
               Enter your credentials to access Revere
             </p>
+
+            {/* Demo Credentials Hint */}
+            {appMode === 'demo' && (
+              <div style={{ 
+                marginBottom: '1.5rem', 
+                padding: '1rem', 
+                backgroundColor: '#f8fafc', 
+                border: '1px solid #e2e8f0', 
+                borderRadius: '0.75rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#f97316' }} />
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Demo Access</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0.75rem', backgroundColor: 'white', border: '1px solid #f1f5f9', borderRadius: '0.5rem' }}>
+                  <span style={{ fontSize: '13px', color: '#64748b' }}>Username</span>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a', fontFamily: 'monospace' }}>admin</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0.75rem', backgroundColor: 'white', border: '1px solid #f1f5f9', borderRadius: '0.5rem' }}>
+                  <span style={{ fontSize: '13px', color: '#64748b' }}>Password</span>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a', fontFamily: 'monospace' }}>demo</span>
+                </div>
+              </div>
+            )}
 
             {/* Error message */}
             {error && (
@@ -585,107 +615,120 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignInSuccess, onInvit
 
             {/* Form */}
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div>
-                <label 
-                  htmlFor="email" 
-                  style={{ 
-                    display: 'block', 
-                    fontSize: '14px', 
-                    fontWeight: 600, 
-                    color: '#374151', 
-                    marginBottom: '0.5rem' 
-                  }}
-                >
-                  Email
-                </label>
-                <input
-                  ref={emailInputRef}
-                  id="email"
-                  type="text"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.75rem', 
-                    border: '1.5px solid #e5e7eb', 
-                    borderRadius: '0.5rem',
-                    fontSize: '15px',
-                    transition: 'border-color 150ms',
-                  }}
-                  placeholder="admin@echocanyonconsulting.com"
-                  required
-                  autoComplete="email"
-                />
-              </div>
-
-              <div>
-                <label 
-                  htmlFor="password" 
-                  style={{ 
-                    display: 'block', 
-                    fontSize: '14px', 
-                    fontWeight: 600, 
-                    color: '#374151', 
-                    marginBottom: '0.5rem' 
-                  }}
-                >
-                  Password
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    onKeyUp={handleKeyDown}
-                    style={{ 
-                      width: '100%', 
-                      padding: '0.75rem', 
-                      paddingRight: '3rem', 
-                      border: '1.5px solid #e5e7eb', 
-                      borderRadius: '0.5rem',
-                      fontSize: '15px',
-                      transition: 'border-color 150ms',
-                    }}
-                    placeholder="Enter your password"
-                    required
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{ 
-                      position: 'absolute', 
-                      right: '0.875rem', 
-                      top: '50%', 
-                      transform: 'translateY(-50%)', 
-                      color: '#6b7280', 
-                      background: 'none', 
-                      border: 'none', 
-                      cursor: 'pointer', 
-                      padding: '0.25rem',
-                    }}
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                {capsLockOn && (
-                  <p style={{ 
-                    marginTop: '0.375rem', 
-                    fontSize: '12px', 
-                    color: '#d97706', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '0.25rem',
-                    margin: '0.375rem 0 0 0'
-                  }}>
-                    <AlertCircle size={12} />
-                    Caps lock is on
+              {appMode === 'prod' ? (
+                <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                  <p style={{ fontSize: '15px', color: '#374151', marginBottom: '0.5rem' }}>
+                    Sign in with your organization account
                   </p>
-                )}
-              </div>
+                  <p style={{ fontSize: '13px', color: '#6b7280' }}>
+                    You will be redirected to Microsoft Azure AD
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label 
+                      htmlFor="email" 
+                      style={{ 
+                        display: 'block', 
+                        fontSize: '14px', 
+                        fontWeight: 600, 
+                        color: '#374151', 
+                        marginBottom: '0.5rem' 
+                      }}
+                    >
+                      Email
+                    </label>
+                    <input
+                      ref={emailInputRef}
+                      id="email"
+                      type="text"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      style={{ 
+                        width: '100%', 
+                        padding: '0.75rem', 
+                        border: '1.5px solid #e5e7eb', 
+                        borderRadius: '0.5rem',
+                        fontSize: '15px',
+                        transition: 'border-color 150ms',
+                      }}
+                      placeholder="admin"
+                      required
+                      autoComplete="email"
+                    />
+                  </div>
+
+                  <div>
+                    <label 
+                      htmlFor="password" 
+                      style={{ 
+                        display: 'block', 
+                        fontSize: '14px', 
+                        fontWeight: 600, 
+                        color: '#374151', 
+                        marginBottom: '0.5rem' 
+                      }}
+                    >
+                      Password
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        onKeyUp={handleKeyDown}
+                        style={{ 
+                          width: '100%', 
+                          padding: '0.75rem', 
+                          paddingRight: '3rem', 
+                          border: '1.5px solid #e5e7eb', 
+                          borderRadius: '0.5rem',
+                          fontSize: '15px',
+                          transition: 'border-color 150ms',
+                        }}
+                        placeholder="Enter your password"
+                        required
+                        autoComplete="current-password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{ 
+                          position: 'absolute', 
+                          right: '0.875rem', 
+                          top: '50%', 
+                          transform: 'translateY(-50%)', 
+                          color: '#6b7280', 
+                          background: 'none', 
+                          border: 'none', 
+                          cursor: 'pointer', 
+                          padding: '0.25rem',
+                        }}
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                    {capsLockOn && (
+                      <p style={{ 
+                        marginTop: '0.375rem', 
+                        fontSize: '12px', 
+                        color: '#d97706', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '0.25rem',
+                        margin: '0.375rem 0 0 0'
+                      }}>
+                        <AlertCircle size={12} />
+                        Caps lock is on
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
 
               {/* Sign in button */}
               <Button
@@ -712,81 +755,34 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignInSuccess, onInvit
                 {loading ? (
                   <>
                     <Loader2 style={{ width: '16px', height: '16px' }} className="animate-spin" />
-                    Signing in...
+                    {appMode === 'prod' ? 'Redirecting...' : 'Signing in...'}
                   </>
                 ) : (
-                  'Sign in'
+                  appMode === 'prod' ? 'Sign in with Microsoft' : 'Sign in'
                 )}
               </Button>
 
               {/* Forgot password */}
-              <div style={{ textAlign: 'center' }}>
-                <button 
-                  type="button"
-                  style={{ 
-                    fontSize: '14px', 
-                    color: '#b91c1c', 
-                    fontWeight: 500, 
-                    background: 'none', 
-                    border: 'none', 
-                    cursor: 'pointer', 
-                    padding: 0,
-                  }}
-                  onClick={(e) => e.preventDefault()}
-                >
-                  Forgot password?
-                </button>
-              </div>
-            </form>
-
-            {/* Demo credentials */}
-            <div style={{ marginTop: '1.75rem' }}>
-              <button
-                type="button"
-                onClick={() => setShowDemoDetails(!showDemoDetails)}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  backgroundColor: '#f3f4f6',
-                  border: 'none',
-                  borderRadius: '0.5rem',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  color: '#374151',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                Demo Credentials
-                <span style={{ transform: showDemoDetails ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 200ms' }}>
-                  ▼
-                </span>
-              </button>
-              
-              {showDemoDetails && (
-                <div style={{ 
-                  marginTop: '0.75rem', 
-                  padding: '1rem', 
-                  backgroundColor: '#eff6ff', 
-                  border: '1px solid #bfdbfe', 
-                  borderRadius: '0.5rem',
-                }}
-                >
-                  <p style={{ fontSize: '13px', color: '#1e40af', margin: '0 0 0.25rem 0' }}>
-                    <strong>Username:</strong> admin
-                  </p>
-                  <p style={{ fontSize: '13px', color: '#1e40af', margin: '0 0 0.75rem 0' }}>
-                    <strong>Password:</strong> demo
-                  </p>
-                  <p style={{ fontSize: '12px', color: '#2563eb', margin: 0 }}>
-                    To test invite flow, add <code style={{ backgroundColor: '#dbeafe', padding: '2px 6px', borderRadius: '3px', fontFamily: 'monospace' }}>?invite=abc123xyz789</code> to URL
-                  </p>
+              {appMode !== 'prod' && (
+                <div style={{ textAlign: 'center' }}>
+                  <button 
+                    type="button"
+                    style={{ 
+                      fontSize: '14px', 
+                      color: '#b91c1c', 
+                      fontWeight: 500, 
+                      background: 'none', 
+                      border: 'none', 
+                      cursor: 'pointer', 
+                      padding: 0,
+                    }}
+                    onClick={(e) => e.preventDefault()}
+                  >
+                    Forgot password?
+                  </button>
                 </div>
               )}
-            </div>
+            </form>
           </div>
         </div>
       )}

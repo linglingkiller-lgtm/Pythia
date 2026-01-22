@@ -115,7 +115,7 @@ const mockUsers: Record<string, any> = {
   },
   'ML': {
     id: 'mk-001',
-    name: 'Matt Kenny',
+    name: 'Matt Kenney',
     title: 'President of Echo Canyon Public Affairs',
     initials: 'MK',
     email: 'matt.kenny@echocanyonconsulting.com',
